@@ -28,7 +28,7 @@ class Application(tornado.web.Application):
             cookie_secret=auth.secret,
             template_path=os.path.join(os.path.dirname(__file__), "templates"),
             static_path=os.path.join(os.path.dirname(__file__), "static"),
-            xsrf_cookies=True,
+            xsrf_cookies=False,
         )
         tornado.web.Application.__init__(self, handlers, **settings)
 
