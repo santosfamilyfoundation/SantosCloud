@@ -16,6 +16,7 @@ from tornado.options import define, options
 from handlers.upload import UploadHandler
 from handlers.testFeatureTracking import TestFeatureTrackingHandler
 from handlers.testObjectTracking import TestObjectTrackingHandler
+from handlers.trajectoryAnalysis import TrajectoryAnalysisHandler
 from handlers.safetyAnalysis import SafetyAnalysisHandler
 
 define("port", default=8888, help="run on the given port", type=int)
@@ -28,6 +29,7 @@ class Application(tornado.web.Application):
             (r"/upload", UploadHandler),
             (r"/test/featureTracking", TestFeatureTrackingHandler),
             (r"/test/objectTracking", TestObjectTrackingHandler),
+            (r"/trajectoryAnalysis", TrajectoryAnalysisHandler),
             (r"/safetyAnalysis", SafetyAnalysisHandler),
         ]
         settings = dict(
