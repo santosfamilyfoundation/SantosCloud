@@ -13,7 +13,10 @@ import auth
 from tornado.options import define, options
 
 # Import all of our custom routes
-from upload import UploadHandler
+from handlers.upload import UploadHandler
+from handlers.testFeatureTracking import TestFeatureTrackingHandler
+from handlers.testObjectTracking import TestObjectTrackingHandler
+from handlers.safetyAnalysis import SafetyAnalysisHandler
 
 define("port", default=8888, help="run on the given port", type=int)
 
@@ -23,6 +26,9 @@ class Application(tornado.web.Application):
         handlers = [
             (r"/", MainHandler),
             (r"/upload", UploadHandler),
+            (r"/test/featureTracking", TestFeatureTrackingHandler),
+            (r"/test/objectTracking", TestObjectTrackingHandler),
+            (r"/safetyAnalysis", SafetyAnalysisHandler),
         ]
         settings = dict(
             cookie_secret=auth.secret,
