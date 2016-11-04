@@ -12,6 +12,9 @@ import auth
 
 from tornado.options import define, options
 
+# Import all of our custom routes
+from upload import UploadHandler
+
 define("port", default=8888, help="run on the given port", type=int)
 
 
@@ -19,6 +22,7 @@ class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
             (r"/", MainHandler),
+            (r"/upload", UploadHandler),
         ]
         settings = dict(
             cookie_secret=auth.secret,
