@@ -1,12 +1,13 @@
 
 import Enum
 class Status(Enum):
-	Uploading = "Uploading video"
-	TrackingFeatures = "Tracking features"
-	TrackingObjects = "Tracking objects"
-	GeneratingVideos = "Generating short videos"
-	CombiningVideos = "Combining videos"
-	SafetyAnalysis = "Running safety analysis"
+	UPLOADING = "Uploading video"
+	TRACKING_FEATURES = "Tracking features"
+	TRACKING_OBJEcTS = "Tracking objects"
+	GENERATING_VIDEOS = "Generating short videos"
+	COMBINING_VIDEOS = "Combining videos"
+	SAFETY_ANALYSIS = "Running safety analysis"
+	DONE = "Done"
 
 class StatusHelper(object):
 	def __init__(self):
