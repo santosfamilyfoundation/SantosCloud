@@ -42,8 +42,6 @@ class ProjectWizard():
         file_names = ["video", "homography", "aerial"]
         pr_path = os.path.join(self.DEFAULT_PROJECT_DIR, self.project_name)
 
-        
-
         if not os.path.exists(pr_path):
             self.PROJECT_PATH = pr_path
             for new_dir in directory_names:
@@ -102,7 +100,7 @@ class ProjectWizard():
          "-show_entries", "stream=avg_frame_rate", 
          "-of", "default=noprint_wrappers=1:nokey=1", 
          self.videopath]))
-        frrt = str(int(list_o.strip().split('/')[0])/int(list_o.strip().split('/')[1]))
+        vid_framerate = str(int(list_o.strip().split('/')[0])/int(list_o.strip().split('/')[1]))
         timestamp = datetime.datetime.fromtimestamp(ts).strftime('%d-%m-%Y %H:%M:%S %Z')
         video_timestamp = vid_ts.strftime('%d-%m-%Y %H:%M:%S %Z')
         self.config_parser.add_section("info")
@@ -111,7 +109,7 @@ class ProjectWizard():
         self.config_parser.add_section("video")
         self.config_parser.set("video", "name", os.path.basename(self.videopath))
         self.config_parser.set("video", "source", self.videopath)
-        self.config_parser.set("video", "framerate", frrt)
+        self.config_parser.set("video", "framerate", vid_framerate)
         self.config_parser.set("video", "start", video_timestamp)
 
         with open(os.path.join(self.PROJECT_PATH, "{}.cfg".format(self.project_name)), 'wb') as configfile:
