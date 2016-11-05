@@ -115,7 +115,7 @@ class ProjectWizard():
 
 
 def load_project(folder_path): # main_window):
-    path = os.path.normpath(folder_path)  # Clean path. May not be necessary.
+    path = 'project_dir/'+os.path.normpath(folder_path)  # Clean path. May not be necessary.
     project_name = os.path.basename(path)
     project_cfg = os.path.join(path, "{}.cfg".format(project_name))
     ac.CURRENT_PROJECT_PATH = path  # Set application-level variables indicating the currently open project
@@ -123,6 +123,7 @@ def load_project(folder_path): # main_window):
     ac.CURRENT_PROJECT_CONFIG = project_cfg
     config_parser = SafeConfigParser()
     config_parser.read(project_cfg)  # Read project config file.
+    print(project_cfg)
     ac.CURRENT_PROJECT_VIDEO_PATH = os.path.join(ac.CURRENT_PROJECT_PATH, config_parser.get("video", "name"))
     #load_homography(main_window)
     #load_results(main_window)

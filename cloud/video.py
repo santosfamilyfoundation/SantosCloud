@@ -6,6 +6,7 @@ def create_video():
     count = 0
     num_frames_per_vid = 60
     images_folder = os.path.join(ac.CURRENT_PROJECT_PATH, "final_images")
+    print(images_folder)
     videos_folder = os.path.join(ac.CURRENT_PROJECT_PATH, "final_videos")
 
     # Make the videos folder if it doesn't exists 
@@ -35,7 +36,7 @@ def create_video():
     combine_videos(videos_folder, "final_videos")
 
 def move_images_to_project_dir_folder(folder):
-    images_folder = os.path.join(ac.CURRENT_PROJECT_PATH, folder)
+    images_folder = folder
     if not os.path.exists(images_folder):
         os.makedirs(images_folder)
     for file in os.listdir(os.getcwd()):
@@ -47,7 +48,7 @@ def convert_frames_to_video(images_folder, videos_folder, filename):
     subprocess.call(["ffmpeg", "-framerate", "30", "-i", os.path.join(images_folder, "image-%d.png"), "-c:v", "libx264", "-pix_fmt", "yuv420p", os.path.join(videos_folder, filename)])
 
 def delete_videos(folder):
-    videos_folder = os.path.join(ac.CURRENT_PROJECT_PATH, folder)
+    videos_folder = folder
     file_extensions = ['.mp4', '.mpg']
 
     for extension in file_extensions:
@@ -63,8 +64,18 @@ def delete_videos(folder):
             if file == 'output' + extension:
                 os.remove(os.path.join(videos_folder, file))
 
+def delete_images(folder):
+    images_folder = folder
+    if os.path.exists(images_folder):
+        for file in os.listdir(images_folder):
+            if file[0:6] == 'image-' and file[-4:] == '.png':
+                os.remove(os.path.join(images_folder, file))
+    for file in os.listdir(os.getcwd()):
+        if file[0:6] == 'image-' and file[-4:] == '.png':
+            os.remove(os.path.join(os.getcwd(), file))
+
 def move_videos_to_folder(folder):
-    videos_folder = os.path.join(ac.CURRENT_PROJECT_PATH, folder)
+    videos_folder = folder
     if not os.path.exists(videos_folder):
         os.makedirs(videos_folder)
     for file in os.listdir(os.getcwd()):
@@ -72,7 +83,7 @@ def move_videos_to_folder(folder):
             os.rename(file, os.path.join(videos_folder, file))
 
 def images_exist(folder):
-    images_folder = os.path.join(ac.CURRENT_PROJECT_PATH, folder)
+    images_folder = folder
     if os.path.exists(images_folder):
         for file in os.listdir(images_folder):
             if file[0:6] == 'image-' and file[-4:] == '.png':
@@ -82,7 +93,7 @@ def images_exist(folder):
 def combine_videos(folder, filename):
     # The only way I could find to join videos was to convert the videos to .mpg format, and then join them.
     # This seems to be the only way to keep ffmpeg happy.
-    videos_folder = os.path.join(ac.CURRENT_PROJECT_PATH, folder)
+    videos_folder = folder
     convert_to_mpeg(videos_folder)
 
     # Using Popen seems to be necessary in order to pipe the output of one into the other
@@ -91,7 +102,7 @@ def combine_videos(folder, filename):
     p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
 
 def convert_to_mpeg(folder):
-    videos_folder = os.path.join(ac.CURRENT_PROJECT_PATH, folder)
+    videos_folder = folder
     count = 0
 
     while os.path.exists(os.path.join(videos_folder, "video-"+str(count)+".mp4")):
@@ -99,7 +110,7 @@ def convert_to_mpeg(folder):
         count += 1
 
 def get_videos(folder):
-    videos_folder = os.path.join(ac.CURRENT_PROJECT_PATH, folder)
+    videos_folder = folder
     count = 0
     videos = []
 
@@ -110,7 +121,8 @@ def get_videos(folder):
 
 
 def renumber_frames(folder, frame):
-    images_folder = os.path.join(ac.CURRENT_PROJECT_PATH, folder)
+    images_folder = folder
+    print(images_folder)
 
     # Rename them all to 'new-image-x' in order to not interfere with the current 'image-x'
     for file in os.listdir(images_folder):

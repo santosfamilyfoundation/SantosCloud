@@ -15,6 +15,8 @@ from tornado.options import define, options
 # Import all of our custom routes
 from upload import UploadHandler
 
+from . import cloud
+
 define("port", default=8888, help="run on the given port", type=int)
 
 
@@ -45,4 +47,5 @@ def main():
     ioloop.start()
 
 if __name__ == "__main__":
+    api.runTrajectoryAnalysis('OlinShorter')
     main()

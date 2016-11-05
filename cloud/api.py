@@ -8,6 +8,8 @@ import pm
 import subprocess
 import video, feat_config
 
+from plotting.make_object_trajectories import main as db_make_objtraj
+
 def saveFiles(diction, *args):
     pm.ProjectWizard(diction)
 

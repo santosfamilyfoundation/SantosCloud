@@ -90,5 +90,6 @@ ENV/
 
 # Our custom auth
 /app/auth.py
+/project_dir
 
 /app/uploads/*
