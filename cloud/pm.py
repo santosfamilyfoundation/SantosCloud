@@ -41,6 +41,9 @@ class ProjectWizard():
         directory_names = ["homography", ".temp", "run", "results"]
         file_names = ["video", "homography", "aerial"]
         pr_path = os.path.join(self.DEFAULT_PROJECT_DIR, self.project_name)
+
+        
+
         if not os.path.exists(pr_path):
             self.PROJECT_PATH = pr_path
             for new_dir in directory_names:
@@ -48,6 +51,10 @@ class ProjectWizard():
 
             self._write_to_project_config()
             copy("default/tracking.cfg", os.path.join(pr_path, "tracking.cfg"))
+
+        for key,value in self.dict_files.iteritems():
+            fh = open(os.path.join(pr_path, key), 'wb')
+            fh.write(value)
 	    copy("default/classifier.cfg", os.path.join(pr_path, "classifier.cfg"))
 	    with open(os.path.join(pr_path, 'tracking.cfg') ,'r+') as trkcfg:
                 old = trkcfg.read()
