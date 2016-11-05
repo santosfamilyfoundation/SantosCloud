@@ -6,23 +6,43 @@ import shutil
 from app_config import AppConfig as ac
 import pm
 import subprocess
-import video
+import video, feat_config
 
-def saveFiles(types, uuid, *args):
-    ac.load_application_config()
-    pm.create_project_dir()
+def saveFiles(diction, *args):
+    pm.ProjectWizard(diction)
 
 
-def runConfigTest(uuid, config, frames, ret_type, ret_args, *args):
-    pass
+def runConfigTestFeature(uuid, config, frames, ret_type, ret_args, *args):
+    pm.ProjectWizard(self)
+    pm.load_project(ac.CURRENT_PROJECT_PATH)
+
+    tracking_path = os.path.join(ac.CURRENT_PROJECT_PATH, ".temp", "test", "test_feature", "feature_tracking.cfg")
+    db_path = os.path.join(ac.CURRENT_PROJECT_PATH, ".temp", "test", "test_feature", "test1.sqlite")
+    if os.path.exists(db_path):
+        os.remove(db_path)
+
+    images_folder = "feature_images"
+    video.delete_images(images_folder)
+
+    # Get the frame information for the test
+    configuration = feat_config.getConfig_features()
+    frame1 = int(configuration["frame1"])
+    nframes = int(configuration["nframes"])
+    fps = float(configuration["video-fps"])
+
+    subprocess.call(["feature-based-tracking", tracking_path, "--tf", "--database-filename", db_path])
+    subprocess.call(["display-trajectories.py", "-i", ac.CURRENT_PROJECT_VIDEO_PATH, "-d", db_path, "-o", ac.CURRENT_PROJECT_PATH + "/homography/homography.txt", "-t", "feature", "--save-images", "-f", str(frame1), "--last-frame", str(frame1+nframes)])
+
+    video.move_images_to_project_dir_folder(images_folder)
+
+    self.feature_tracking_video_player.loadFrames(os.path.join(ac.CURRENT_PROJECT_PATH, images_folder), fps)
 
 def runTrajectoryAnalysis(uuid):#, config, ret_type, ret_args, *args):
-    
-def run(self):
     """
     Runs TrafficIntelligence trackers and support scripts.
     """
-    pm.load_project(ac.CURRENT_PROJECT_PATH)
+    ac.load_application_config()
+    pm.load_project(uuid)
 
     # create test folder
     if not os.path.exists(ac.CURRENT_PROJECT_PATH + "/run"):
