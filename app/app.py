@@ -19,8 +19,6 @@ from handlers.testObjectTracking import TestObjectTrackingHandler
 from handlers.trajectoryAnalysis import TrajectoryAnalysisHandler
 from handlers.safetyAnalysis import SafetyAnalysisHandler
 
-from . import cloud
-
 define("port", default=8888, help="run on the given port", type=int)
 
 
@@ -55,5 +53,4 @@ def main():
     ioloop.start()
 
 if __name__ == "__main__":
-    api.runTrajectoryAnalysis('OlinShorter')
     main()
