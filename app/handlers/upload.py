@@ -12,9 +12,10 @@ class UploadHandler(tornado.web.RequestHandler):
         fname = fileinfo['filename']
         extn = os.path.splitext(fname)[-1]
         cname = str(uuid.uuid4()) + extn
-        if not os.path.exists(os.path.join(os.getcwd(), '/uploads')):
-            os.mkdir(os.path.join(os.getcwd(), '/uploads'))
-        fh = open('uploads/' + cname, 'wb')
+        upload_dir = os.path.join(os.getcwd(), 'uploads')
+        if not os.path.exists(upload_dir):
+            os.mkdir(upload_dir)
+        fh = open(os.path.join(upload_dir, cname), 'wb')
         fh.write(fileinfo['body'])
         self.finish(cname + " is uploaded!! Check uploads folder")
 
