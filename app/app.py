@@ -18,6 +18,8 @@ from handlers.testFeatureTracking import TestFeatureTrackingHandler
 from handlers.testObjectTracking import TestObjectTrackingHandler
 from handlers.trajectoryAnalysis import TrajectoryAnalysisHandler
 from handlers.safetyAnalysis import SafetyAnalysisHandler
+from handlers.trajectoryAnalysisStatus import TrajectoryAnalysisStatusHandler
+from handlers.safetyAnalysisStatus import SafetyAnalysisStatusHandler
 
 define("port", default=8888, help="run on the given port", type=int)
 
@@ -31,6 +33,8 @@ class Application(tornado.web.Application):
             (r"/test/objectTracking", TestObjectTrackingHandler),
             (r"/trajectoryAnalysis", TrajectoryAnalysisHandler),
             (r"/safetyAnalysis", SafetyAnalysisHandler),
+            (r"/trajectoryAnalysis/status", SafetyAnalysisHandler),
+            (r"/safetyAnalysis/status", SafetyAnalysisHandler),
         ]
         settings = dict(
             cookie_secret=auth.secret,
