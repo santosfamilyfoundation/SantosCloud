@@ -99,21 +99,15 @@ class ProjectWizard(QtGui.QWizard):
             self.creating_project = True
             self.create_project_dir()
 
-    def create_project_dir(self):
-        self.project_name = str(self.ui.newp_projectname_input.text())
-        progress_bar = self.ui.newp_creation_progress
-        progress_msg = self.ui.newp_creation_status
+    def create_project_dir(self, uuid):
+        self.project_name = str(uuid)
         directory_names = ["homography", ".temp", "run", "results"]
         pr_path = os.path.join(self.DEFAULT_PROJECT_DIR, self.project_name)
         if not os.path.exists(pr_path):
             self.PROJECT_PATH = pr_path
-            progress_msg.setText("Creating project directories...")
             for new_dir in directory_names:
-                progress_bar.setValue(progress_bar.value() + 5)
                 os.makedirs(os.path.join(pr_path, new_dir))
 
-            progress_bar.setValue(progress_bar.value() + 5)
-            progress_msg.setText("Writing configuration files...")
             self._write_to_project_config()
             copy("default/tracking.cfg", os.path.join(pr_path, "tracking.cfg"))
 	    copy("default/classifier.cfg", os.path.join(pr_path, "classifier.cfg"))
@@ -129,39 +123,26 @@ class ProjectWizard(QtGui.QWizard):
 		nline2 = 'bv-svm-filename = ../project_dir/{}/modelBV.xml\n'.format(self.project_name)
 		newcfg.write(nline1+nline2+old)
 
-            progress_msg.setText("Copying object classification files...")
             svms = ["modelBV.xml", "modelPB.xml", "modelPBV.xml", "modelPV.xml"]
             for svm in svms:
                 copy("default/{}".format(svm), os.path.join(pr_path, svm))
-                progress_bar.setValue(progress_bar.value() + 5)
 
-            progress_msg.setText("Copying video file...")
             video_dest = os.path.join(pr_path, os.path.basename(self.videopath))
             copy(self.videopath, video_dest)
-            progress_bar.setValue(80)
 
-            progress_msg.setText("Extracting camera image...")
             vidcap = cv2.VideoCapture(video_dest)
             vidcap.set(cv2.cv.CV_CAP_PROP_FRAME_COUNT, 1000)
             success, image = vidcap.read()
-            progress_bar.setValue(85)
             if success:
                 cv2.imwrite(os.path.join(pr_path, "homography", "camera.png"), image)
             else:
                 print("ERR: No camera image extracted.")
-            progress_bar.setValue(90)
 
-            progress_msg.setText("Copying aerial image...")
             im = Image.open(self.aerialpath)
             aerial_dest = os.path.join(pr_path, "homography", "aerial.png")
             im.save(aerial_dest)
-            progress_bar.setValue(95)
-            progress_msg.setText("Complete.")
 
-            progress_msg.setText("Opening {} project...".format(self.project_name))
             self.load_new_project()
-            progress_bar.setValue(100)
-            progress_msg.setText("Complete.")
 
         else:
             print("Project exists. No new project created.")
@@ -187,7 +168,7 @@ class ProjectWizard(QtGui.QWizard):
         load_project(self.PROJECT_PATH, self.parent())
 
 
-def load_project(folder_path, main_window):
+def load_project(folder_path): # main_window):
     path = os.path.normpath(folder_path)  # Clean path. May not be necessary.
     project_name = os.path.basename(path)
     project_cfg = os.path.join(path, "{}.cfg".format(project_name))
@@ -197,8 +178,8 @@ def load_project(folder_path, main_window):
     config_parser = SafeConfigParser()
     config_parser.read(project_cfg)  # Read project config file.
     ac.CURRENT_PROJECT_VIDEO_PATH = os.path.join(ac.CURRENT_PROJECT_PATH, config_parser.get("video", "name"))
-    load_homography(main_window)
-    load_results(main_window)
+    #load_homography(main_window)
+    #load_results(main_window)
 
 
 def load_homography(main_window):

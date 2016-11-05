@@ -4,20 +4,25 @@
 import os
 import shutil
 from app_config import AppConfig as ac
+import pm
 import subprocess
 
-def uploadFiles(types, paths, *args):
-    pass
+def saveFiles(types, uuid, *args):
+    ac.load_application_config()
+    pm.create_project_dir()
+
 
 def runConfigTest(uuid, config, frames, ret_type, ret_args, *args):
     pass
 
-def runTrajectoryAnalysis(uuid, config, ret_type, ret_args, *args):
+def runTrajectoryAnalysis(uuid):#, config, ret_type, ret_args, *args):
     
     def run(self):
         """
         Runs TrafficIntelligence trackers and support scripts.
         """
+        pm.load_project(ac.CURRENT_PROJECT_PATH)
+
         # create test folder
         if not os.path.exists(ac.CURRENT_PROJECT_PATH + "/run"):
             os.mkdir(ac.CURRENT_PROJECT_PATH + "/run")
