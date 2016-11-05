@@ -15,7 +15,7 @@ def saveFiles(diction, *args):
 
 
 def runConfigTestFeature(uuid, config, frames, ret_type, ret_args, *args):
-    pm.ProjectWizard(self)
+    ac.load_application_config()
     pm.load_project(ac.CURRENT_PROJECT_PATH)
 
     tracking_path = os.path.join(ac.CURRENT_PROJECT_PATH, ".temp", "test", "test_feature", "feature_tracking.cfg")
