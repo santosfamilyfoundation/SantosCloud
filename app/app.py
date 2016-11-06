@@ -33,8 +33,8 @@ class Application(tornado.web.Application):
             (r"/test/objectTracking", TestObjectTrackingHandler),
             (r"/trajectoryAnalysis", TrajectoryAnalysisHandler),
             (r"/safetyAnalysis", SafetyAnalysisHandler),
-            (r"/trajectoryAnalysis/status", SafetyAnalysisHandler),
-            (r"/safetyAnalysis/status", SafetyAnalysisHandler),
+            (r"/trajectoryAnalysis/status", TrajectoryAnalysisStatusHandler),
+            (r"/safetyAnalysis/status", SafetyAnalysisStatusHandler),
         ]
         settings = dict(
             cookie_secret=auth.secret,
