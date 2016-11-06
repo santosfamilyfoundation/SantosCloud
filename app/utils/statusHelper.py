@@ -17,7 +17,7 @@ class StatusHelper(object):
         self.status_dict[identifier] = status
 
     def get_status(self, identifier):
-    	if identifier not in self.status_dict:
+        if identifier not in self.status_dict:
             return Status.UNKNOWN
         return self.status_dict[identifier]
 
