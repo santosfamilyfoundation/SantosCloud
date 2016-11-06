@@ -12,6 +12,7 @@ from plotting.make_object_trajectories import main as db_make_objtraj
 
 def saveFiles(diction, *args):
     pm.ProjectWizard(diction)
+    return pm.uuid
 
 
 def runConfigTestFeature(uuid, config, frames, ret_type, ret_args, *args):
@@ -36,8 +37,6 @@ def runConfigTestFeature(uuid, config, frames, ret_type, ret_args, *args):
     subprocess.call(["display-trajectories.py", "-i", ac.CURRENT_PROJECT_VIDEO_PATH, "-d", db_path, "-o", ac.CURRENT_PROJECT_PATH + "/homography/homography.txt", "-t", "feature", "--save-images", "-f", str(frame1), "--last-frame", str(frame1+nframes)])
 
     video.move_images_to_project_dir_folder(images_folder)
-
-    self.feature_tracking_video_player.loadFrames(os.path.join(ac.CURRENT_PROJECT_PATH, images_folder), fps)
 
 def runTrajectoryAnalysis(uuid):#, config, ret_type, ret_args, *args):
     """
