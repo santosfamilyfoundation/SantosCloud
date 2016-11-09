@@ -100,14 +100,6 @@ def combine_videos(folder, filename):
     p2 = subprocess.Popen(['ffmpeg', '-f', 'mpeg', '-i', '-', '-qscale', '0', '-vcodec', 'mpeg4', os.path.join(videos_folder, 'output.mp4')], stdin=p1.stdout, stdout=subprocess.PIPE)
     p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
 
-def convert_to_mpeg(folder):
-    videos_folder = folder
-    count = 0
-
-    while os.path.exists(os.path.join(videos_folder, "video-"+str(count)+".mp4")):
-        subprocess.call(['ffmpeg', '-i', os.path.join(videos_folder, 'video-'+str(count)+'.mp4'), '-qscale', '0', os.path.join(folder, "video-"+str(count)+".mpg")])
-        count += 1
-
 def get_videos(folder):
     videos_folder = folder
     count = 0
