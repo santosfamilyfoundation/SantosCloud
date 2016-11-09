@@ -19,8 +19,7 @@ class UploadHandler(tornado.web.RequestHandler):
         name_body_dict = self.parse_request(self.request.files)
         project_identifier = api.saveFiles(name_body_dict)
 
-        # TODO(rlouie): This is the next step!!!
-        # api.runTrajectoryAnalysis(uuid)
+        api.runTrajectoryAnalysis(project_identifier)
 
         self.finish("Upload successful for project directory {}".format(project_identifier))
 
