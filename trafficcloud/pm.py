@@ -52,8 +52,9 @@ class ProjectWizard():
             for key,value in self.dict_files.iteritems():
                 if key[:5] == 'video':
                     self.videopath = os.path.join(pr_path, key)
-                fh = open(os.path.join(pr_path, key), 'wb')
-                fh.write(value)
+                with open(os.path.join(pr_path, key), 'wb') as fh:
+                    fh.write(value)
+
 
             self._write_to_project_config()
             copy(os.path.join(os.path.dirname(os.path.realpath(__file__)), "default/tracking.cfg"), os.path.join(pr_path, "tracking.cfg"))
@@ -81,6 +82,15 @@ class ProjectWizard():
             print("Project exists. No new project created.")
 
     def _write_to_project_config(self):
+        # Copy information given by the project_name.cfg generated client side
+        client_config_parser = SafeConfigParser()
+        client_config_parser.read(os.path.join(self.PROJECT_PATH, "project_name.cfg"))
+        unitpixelratio = None
+        try:
+            unitpixelratio = client_config_parser.get("homography", "unitpixelratio")
+        except NoSectionError:
+            print("NoSectionError: no 'homography' section found in config file. Unit Pixel Ratio will not be copied.")
+
         ts = time.time()
         vid_ts = datetime.datetime.now()
         #This line needs to be updated to no longer need the ui class. Load video and pull time.
@@ -101,6 +111,9 @@ class ProjectWizard():
         self.config_parser.set("video", "source", self.videopath)
         self.config_parser.set("video", "framerate", vid_framerate)
         self.config_parser.set("video", "start", video_timestamp)
+        if unitpixelratio:
+            self.config_parser.add_section("homography")
+            self.config_parser.set("homography", "unitpixelratio", unitpixelratio)
 
         with open(os.path.join(self.PROJECT_PATH, "{}.cfg".format(self.project_name)), 'wb') as configfile:
             self.config_parser.write(configfile)
