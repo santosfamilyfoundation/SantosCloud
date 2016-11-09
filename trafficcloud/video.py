@@ -6,15 +6,15 @@ def create_video():
     count = 0
     num_frames_per_vid = 60
     images_folder = os.path.join(ac.CURRENT_PROJECT_PATH, "final_images")
-    print(images_folder)
     videos_folder = os.path.join(ac.CURRENT_PROJECT_PATH, "final_videos")
 
     # Make the videos folder if it doesn't exists 
-    # (images_folder will be created by move_images_to_project_dir_folder)
     if not os.path.exists(videos_folder):
         os.makedirs(videos_folder)
+    if not os.path.exists(images_folder):
+        os.makedirs(images_folder)
     db_path = os.path.join(ac.CURRENT_PROJECT_PATH, "run", "results.sqlite")
-    delete_videos("final_videos")
+    delete_videos(videos_folder)
 
     while True:
         # Delete old images, and recreate them in the right place
