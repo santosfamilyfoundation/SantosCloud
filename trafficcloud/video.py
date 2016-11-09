@@ -34,6 +34,7 @@ def create_video():
         count += 1
 
     combine_videos(videos_folder, "final_videos")
+    delete_videos(videos_folder, delete_output=False)
 
 def move_images_to_project_dir_folder(folder):
     images_folder = folder
@@ -47,7 +48,7 @@ def move_images_to_project_dir_folder(folder):
 def convert_frames_to_video(images_folder, videos_folder, filename):
     subprocess.call(["ffmpeg", "-framerate", "30", "-i", os.path.join(images_folder, "image-%d.png"), "-c:v", "libx264", "-pix_fmt", "yuv420p", os.path.join(videos_folder, filename)])
 
-def delete_videos(folder):
+def delete_videos(folder, delete_output=True):
     videos_folder = folder
     file_extensions = ['.mp4', '.mpg']
 
@@ -56,12 +57,12 @@ def delete_videos(folder):
             for file in os.listdir(videos_folder):
                 if file[0:6] == 'video-' and file[-4:] == extension:
                     os.remove(os.path.join(videos_folder, file))
-                if file == 'output' + extension:
+                if delete_output and file == 'output' + extension:
                     os.remove(os.path.join(videos_folder, file))
         for file in os.listdir(os.getcwd()):
             if file[0:6] == 'video-' and file[-4:] == extension:
                 os.remove(os.path.join(os.getcwd(), file))
-            if file == 'output' + extension:
+            if delete_output and file == 'output' + extension:
                 os.remove(os.path.join(videos_folder, file))
 
 def delete_images(folder):
@@ -100,6 +101,7 @@ def combine_videos(folder, filename):
     p1 = subprocess.Popen(['cat']+get_videos(videos_folder), stdout=subprocess.PIPE)
     p2 = subprocess.Popen(['ffmpeg', '-f', 'mpeg', '-i', '-', '-qscale', '0', '-vcodec', 'mpeg4', os.path.join(videos_folder, 'output.mp4')], stdin=p1.stdout, stdout=subprocess.PIPE)
     p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
+    p2.wait()
 
 def convert_to_mpeg(folder):
     videos_folder = folder
