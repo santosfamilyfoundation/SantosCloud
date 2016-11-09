@@ -29,7 +29,7 @@ def create_video():
 
         # Get the frames, and create a short video out of them
         renumber_frames(images_folder, count*num_frames_per_vid)
-        convert_frames_to_video(images_folder, videos_folder, "video-"+str(count)+".mp4")
+        convert_frames_to_video(images_folder, videos_folder, "video-"+str(count)+".mpg")
 
         count += 1
 
@@ -94,7 +94,6 @@ def combine_videos(folder, filename):
     # The only way I could find to join videos was to convert the videos to .mpg format, and then join them.
     # This seems to be the only way to keep ffmpeg happy.
     videos_folder = folder
-    convert_to_mpeg(videos_folder)
 
     # Using Popen seems to be necessary in order to pipe the output of one into the other
     p1 = subprocess.Popen(['cat']+get_videos(videos_folder), stdout=subprocess.PIPE)
