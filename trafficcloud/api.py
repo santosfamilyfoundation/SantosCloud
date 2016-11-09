@@ -11,7 +11,7 @@ import video, feat_config
 from plotting.make_object_trajectories import main as db_make_objtraj
 
 def saveFiles(diction, *args):
-    return str(pm.ProjectWizard(diction).identifier)
+    return pm.ProjectWizard(diction).identifier
 
 def runConfigTestFeature(identifier, config, frames, ret_type, ret_args, *args):
     ac.load_application_config()

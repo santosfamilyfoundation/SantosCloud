@@ -33,7 +33,7 @@ class ProjectWizard():
         ac.load_application_config()
         self.DEFAULT_PROJECT_DIR = ac.PROJECT_DIR
 
-        self.identifier = uuid.uuid4()
+        self.identifier = str(uuid.uuid4())
         self.config_parser = SafeConfigParser()
         self.create_project_dir(self.identifier)
 
