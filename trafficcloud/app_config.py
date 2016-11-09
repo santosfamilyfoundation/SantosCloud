@@ -19,7 +19,7 @@ class AppConfig(object):
     def load_application_config(cls):
         config_parser = SafeConfigParser()
         config_parser.read(os.path.join(os.path.dirname(os.path.realpath(__file__)), ".application"))
-        cls.PROJECT_DIR = config_parser.get("info", "default_project_dir")
+        cls.PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), config_parser.get("info", "default_project_dir")))
         cls.TI_INSTALL_DIR = config_parser.get("info", "ti_install_dir")
 
     # TODO: class method for writing to application config file
