@@ -9,7 +9,7 @@ To use the project, you must add the TrafficCloud folder to your PYTHONPATH envi
 export PYTHONPATH="${PYTHONPATH}:/home/$USER/Documents/TrafficCloud"
 ```
 
-(This example is if your TrafficCloud repo lives in `~/Documents/)
+(This example is if your TrafficCloud repo lives in `~/Documents/`)
 
 A simple way to do this is by using `vim ~/.bashrc` or `nano ~/.bashrc` and then running `source ~/.bashrc` or restarting your terminal.
 
