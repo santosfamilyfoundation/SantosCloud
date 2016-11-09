@@ -110,7 +110,7 @@ class ProjectWizard():
 
 
 def load_project(folder_path): # main_window):
-    path = os.path.normpath(folder_path)  # Clean path. May not be necessary.
+    path = os.path.join(ac.PROJECT_DIR, os.path.normpath(folder_path))  # Clean path. May not be necessary.
     project_name = os.path.basename(path)
     project_cfg = os.path.join(path, "{}.cfg".format(project_name))
     ac.CURRENT_PROJECT_PATH = path  # Set application-level variables indicating the currently open project
