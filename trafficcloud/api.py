@@ -11,11 +11,9 @@ import video, feat_config
 from plotting.make_object_trajectories import main as db_make_objtraj
 
 def saveFiles(diction, *args):
-    pm.ProjectWizard(diction)
-    return pm.uuid
+    return pm.ProjectWizard(diction).identifier
 
-
-def runConfigTestFeature(uuid, config, frames, ret_type, ret_args, *args):
+def runConfigTestFeature(identifier, config, frames, ret_type, ret_args, *args):
     ac.load_application_config()
     pm.load_project(ac.CURRENT_PROJECT_PATH)
 
@@ -38,12 +36,12 @@ def runConfigTestFeature(uuid, config, frames, ret_type, ret_args, *args):
 
     video.move_images_to_project_dir_folder(images_folder)
 
-def runTrajectoryAnalysis(uuid):#, config, ret_type, ret_args, *args):
+def runTrajectoryAnalysis(identifier):#, config, ret_type, ret_args, *args):
     """
     Runs TrafficIntelligence trackers and support scripts.
     """
     ac.load_application_config()
-    pm.load_project(uuid)
+    pm.load_project(identifier)
 
     # create test folder
     if not os.path.exists(ac.CURRENT_PROJECT_PATH + "/run"):
@@ -89,16 +87,16 @@ def runTrajectoryAnalysis(uuid):#, config, ret_type, ret_args, *args):
 
 
 
-def runSafetyAnalysis(uuid, prediction, db, ret_type, ret_args):
+def runSafetyAnalysis(identifier, prediction, db, ret_type, ret_args):
     pass
 
-def runVisualization(uuid, db, ret_form, ret_type, ret_args, *args):
+def runVisualization(identifier, db, ret_form, ret_type, ret_args, *args):
     pass
 
-def getDB(uuid):
+def getDB(identifier):
     pass
 
-def getStatus(uuid):
+def getStatus(identifier):
     pass
 
 def generateDefaultConfig():

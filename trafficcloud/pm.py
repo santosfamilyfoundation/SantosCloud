@@ -33,12 +33,12 @@ class ProjectWizard():
         ac.load_application_config()
         self.DEFAULT_PROJECT_DIR = ac.PROJECT_DIR
 
-        self.uuid = uuid.uuid4()
+        self.identifier = str(uuid.uuid4())
         self.config_parser = SafeConfigParser()
-        self.create_project_dir(self.uuid)
+        self.create_project_dir(self.identifier)
 
-    def create_project_dir(self, uuid):
-        self.project_name = str(uuid)
+    def create_project_dir(self, identifier):
+        self.project_name = str(identifier)
         directory_names = ["homography", ".temp/test/test_object/", ".temp/test/test_feature/", "run", "results"]
         pr_path = os.path.join(self.DEFAULT_PROJECT_DIR, self.project_name)
 
