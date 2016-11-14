@@ -84,3 +84,37 @@ def check_project_cfg_section(section):
         return True                # then return True.
     else:                          # Otherwise,
         return False               # then return False
+
+def update_tracking_config(config_path, update_dict):
+    """helper function to edit cfg files that look like run_tracking.cfg
+
+    update_dict: i.e. {'nframes': 10, 'video-filename': 'video.avi'}
+    """
+    with open(config_path, 'r') as rf:
+        lines = rf.readlines()
+    with open(config_path, 'w') as wf:
+        for line in lines:
+            line_param = line.split('=')[0].strip()
+            if line_param in update_dict.keys():
+                wf.write("{} = {}\n".format(line_param, update_dict[line_param]))
+            else:
+                wf.write(line)
+
+def get_tracking_config(config_path):
+    """helper function to get params and their values of cfg files that look like run_tracking.cfg
+
+    get_dict: params to their values, as a dictionary
+    """
+    get_dict = {}
+    with open(config_path, 'r') as rf:
+        lines = rf.readlines()
+        for line in lines:
+            # if not a comment line
+            if line[0] != "#":
+                line_param = line.split('=')[0].strip()
+                line_value = line.split('=')[1].strip()
+                get_dict[line_param] = line_value
+    return get_dict
+
+if __name__ == '__main__':
+    pass
