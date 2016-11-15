@@ -48,6 +48,7 @@ def main():
     tornado.options.parse_command_line()
     app = Application()
     app.listen(options.port)
+    print('Listening on port '+str(options.port))
     ioloop = tornado.ioloop.IOLoop().instance()
     tornado.autoreload.start(ioloop)
     ioloop.start()
