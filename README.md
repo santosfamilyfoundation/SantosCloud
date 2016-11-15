@@ -15,7 +15,7 @@ A simple way to do this is by using `vim ~/.bashrc` or `nano ~/.bashrc` and then
 
 ### Running
 
-Running `python main.py <project_name>` from the TrafficCloud folder will run the analysis on the project. `<project_name>` can either be the folder name or the relative path to the folder from the TrafficCloud folder (i.e. for a project with id of 'id', this can either be `python main.py id` or `python main.py project_dir/id/`). This assumes that the project folder exists in `TrafficCloud/project_dir/` and contains all of the necessary config and video files.
+Running `python main.py <project_name>` from the TrafficCloud folder will run the analysis on the project. `<project_name>` can either be the folder name or the relative or absolute path to the folder from the TrafficCloud folder (i.e. for a project with id of 'id', this can be `python main.py id`, `python main.py project_dir/id/` or `python main.py /home/username/TrafficCloud/project_dir/id/`). This assumes that the project folder exists in `TrafficCloud/project_dir/` and contains all of the necessary config and video files.
 
 To run the server, either 1) run `python app/app.py` from the TrafficCloud folder, or 2) `cd` into the `app/` folder and run `python app.py`. These will start the server and tell you what port it is running on.
 
