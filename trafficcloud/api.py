@@ -57,7 +57,12 @@ def runTrajectoryAnalysis(identifier):#, config, ret_type, ret_args, *args):
     # creates new config file
     shutil.copyfile(ac.CURRENT_PROJECT_PATH + "/.temp/test/test_object/object_tracking.cfg", tracking_path)
 
-    update_dict = {'frame1': 0, 'nframes': 0, 'database-filename': 'results.sqlite'}
+    update_dict = {'frame1': 0, 
+        'nframes': 0, 
+        'database-filename': 'results.sqlite', 
+        'classifier-filename': os.path.join(ac.CURRENT_PROJECT_PATH, "classifier.cfg"),
+        'video-filename': os.path.join(ac.CURRENT_PROJECT_PATH, "video.mp4"),
+        'homography-filename': os.path.join(ac.CURRENT_PROJECT_PATH, "homography", "homography.txt")}
     update_tracking_config(tracking_path, update_dict)
 
     db_path = os.path.join(ac.CURRENT_PROJECT_PATH, "run", "results.sqlite")

@@ -16,16 +16,13 @@ def create_video():
     db_path = os.path.join(ac.CURRENT_PROJECT_PATH, "run", "results.sqlite")
     delete_videos(videos_folder)
 
-    while True:
+    num_frames = get_number_of_frames(ac.CURRENT_PROJECT_VIDEO_PATH)
+
+    while num_frames_per_vid * count < num_frames:
         # Delete old images, and recreate them in the right place
         delete_images(images_folder)
         subprocess.call(["display-trajectories.py", "-i", ac.CURRENT_PROJECT_VIDEO_PATH,"-d", db_path, "-o", ac.CURRENT_PROJECT_PATH + "/homography/homography.txt", "-t", "object", "--save-images", "-f", str(count*num_frames_per_vid), "--last-frame", str((count + 1)*num_frames_per_vid - 1)])
         move_images_to_project_dir_folder(images_folder)
-        
-        # If we got to the end of the video, break
-        if not images_exist(images_folder):
-            print 'No more images'
-            break
 
         # Get the frames, and create a short video out of them
         renumber_frames(images_folder, count*num_frames_per_vid)
@@ -82,6 +79,16 @@ def move_videos_to_folder(folder):
     for file in os.listdir(os.getcwd()):
         if file[0:6] == 'video-' and file[-4:] == '.mp4':
             os.rename(file, os.path.join(videos_folder, file))
+
+def get_number_of_frames(videopath):
+    num = int(subprocess.check_output(["ffprobe",
+         "-v", "error",
+         "-count_frames",
+         "-select_streams", "v:0", 
+         "-show_entries", "stream=nb_read_frames", 
+         "-of", "default=nokey=1:noprint_wrappers=1", 
+         videopath]))
+    return num
 
 def images_exist(folder):
     images_folder = folder
