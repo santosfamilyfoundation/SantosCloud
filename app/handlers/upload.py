@@ -15,6 +15,16 @@ class UploadHandler(tornado.web.RequestHandler):
             name_body_dict[k] = fileinfo['body']
         return name_body_dict
 
+    """
+    @api {post} /upload/ Upload Video
+    @apiName UploadVideo
+    @apiGroup Upload
+
+    @apiParam {File} id Users unique ID.
+
+    @apiSuccess {String} firstname Firstname of the User.
+    @apiSuccess {String} lastname  Lastname of the User.
+    """
     def post(self):
         name_body_dict = self.parse_request(self.request.files)
         project_identifier = api.saveFiles(name_body_dict)

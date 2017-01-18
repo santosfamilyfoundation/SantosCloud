@@ -7,7 +7,7 @@ import tornado.escape
 import tornado.ioloop
 import tornado.options
 import tornado.web
-import os.path
+import os
 import auth
 
 from tornado.options import define, options
@@ -33,7 +33,7 @@ class Application(tornado.web.Application):
             (r"/safetyAnalysis", SafetyAnalysisHandler),
         ]
         settings = dict(
-            cookie_secret=auth.secret,
+            cookie_secret=os.environ.get('TRAFFICCLOUD_SECRET_KEY'),
             template_path=os.path.join(os.path.dirname(__file__), "templates"),
             static_path=os.path.join(os.path.dirname(__file__), "static"),
             xsrf_cookies=False,
@@ -45,6 +45,12 @@ class MainHandler(tornado.web.RequestHandler):
         self.render("index.html")
 
 def main():
+    keys = ['TRAFFICCLOUD_SECRET_KEY', 'TRAFFICCLOUD_EMAIL', 'TRAFFICCLOUD_PASSWORD']
+    for key in keys:
+        if os.environ.get(key) == None:
+            print("Set the "+key+" environment variable")
+            return
+
     tornado.options.parse_command_line()
     app = Application()
     app.listen(options.port)
