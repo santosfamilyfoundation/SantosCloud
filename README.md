@@ -13,6 +13,21 @@ export PYTHONPATH="${PYTHONPATH}:/home/$USER/Documents/TrafficCloud"
 
 A simple way to do this is by using `vim ~/.bashrc` or `nano ~/.bashrc` and then running `source ~/.bashrc` or restarting your terminal.
 
+You must also set environment variables for the secret key, email, and the password for the email. Run the following commands to set these environment variables:
+
+```
+export TRAFFICCLOUD_SECRET_KEY="ExampleSecretKey"
+export TRAFFICCLOUD_EMAIL="santostrafficcloud@gmail.com"
+export TRAFFICCLOUD_PASSWORD="ExamplePassword"
+```
+
+You can generate a secret key by running the following python commands:
+
+```
+import os
+os.urandom(24).encode('hex')
+```
+
 ### Running
 
 Running `python main.py <project_name>` from the TrafficCloud folder will run the analysis on the project. `<project_name>` can either be the folder name or the relative or absolute path to the folder from the TrafficCloud folder (i.e. for a project with id of 'id', this can be `python main.py id`, `python main.py project_dir/id/` or `python main.py /home/username/TrafficCloud/project_dir/id/`). This assumes that the project folder exists in `TrafficCloud/project_dir/` and contains all of the necessary config and video files.
