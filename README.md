@@ -48,6 +48,6 @@ To install `apidoc` in order to update the documentation, you must install npm. 
 To regenerate the API Documentation, please run the following command from the SantosCloud folder:
 
 ```
-apidoc -f ".*\\.py$" apidoc -i app/handlers/ -o app/templates/apidoc/
+apidoc -f ".*\\.py$" apidoc -i app/handlers/ -o app/static/apidoc/
 ```
 
