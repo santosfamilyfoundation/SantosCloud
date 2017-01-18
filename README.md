@@ -45,9 +45,15 @@ To install `apidoc` in order to update the documentation, you must install npm. 
 3. Run `node -v` and `npm -v` in a shell and ensure that node's version is greater than 0.10.35 and npm's version is greater than 2.1.17.
 4. If npm is out of date run `sudo npm install -g npm`
 
+#### Regenerating the Documentation
+
 To regenerate the API Documentation, please run the following command from the SantosCloud folder:
 
 ```
-apidoc -f ".*\\.py$" apidoc -i app/handlers/ -o app/static/apidoc/
+apidoc -f ".*\\.py$" apidoc -i app/handlers/ -o app/static/apidoc
 ```
+
+#### Viewing the Documentation
+
+Navigate to the IP (localhost:8888 for local installation) and the path `/static/apidoc/index.html`. (For example, `localhost:8888/static/apidoc/index.html`).
 
