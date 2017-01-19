@@ -14,8 +14,7 @@ from tornado.options import define, options
 
 # Import all of our custom routes
 from handlers.upload import UploadHandler
-from handlers.testFeatureTracking import TestFeatureTrackingHandler
-from handlers.testObjectTracking import TestObjectTrackingHandler
+from handlers.testConfig import TestConfigHandler
 from handlers.trajectoryAnalysis import TrajectoryAnalysisHandler
 from handlers.safetyAnalysis import SafetyAnalysisHandler
 
@@ -27,10 +26,8 @@ class Application(tornado.web.Application):
         handlers = [
             (r"/", MainHandler),
             (r"/upload", UploadHandler),
-            (r"/test/featureTracking", TestFeatureTrackingHandler),
-            (r"/test/objectTracking", TestObjectTrackingHandler),
-            (r"/trajectoryAnalysis", TrajectoryAnalysisHandler),
-            (r"/safetyAnalysis", SafetyAnalysisHandler),
+            (r"/testConfig", TestConfigHandler),
+            (r"/analysis", AnalysisHandler),
         ]
         settings = dict(
             cookie_secret=os.environ.get('TRAFFICCLOUD_SECRET_KEY'),

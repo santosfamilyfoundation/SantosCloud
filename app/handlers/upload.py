@@ -19,9 +19,10 @@ class UploadHandler(tornado.web.RequestHandler):
     @api {post} /upload/ Upload Video
     @apiName UploadVideo
     @apiGroup Upload
-    @apiDescription This route will analyze the provided video, and return the project identifier.
+    @apiDescription This route will upload files to a project (and create a new project if an old one is not specified). You may provide a project identifier if you would like to update the files from an old project. If you provide a project identifier for an old project, all of the parameters are optional. If you are creating a new project, all parameters are required. This route will always return a dictionary containing the project identifier.
 
     @apiParam {String} email The email to notify when analysis is done.
+    @apiParam {String} [identifier] The identifier of the project to update the file of. If no identifier is provided, a new project will be created, and the identifier will be returned in the response.
     @apiParam {File} homography/aerialpng An aerial photo of the intersection.
     @apiParam {File} homography/camerapng A screenshot of the intersection from the video.
     @apiParam {File} homography/homographytxt The homography text file to use.
@@ -32,9 +33,13 @@ class UploadHandler(tornado.web.RequestHandler):
     @apiParam {File} video The video file to analyze. This can have any file extension.
 
     @apiSuccess {String} project_identifier The project identifier. This will be used to reference the project in all other requests.
+
+    @apiError error_message The error message to display.
     """
     def post(self):
+        # TODO: Check for an existing project, and update only the existing files if so.
         name_body_dict = self.parse_request(self.request.files)
+        # TODO: Save email
         project_identifier = api.saveFiles(name_body_dict)
 
         api.runTrajectoryAnalysis(project_identifier)
