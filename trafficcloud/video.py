@@ -107,7 +107,7 @@ def get_framerate(videopath):
 
 def create_video_snippet(project_path, video_path, videos_folder, file_prefix, video_number, start_frame, end_frame):
     images_folder = os.path.join(project_path, "temp_images")
-    db_path = os.path.join(video_path, "run", "results.sqlite")
+    db_path = os.path.join(project_path, "run", "results.sqlite")
     temp_image_prefix = "image-"
 
     # Make the images folder if it doesn't exists 
