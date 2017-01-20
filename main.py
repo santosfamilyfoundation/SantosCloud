@@ -9,3 +9,4 @@ if __name__ == "__main__":
         project = sys.argv[1]
         project_identifier = project.strip('/').split('/')[-1]
         api.runTrajectoryAnalysis(project_identifier)
+        # api.createVideos(project_identifier)
