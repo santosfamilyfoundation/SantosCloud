@@ -5,13 +5,13 @@ import subprocess
 tracking_filename = "tracking.mp4"
 highlight_filename = "highlight.mp4"
 
-def create_tracking_video():
-    videos_folder = os.path.join(ac.CURRENT_PROJECT_PATH, "final_videos")
+def create_tracking_video(project_path, video_path):
+    videos_folder = os.path.join(project_path, "final_videos")
     temp_video_prefix = "temp_tracking_video-"
 
     count = 0
     num_frames_per_vid = 60
-    num_frames = get_number_of_frames(ac.CURRENT_PROJECT_VIDEO_PATH)
+    num_frames = get_number_of_frames(video_path)
 
     # Make the videos folder if it doesn't exists 
     if not os.path.exists(videos_folder):
@@ -21,14 +21,14 @@ def create_tracking_video():
 
     # Create a bunch of short videos ("snippets")
     while num_frames_per_vid * count < num_frames:
-        create_video_snippet(videos_folder, temp_video_prefix, count, count*num_frames_per_vid, (count + 1)*num_frames_per_vid - 1)
+        create_video_snippet(project_path, video_path, videos_folder, temp_video_prefix, count, count*num_frames_per_vid, (count + 1)*num_frames_per_vid - 1)
         count += 1
 
     combine_videos(videos_folder, temp_video_prefix, tracking_filename)
     delete_files(videos_folder, temp_video_prefix, ["mpg", "mp4"], excluded_files=[tracking_filename, highlight_filename])
 
-def create_highlight_video(list_of_near_misses):
-    videos_folder = os.path.join(ac.CURRENT_PROJECT_PATH, "final_videos")
+def create_highlight_video(project_path, video_path, list_of_near_misses):
+    videos_folder = os.path.join(project_path, "final_videos")
     temp_video_prefix = "temp_highlight_video-"
 
     # Make the videos folder if it doesn't exists 
@@ -39,7 +39,7 @@ def create_highlight_video(list_of_near_misses):
 
     # Create a bunch of short videos ("snippets")
     for i, near_miss in enumerate(list_of_near_misses):
-        create_video_snippet(videos_folder, temp_video_prefix, i, near_miss[0], near_miss[1])
+        create_video_snippet(project_path, video_path, videos_folder, temp_video_prefix, i, near_miss[0], near_miss[1])
 
     combine_videos(videos_folder, temp_video_prefix, highlight_filename)
     delete_files(videos_folder, temp_video_prefix, ["mpg", "mp4"], excluded_files=[tracking_filename, highlight_filename])
@@ -105,9 +105,9 @@ def get_framerate(videopath):
 
 #### Video Creation
 
-def create_video_snippet(videos_folder, file_prefix, video_number, start_frame, end_frame):
-    images_folder = os.path.join(ac.CURRENT_PROJECT_PATH, "temp_images")
-    db_path = os.path.join(ac.CURRENT_PROJECT_PATH, "run", "results.sqlite")
+def create_video_snippet(project_path, video_path, videos_folder, file_prefix, video_number, start_frame, end_frame):
+    images_folder = os.path.join(project_path, "temp_images")
+    db_path = os.path.join(video_path, "run", "results.sqlite")
     temp_image_prefix = "image-"
 
     # Make the images folder if it doesn't exists 
@@ -116,12 +116,12 @@ def create_video_snippet(videos_folder, file_prefix, video_number, start_frame, 
 
     # Delete old images, and recreate them in the right place
     delete_files(images_folder, temp_image_prefix, ["png"], excluded_files=[tracking_filename, highlight_filename])
-    subprocess.call(["display-trajectories.py", "-i", ac.CURRENT_PROJECT_VIDEO_PATH,"-d", db_path, "-o", ac.CURRENT_PROJECT_PATH + "/homography/homography.txt", "-t", "object", "--save-images", "-f", str(start_frame), "--last-frame", str(end_frame)])
+    subprocess.call(["display-trajectories.py", "-i", video_path,"-d", db_path, "-o", project_path + "/homography/homography.txt", "-t", "object", "--save-images", "-f", str(start_frame), "--last-frame", str(end_frame)])
     move_files_to_folder(os.getcwd(), images_folder, temp_image_prefix, ["png"])
 
     # Get the frames, and create a short video out of them
     renumber_frames(images_folder, start_frame, temp_image_prefix, "png")
-    convert_frames_to_video(images_folder, videos_folder, temp_image_prefix, file_prefix + str(video_number) + ".mpg")
+    convert_frames_to_video(video_path, images_folder, videos_folder, temp_image_prefix, file_prefix + str(video_number) + ".mpg")
 
 def combine_videos(videos_folder, temp_video_prefix, filename):
     # The only way I could find to join videos was to convert the videos to .mpg format, and then join them.
@@ -171,9 +171,9 @@ def renumber_frames(folder, start_frame, prefix, extension):
 
     os.removedirs(temp_folder)
 
-def convert_frames_to_video(images_folder, videos_folder, images_prefix, filename):
+def convert_frames_to_video(video_path, images_folder, videos_folder, images_prefix, filename):
     subprocess.call(["ffmpeg", 
-        "-framerate", get_framerate(ac.CURRENT_PROJECT_VIDEO_PATH), 
+        "-framerate", get_framerate(video_path), 
         "-i", os.path.join(images_folder, images_prefix+"%d.png"), 
         "-c:v", "libx264", 
         "-pix_fmt", "yuv420p", 
