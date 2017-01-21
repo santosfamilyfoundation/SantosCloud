@@ -124,6 +124,15 @@ def create_video_snippet(project_path, video_path, videos_folder, file_prefix, v
     renumber_frames(images_folder, start_frame, temp_image_prefix, "png")
     convert_frames_to_video(video_path, images_folder, videos_folder, temp_image_prefix, file_prefix + str(video_number) + ".mpg")
 
+def create_video_from_image(folder, image_filename, video_filename, duration):
+    subprocess.call(["ffmpeg", 
+        "-loop", "1", 
+        "-i", os.path.join(folder, image_filename), 
+        "-c:v", "libx264",
+        "-t", str(duration),
+        "-pix_fmt", "yuv420p", 
+        os.path.join(folder, video_filename)])
+
 def combine_videos(videos_folder, temp_video_prefix, filename):
     # The only way I could find to join videos was to convert the videos to .mpg format, and then join them.
     # This seems to be the only way to keep ffmpeg happy.
