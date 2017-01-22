@@ -8,7 +8,6 @@ import tornado.ioloop
 import tornado.options
 import tornado.web
 import os
-import auth
 
 from tornado.options import define, options
 
