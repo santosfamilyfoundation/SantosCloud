@@ -21,6 +21,8 @@ export TRAFFICCLOUD_EMAIL="santostrafficcloud@gmail.com"
 export TRAFFICCLOUD_PASSWORD="ExamplePassword"
 ```
 
+The email feature has only been tested with Gmail emails. If you install this locally, you can create a Gmail or use yours to send emails from when the analysis completes.
+
 You can generate a secret key by running the following python commands:
 
 ```
