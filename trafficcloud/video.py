@@ -2,6 +2,7 @@ import os
 from app_config import AppConfig as ac
 import subprocess
 import json
+import matplotlib.pyplot as plt
 
 tracking_filename = "tracking.mp4"
 highlight_filename = "highlight.mp4"
@@ -32,15 +33,35 @@ def create_highlight_video(project_path, video_path, list_of_near_misses):
     videos_folder = os.path.join(project_path, "final_videos")
     temp_video_prefix = "temp_highlight_video-"
 
+    upper_frame_limit = get_number_of_frames(video_path)
+
     # Make the videos folder if it doesn't exists 
     if not os.path.exists(videos_folder):
         os.makedirs(videos_folder)
 
     delete_files(videos_folder, excluded_files=[tracking_filename])
 
-    # Create a bunch of short videos ("snippets")
     for i, near_miss in enumerate(list_of_near_misses):
-        create_video_snippet(project_path, video_path, videos_folder, temp_video_prefix, i, near_miss[0], near_miss[1])
+        start_frame, end_frame, object_id1, object_id2 = near_miss
+        
+        # Create a short video snippet of the near miss interaction
+        snippet_number = 2*i + 1
+        pts_multiplier = 3.0 # > 1.0 = slower ; < 1.0 = faster than
+        create_video_snippet(project_path, video_path, videos_folder, temp_video_prefix, snippet_number,
+            max(0, start_frame-30), min(upper_frame_limit, end_frame+30), pts_multiplier)
+
+        # Get resolution of video
+        snippet_path = os.path.join(videos_folder, temp_video_prefix + str(snippet_number) + ".mpg")
+        width, height = get_resolution(snippet_path)
+        
+        # create title slide image
+        slide_number = 2*i
+        slide_name = temp_video_prefix + str(slide_number)
+        slide_path = os.path.join(videos_folder, slide_name+'.png')
+        create_title_slide(width, height, slide_path, object_id1, object_id2)
+        
+        # create title slide video
+        create_video_from_image(videos_folder, slide_name+'.png', slide_name+'.mpg', 5)
 
     combine_videos(videos_folder, temp_video_prefix, highlight_filename)
     delete_files(videos_folder, temp_video_prefix, ["mpg", "mp4"], excluded_files=[tracking_filename, highlight_filename])
@@ -104,9 +125,20 @@ def get_framerate(videopath):
         videopath]))
     return str(int(list_o.strip().split('/')[0])/float(list_o.strip().split('/')[1]))
 
+def get_resolution(videopath):
+    """
+    Returns
+    -------
+
+    (width, height) in number of pixels
+    """
+    out = subprocess.check_output(['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_streams', videopath])
+    out = json.loads(out)
+    return out['streams'][0]['width'], out['streams'][0]['height']
+
 #### Video Creation
 
-def create_video_snippet(project_path, video_path, videos_folder, file_prefix, video_number, start_frame, end_frame):
+def create_video_snippet(project_path, video_path, videos_folder, file_prefix, video_number, start_frame, end_frame, pts_multiplier=1.0):
     images_folder = os.path.join(project_path, "temp_images")
     db_path = os.path.join(project_path, "run", "results.sqlite")
     temp_image_prefix = "image-"
@@ -122,7 +154,7 @@ def create_video_snippet(project_path, video_path, videos_folder, file_prefix, v
 
     # Get the frames, and create a short video out of them
     renumber_frames(images_folder, start_frame, temp_image_prefix, "png")
-    convert_frames_to_video(video_path, images_folder, videos_folder, temp_image_prefix, file_prefix + str(video_number) + ".mpg")
+    convert_frames_to_video(video_path, images_folder, videos_folder, temp_image_prefix, file_prefix + str(video_number) + ".mpg", pts_multiplier)
 
 def create_video_from_image(folder, image_filename, video_filename, duration):
     subprocess.call(["ffmpeg", 
@@ -181,21 +213,46 @@ def renumber_frames(folder, start_frame, prefix, extension):
 
     os.removedirs(temp_folder)
 
-def convert_frames_to_video(video_path, images_folder, videos_folder, images_prefix, filename):
+def convert_frames_to_video(video_path, images_folder, videos_folder, images_prefix, filename, pts_multiplier):
     subprocess.call(["ffmpeg", 
         "-framerate", get_framerate(video_path), 
-        "-i", os.path.join(images_folder, images_prefix+"%d.png"), 
+        "-i", os.path.join(images_folder, images_prefix+"%d.png"),
+        "-filter:v", "setpts={:0.1f}*PTS".format(pts_multiplier),
         "-c:v", "libx264", 
         "-pix_fmt", "yuv420p", 
         os.path.join(videos_folder, filename)])
 
-def get_resolution(videopath):
+def create_title_slide(width, height, save_path, object_id1, object_id2, fontsize=None, textcolor='#FFFFFF', facecolor='#000000'):
     """
-    Returns
-    -------
+    width: int, width in pixels of desired output
+    height: int, pixel height of desired output
+    
+    Note: fontsize varies with the resolution of the video in a very dumb manner right now.
+    If you want to control fontsize, provide it as a parameter
+    """
+    # heights and widths in matplotlib are units of inches, not pixels
+    dpi = 100.0
+    mpl_width = width / dpi
+    mpl_height = height / dpi
 
-    (width, height) in number of pixels
-    """
-    out = subprocess.check_output(['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_streams', videopath])
-    out = json.loads(out)
-    return out['streams'][0]['width'], out['streams'][0]['height']
+    # make figure without frame
+    fig = plt.figure(frameon=False)
+    fig.set_size_inches(mpl_width, mpl_height)
+    ax = fig.add_subplot(111)
+
+    # hide axis
+    ax.set_axis_off()
+
+    # set your axis size
+    ax.axis([0, mpl_width, 0, mpl_height])
+
+    # 20 is a good font size for a 400 height image...
+    # 40 is a good font size for a 800 height image
+    if not fontsize:
+        fontsize = height / 20
+
+    ax.text(0.2*mpl_width, 0.75*mpl_height, 'Near Miss between', style='italic', fontsize=fontsize, color=textcolor)
+    ax.text(0.2*mpl_width, 0.6*mpl_height, 'Object {}'.format(object_id1), fontsize=fontsize, color=textcolor)
+    ax.text(0.2*mpl_width, 0.4*mpl_height, 'Object {}'.format(object_id2), fontsize=fontsize, color=textcolor)
+
+    fig.savefig(save_path, dpi=dpi, bbox_inches=0, pad_inches=0, facecolor=facecolor)
