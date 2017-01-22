@@ -40,11 +40,16 @@ class MainHandler(tornado.web.RequestHandler):
         self.render("index.html")
 
 def main():
-    keys = ['TRAFFICCLOUD_SECRET_KEY', 'TRAFFICCLOUD_EMAIL', 'TRAFFICCLOUD_PASSWORD']
+    keys = ['TRAFFICCLOUD_SECRET_KEY', 'TRAFFICCLOUD_EMAIL', 'TRAFFICCLOUD_EMAIL_PASSWORD']
     for key in keys:
         if os.environ.get(key) == None:
             print("Set the "+key+" environment variable")
             return
+
+    if os.environ.get('TRAFFICCLOUD_SECRET_KEY') == "DefaultSecretKey":
+        print('WARNING: You are using the default secret key. This is insecure! Please create a secret key and set it on the TRAFFICCLOUD_SECRET_KEY environment variable.')
+    if os.environ.get('TRAFFICCLOUD_EMAIL') == '' or os.environ.get('TRAFFICCLOUD_EMAIL_PASSWORD') == '':
+        print("WARNING: Running without email capabilities. Users won't be emailed when their processing completes. To fix this, set the TRAFFICCLOUD_EMAIL and TRAFFICCLOUD_EMAIL_PASSWORD environment variables.")
 
     tornado.options.parse_command_line()
     app = Application()

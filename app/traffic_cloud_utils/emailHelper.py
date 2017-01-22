@@ -9,7 +9,11 @@ class EmailHelper(object):
 
 	def send_email(self, to_addr, subject, message):
 		email = os.environ.get('TRAFFICCLOUD_EMAIL')
-		password = os.environ.get('TRAFFICCLOUD_PASSWORD')
+		password = os.environ.get('TRAFFICCLOUD_EMAIL_PASSWORD')
+
+    	if email == '' or password == '' or email == None or password == None:
+    		print("WARNING: No email provided, failed to email user.")
+    		return
 
 		text = "From: Traffic Cloud <"+email+">\nTo: "+to_addr+"\nSubject: "+subject+"\n"+message
 		server = smtplib.SMTP('smtp.gmail.com:587')
