@@ -6,6 +6,7 @@ import os
 
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 import random
 from thinkstats2 import Cdf
 import thinkplot
@@ -401,6 +402,67 @@ def road_user_chart(fig, filename):
     connection.commit()
     connection.close()
 
+def road_user_icon_counts(title, car, bike, pedestrian, save_path, textcolor='#000000', facecolor='#FFFFFF', iconpath='/home/user/Documents/TrafficCloud/trafficcloud/plotting'):
+    """
+    car, bike, pedestrian: str or int, the desired data to display under these different road users
+
+    Example:
+    road_user_icon_counts(title='Road User Counts', car=10, bike='bike', pedestrian=0, save_path='out.png')
+    """
+    dpi = 100.0
+    mpl_width, mpl_height = (10, 8)
+
+    # make figure without frame
+    fig = plt.figure(frameon=False)
+    fig.set_size_inches(mpl_width, mpl_height)
+    ax = fig.add_subplot(111)
+
+    # hide axis
+    ax.set_axis_off()
+
+    # set your axis size
+    ax.axis([0, mpl_width, 0, mpl_height])
+
+    fontsize = 30
+
+    # Title
+    title_y = 0.85
+    ax.text(0.5*mpl_width, title_y*mpl_height, str(title), horizontalalignment='center', fontsize=fontsize, color=textcolor)
+
+    car_loc = 0.15
+    bike_loc = 0.5
+    ped_loc = 0.85
+    icon_y = 0.6
+    text_y = 0.4
+
+    # car icon
+    fn = os.path.join(iconpath, 'car.png')
+    arr_img = plt.imread(fn, format='png')
+    im = OffsetImage(arr_img, zoom=0.7)
+    ab = AnnotationBbox(im, (car_loc*mpl_width, icon_y*mpl_height), xycoords='data', frameon=False)
+    ax.add_artist(ab)
+    # car count
+    ax.text(car_loc*mpl_width, text_y*mpl_height, str(car), horizontalalignment='center', fontsize=fontsize, color=textcolor)
+
+    # bike icon
+    fn = os.path.join(iconpath, 'bike.png')
+    arr_img = plt.imread(fn, format='png')
+    im = OffsetImage(arr_img, zoom=0.7)
+    ab = AnnotationBbox(im, (bike_loc*mpl_width, icon_y*mpl_height), xycoords='data', frameon=False)
+    ax.add_artist(ab)
+    # bike count
+    ax.text(bike_loc*mpl_width, text_y*mpl_height, str(bike), horizontalalignment='center', fontsize=fontsize, color=textcolor)
+
+    # ped icon
+    fn = os.path.join(iconpath, 'pedestrian.png')
+    arr_img = plt.imread(fn, format='png')
+    im = OffsetImage(arr_img, zoom=0.7)
+    ab = AnnotationBbox(im, (ped_loc*mpl_width, icon_y*mpl_height), xycoords='data', frameon=False)
+    ax.add_artist(ab)
+    # bike count
+    ax.text(ped_loc*mpl_width, text_y*mpl_height, str(pedestrian), horizontalalignment='center', fontsize=fontsize, color=textcolor)
+
+    fig.savefig(save_path, dpi=dpi, bbox_inches=0, pad_inches=0, facecolor=facecolor)
 
 if __name__ == '__main__':
     import argparse
