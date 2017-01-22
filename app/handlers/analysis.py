@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
 import tornado.web
-import os
-import uuid
 
 class AnalysisHandler(tornado.web.RequestHandler):
     """
