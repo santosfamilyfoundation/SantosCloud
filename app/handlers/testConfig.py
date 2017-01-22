@@ -4,7 +4,7 @@ import tornado.web
 import os
 import uuid
 
-class TestFeatureTrackingHandler(tornado.web.RequestHandler):
+class TestConfigHandler(tornado.web.RequestHandler):
     """
     @api {post} /testConfig/ Test Configuration
     @apiName TestConfig
