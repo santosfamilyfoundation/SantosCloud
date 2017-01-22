@@ -7,7 +7,7 @@ def test_create_highlight_video(dbpath, projectpath, videoname):
 	"""
 	dbpath: the database should already have interactions and ttc indicators computed
 		from running trafficintelligence/scripts/safety-analysis.py
-	projectpath: i.e. '/home/user/Traffic/SantosCloud/project_dir/{uuid}'
+	projectpath: i.e. '/home/user/Documents/SantosCloud/project_dir/{uuid}'
 	videoname: source video name, i.e. 'video.avi'
 	
 	If no errors occur, check the generated highlight video in {projectpath}/final_videos
