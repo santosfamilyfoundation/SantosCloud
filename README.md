@@ -40,7 +40,7 @@ To run the server, either 1) run `python app/app.py` from the TrafficCloud folde
 
 To install `apidoc` in order to update the documentation, you must install npm. To install npm on Ubuntu/Debian systems, follow these steps:
 
-1. Run `curl -sL https://deb.nodesource.com/setup | sudo bash -` (install curl with `sudo apt-get install curl` if needed)
+1. Run `curl -sL https://deb.nodesource.com/setup_4.x | sudo bash -` (install curl with `sudo apt-get install curl` if needed)
 2. Run `sudo apt-get install -y nodejs` and `sudo apt-get install -y build-essential`.
 3. Run `node -v` and `npm -v` in a shell and ensure that node's version is greater than 0.10.35 and npm's version is greater than 2.1.17.
 4. If npm is out of date run `sudo npm install -g npm`
