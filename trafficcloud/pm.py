@@ -16,6 +16,7 @@ import numpy as np
 
 from app_config import AppConfig as ac
 from app_config import check_project_cfg_option, update_project_cfg, check_project_cfg_section
+from video import get_framerate
 
 import subprocess
 import uuid
@@ -93,13 +94,6 @@ class ProjectWizard():
         ts = time.time()
         vid_ts = datetime.datetime.now()
         #This line needs to be updated to no longer need the ui class. Load video and pull time.
-        list_o = str(subprocess.check_output(["ffprobe",
-         "-v", "error", 
-         "-select_streams", "v:0", 
-         "-show_entries", "stream=avg_frame_rate", 
-         "-of", "default=noprint_wrappers=1:nokey=1", 
-         self.videopath]))
-        vid_framerate = str(int(list_o.strip().split('/')[0])/int(list_o.strip().split('/')[1]))
         timestamp = datetime.datetime.fromtimestamp(ts).strftime('%d-%m-%Y %H:%M:%S %Z')
         video_timestamp = vid_ts.strftime('%d-%m-%Y %H:%M:%S %Z')
         self.config_parser.add_section("info")
@@ -108,7 +102,7 @@ class ProjectWizard():
         self.config_parser.add_section("video")
         self.config_parser.set("video", "name", os.path.basename(self.videopath))
         self.config_parser.set("video", "source", self.videopath)
-        self.config_parser.set("video", "framerate", vid_framerate)
+        self.config_parser.set("video", "framerate", get_framerate(self.videopath))
         self.config_parser.set("video", "start", video_timestamp)
         if unitpixelratio:
             self.config_parser.add_section("homography")

@@ -76,7 +76,17 @@ def runTrajectoryAnalysis(identifier):#, config, ret_type, ret_args, *args):
 
     db_make_objtraj(db_path)  # Make our object_trajectories db table
 
-    video.create_video()
+    video.create_tracking_video(ac.CURRENT_PROJECT_PATH, ac.CURRENT_PROJECT_VIDEO_PATH)
+
+def createVideos(identifier):
+    """
+    Runs TrafficIntelligence trackers and support scripts.
+    """
+    ac.load_application_config()
+    pm.load_project(identifier)
+
+    video.create_tracking_video(ac.CURRENT_PROJECT_PATH, ac.CURRENT_PROJECT_VIDEO_PATH)
+
 
 def runSafetyAnalysis(identifier, prediction_method=None):
 
