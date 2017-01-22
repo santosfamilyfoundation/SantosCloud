@@ -14,8 +14,7 @@ from tornado.options import define, options
 # Import all of our custom routes
 from handlers.upload import UploadHandler
 from handlers.testConfig import TestConfigHandler
-from handlers.trajectoryAnalysis import TrajectoryAnalysisHandler
-from handlers.safetyAnalysis import SafetyAnalysisHandler
+from handlers.analysis import AnalysisHandler
 
 define("port", default=8888, help="run on the given port", type=int)
 
