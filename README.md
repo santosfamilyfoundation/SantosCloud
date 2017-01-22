@@ -44,6 +44,7 @@ To install `apidoc` in order to update the documentation, you must install npm. 
 2. Run `sudo apt-get install -y nodejs` and `sudo apt-get install -y build-essential`.
 3. Run `node -v` and `npm -v` in a shell and ensure that node's version is greater than 0.10.35 and npm's version is greater than 2.1.17.
 4. If npm is out of date run `sudo npm install -g npm`
+5. Run `sudo npm install apidoc -g`.
 
 #### Regenerating the Documentation
 
