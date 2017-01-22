@@ -1,6 +1,7 @@
 import os
 from app_config import AppConfig as ac
 import subprocess
+import json
 
 def create_video():
     count = 0
@@ -138,4 +139,13 @@ def renumber_frames(folder, frame):
             new_file = file[4:]
             os.rename(os.path.join(images_folder, file), os.path.join(images_folder, new_file))
 
+def get_resolution(videopath):
+    """
+    Returns
+    -------
 
+    (width, height) in number of pixels
+    """
+    out = subprocess.check_output(['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_streams', videopath])
+    out = json.loads(out)
+    return out['streams'][0]['width'], out['streams'][0]['height']

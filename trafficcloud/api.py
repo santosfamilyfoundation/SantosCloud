@@ -61,7 +61,7 @@ def runTrajectoryAnalysis(identifier):#, config, ret_type, ret_args, *args):
         'nframes': 0, 
         'database-filename': 'results.sqlite', 
         'classifier-filename': os.path.join(ac.CURRENT_PROJECT_PATH, "classifier.cfg"),
-        'video-filename': os.path.join(ac.CURRENT_PROJECT_PATH, "video.mp4"),
+        'video-filename': ac.CURRENT_PROJECT_VIDEO_PATH,
         'homography-filename': os.path.join(ac.CURRENT_PROJECT_PATH, "homography", "homography.txt")}
     update_tracking_config(tracking_path, update_dict)
 

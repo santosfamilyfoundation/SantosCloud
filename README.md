@@ -36,3 +36,27 @@ Running `python main.py <project_name>` from the TrafficCloud folder will run th
 
 To run the server, either 1) run `python app/app.py` from the TrafficCloud folder, or 2) `cd` into the `app/` folder and run `python app.py`. These will start the server and tell you what port it is running on.
 
+### Generate API Documentation
+
+#### Install `apidoc`
+
+To install `apidoc` in order to update the documentation, you must install npm. To install npm on Ubuntu/Debian systems, follow these steps:
+
+1. Run `curl -sL https://deb.nodesource.com/setup_4.x | sudo bash -` (install curl with `sudo apt-get install curl` if needed)
+2. Run `sudo apt-get install -y nodejs` and `sudo apt-get install -y build-essential`.
+3. Run `node -v` and `npm -v` in a shell and ensure that node's version is greater than 0.10.35 and npm's version is greater than 2.1.17.
+4. If npm is out of date run `sudo npm install -g npm`
+5. Run `sudo npm install apidoc -g`.
+
+#### Regenerating the Documentation
+
+To regenerate the API Documentation, please run the following command from the SantosCloud folder:
+
+```
+apidoc -f ".*\\.py$" apidoc -i app/handlers/ -o app/static/apidoc
+```
+
+#### Viewing the Documentation
+
+Navigate to the IP (localhost:8888 for local installation) and the path `/static/apidoc/index.html`. (For example, `localhost:8888/static/apidoc/index.html`).
+

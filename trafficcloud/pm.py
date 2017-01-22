@@ -7,7 +7,6 @@ from ConfigParser import SafeConfigParser, NoSectionError, NoOptionError
 import time
 import datetime
 from shutil import copy
-import cv2
 try:
     from PIL import Image
 except:
