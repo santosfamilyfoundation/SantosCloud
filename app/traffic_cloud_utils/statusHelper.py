@@ -6,13 +6,13 @@ from trafficcloud.app_config import update_config_with_sections, get_config_sect
 
 class Status(object):
     class StatusType:
-        UPLOAD_VIDEO = "UploadVideo"
-        UPLOAD_HOMOGRAPHY = "UploadHomography"
-        CONFIGURATION_TEST = "ConfigurationTest"
-        FEATURE_TRACKING = "FeatureTracking"
-        OBJECT_TRACKING = "ObjectTracking"
-        HIGHLIGHT_VIDEO = "HighlightVideo"
-        SAFETY_ANALYSIS = "SafetyAnalysis"
+        UPLOAD_VIDEO = "upload_video"
+        UPLOAD_HOMOGRAPHY = "upload_homography"
+        CONFIGURATION_TEST = "configuration_test"
+        FEATURE_TRACKING = "feature_tracking"
+        OBJECT_TRACKING = "object_tracking"
+        SAFETY_ANALYSIS = "safety_analysis"
+        HIGHLIGHT_VIDEO = "highlight_video"
 
     class Status:
         INCOMPLETE = 0
@@ -26,8 +26,8 @@ class Status(object):
             self.Type.CONFIGURATION_TEST: 0,
             self.Type.FEATURE_TRACKING: 0,
             self.Type.OBJECT_TRACKING: 0,
-            self.Type.HIGHLIGHT_VIDEO: 0,
             self.Type.SAFETY_ANALYSIS: 0,
+            self.Type.HIGHLIGHT_VIDEO: 0,
         }
 
 class StatusHelper(object):
