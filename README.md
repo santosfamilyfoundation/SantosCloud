@@ -18,7 +18,7 @@ You must also set environment variables for the secret key, email, and the passw
 ```
 export TRAFFICCLOUD_SECRET_KEY="ExampleSecretKey"
 export TRAFFICCLOUD_EMAIL="santostrafficcloud@gmail.com"
-export TRAFFICCLOUD_PASSWORD="ExamplePassword"
+export TRAFFICCLOUD_EMAIL_PASSWORD="ExamplePassword"
 ```
 
 The email feature has only been tested with Gmail emails. If you install this locally, you can create a Gmail or use yours to send emails from when the analysis completes.
