@@ -122,6 +122,7 @@ def update_config_without_sections(config_path, update_dict):
 
     update_dict: i.e. {'nframes': 10, 'video-filename': 'video.avi'}
     """
+    unused_keys = update_dict.keys()
     with open(config_path, 'r') as rf:
         lines = rf.readlines()
     with open(config_path, 'w') as wf:
@@ -129,8 +130,12 @@ def update_config_without_sections(config_path, update_dict):
             line_param = line.split('=')[0].strip()
             if line_param in update_dict.keys():
                 wf.write("{} = {}\n".format(line_param, update_dict[line_param]))
+                unused_keys.remove(line_param)
             else:
                 wf.write(line)
+        for unused_key in unused_keys:
+            wf.write("{} = {}\n".format(unused_key, update_dict[unused_key]))
+            
 
 def get_config_without_sections(config_path):
     """helper function to get params and their values of cfg files that look like run_tracking.cfg

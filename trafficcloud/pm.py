@@ -14,7 +14,7 @@ except:
 import cvutils
 import numpy as np
 
-from app_config import get_project_path, get_project_config_path, config_section_exists
+from app_config import get_project_path, get_project_config_path, config_section_exists, update_config_without_sections
 from video import get_framerate
 
 import subprocess
@@ -52,18 +52,16 @@ class ProjectWizard():
             copy(os.path.join(default_files_dir, "tracking.cfg"), os.path.join(project_path, "tracking.cfg"))
             copy(os.path.join(default_files_dir, "classifier.cfg"), os.path.join(project_path, "classifier.cfg"))
 
-            with open(os.path.join(project_path, 'tracking.cfg') ,'r+') as trkcfg:
-                old = trkcfg.read()
-                trkcfg.seek(0)
-                newline = 'classifier-filename = '+os.path.join(project_path, 'classifier.cfg')
-                trkcfg.write(newline+old)
+            update_dict_1 = {
+                'classifier-filename': os.path.join(project_path, 'classifier.cfg')
+            }
+            update_config_without_sections(os.path.join(project_path, 'tracking.cfg'), update_dict_1)
 
-            with open(os.path.join(project_path, 'classifier.cfg'),'r+') as newcfg:
-                old = newcfg.read()
-                newcfg.seek(0)
-                nline1 = 'pbv-svm-filename = '+os.path.join(default_files_dir, 'modelPBV.xml') + '\n'
-                nline2 = 'bv-svm-filename = '+os.path.join(default_files_dir, 'modelBV.xml') + '\n'
-                newcfg.write(nline1+nline2+old)
+            update_dict_2 = {
+                'pbv-svm-filename': os.path.join(default_files_dir, 'modelPBV.xml'),
+                'bv-svm-filename': os.path.join(default_files_dir, 'modelBV.xml')
+            }
+            update_config_without_sections(os.path.join(project_path, 'classifier.cfg'), update_dict_2)
 
         else:
             print("Project exists. No new project created.")
