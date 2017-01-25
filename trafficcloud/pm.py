@@ -29,7 +29,7 @@ class ProjectWizard():
         self.create_project_dir(self.identifier)
 
     def create_project_dir(self, identifier):
-        directory_names = ["homography", ".temp/test/test_object/", ".temp/test/test_feature/", "run", "results"]
+        directory_names = ["homography", os.path.join(".temp", "test", "test_object"), os.path.join(".temp", "test", "test_feature"), "run", "results"]
         project_path = get_project_path(identifier)
 
         if not os.path.exists(project_path):

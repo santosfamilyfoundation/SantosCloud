@@ -3,15 +3,7 @@ from ConfigParser import SafeConfigParser
 import os
 
 class AppConfig(object):
-    PROJECT_DIR = None
-    TI_INSTALL_DIR = None
-
-    @classmethod
-    def load_application_config(cls):
-        config_parser = SafeConfigParser()
-        config_parser.read(os.path.join(os.path.dirname(os.path.realpath(__file__)), ".application"))
-        cls.PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), config_parser.get("info", "default_project_dir")))
-        cls.TI_INSTALL_DIR = config_parser.get("info", "ti_install_dir")
+    PROJECT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), "..", "project_dir"))
 
 def get_base_project_dir(identifier):
     return AppConfig.PROJECT_DIR

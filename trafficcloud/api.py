@@ -14,8 +14,9 @@ def saveFiles(diction, *args):
     return pm.ProjectWizard(diction).identifier
 
 def runConfigTestFeature(identifier, config, frames, ret_type, ret_args, *args):
-    tracking_path = os.path.join(get_project_path(identifier), ".temp", "test", "test_feature", "feature_tracking.cfg")
-    db_path = os.path.join(get_project_path(identifier), ".temp", "test", "test_feature", "test1.sqlite")
+    project_path = get_project_path(identifier)
+    tracking_path = os.path.join(project_path, ".temp", "test", "test_feature", "feature_tracking.cfg")
+    db_path = os.path.join(project_path, ".temp", "test", "test_feature", "test1.sqlite")
     if os.path.exists(db_path):
         os.remove(db_path)
 
@@ -28,8 +29,10 @@ def runConfigTestFeature(identifier, config, frames, ret_type, ret_args, *args):
     nframes = int(configuration["nframes"])
     fps = float(configuration["video-fps"])
 
+    homography_path = os.path.join(project_path, "homography", "homography.txt")
+
     subprocess.call(["feature-based-tracking", tracking_path, "--tf", "--database-filename", db_path])
-    subprocess.call(["display-trajectories.py", "-i", get_project_video_path(identifier), "-d", db_path, "-o", get_project_path(identifier) + "/homography/homography.txt", "-t", "feature", "--save-images", "-f", str(frame1), "--last-frame", str(frame1+nframes)])
+    subprocess.call(["display-trajectories.py", "-i", get_project_video_path(identifier), "-d", db_path, "-o", homography_path, "-t", "feature", "--save-images", "-f", str(frame1), "--last-frame", str(frame1+nframes)])
 
     video.move_images_to_project_dir_folder(images_folder)
 
@@ -40,8 +43,8 @@ def runTrajectoryAnalysis(identifier):#, config, ret_type, ret_args, *args):
     project_path = get_project_path(identifier)
 
     # create test folder
-    if not os.path.exists(project_path + "/run"):
-        os.mkdir(project_path + "/run")
+    if not os.path.exists(os.path.join(project_path, "run")):
+        os.mkdir(os.path.join(project_path, "run"))
 
     tracking_path = os.path.join(project_path, "run", "run_tracking.cfg")
 
@@ -50,7 +53,8 @@ def runTrajectoryAnalysis(identifier):#, config, ret_type, ret_args, *args):
         os.remove(tracking_path)
 
     # creates new config file
-    shutil.copyfile(os.path.join(project_path, ".temp/test/test_object/object_tracking.cfg"), tracking_path)
+    prev_tracking_path = os.path.join(project_path, ".temp", "test", "test_object", "object_tracking.cfg")
+    shutil.copyfile(prev_tracking_path, tracking_path)
 
     update_dict = {'frame1': 0, 
         'nframes': 0, 

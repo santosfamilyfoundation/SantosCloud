@@ -18,6 +18,7 @@ class Status(object):
         IN_PROGRESS = 1
         COMPLETE = 2
 
+    @staticmethod
     def create_status_dict():
         return {
             self.Type.UPLOAD_VIDEO: 0,
@@ -32,7 +33,7 @@ class Status(object):
 class StatusHelper(object):
     @staticmethod
     def initalize_project(identifier):
-        d = cls.create_status_dict()
+        d = Status.create_status_dict()
         config_path = get_project_config_path(identifier)
         for (status_type, status) in d.iteritems():
             update_config_with_sections(config_path, "status", status_type, status)
