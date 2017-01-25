@@ -2,27 +2,26 @@
 from ConfigParser import SafeConfigParser
 import os
 
-
 class AppConfig(object):
-    PROJECT_DIR = None
-    TI_INSTALL_DIR = None
-    # TODO: Link CURRENT_PROJECT_* with a @property.setter which automatically sets all from one, (e.g., set all using just folder dir)
-    CURRENT_PROJECT_PATH = None  # Path to base of currently open project's folder
-    CURRENT_PROJECT_NAME = None
-    CURRENT_PROJECT_CONFIG = None  # Path
-    CURRENT_PROJECT_VIDEO_PATH = None
+    PROJECT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), "..", "project_dir"))
 
-    def __init__(self):
-        super(AppConfig, self).__init__()
+def get_base_project_dir(identifier):
+    return AppConfig.PROJECT_DIR
 
-    @classmethod
-    def load_application_config(cls):
-        config_parser = SafeConfigParser()
-        config_parser.read(os.path.join(os.path.dirname(os.path.realpath(__file__)), ".application"))
-        cls.PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), config_parser.get("info", "default_project_dir")))
-        cls.TI_INSTALL_DIR = config_parser.get("info", "ti_install_dir")
+def get_project_path(identifier):
+    return os.path.join(AppConfig.PROJECT_DIR, identifier)
 
-    # TODO: class method for writing to application config file
+def get_project_config_path(identifier):
+    return os.path.join(AppConfig.PROJECT_DIR, identifier, identifier + ".cfg")
+
+def get_project_video_path(identifier):
+    project_config = os.path.join(AppConfig.PROJECT_DIR, identifier, identifier + ".cfg")
+    (success, video) = get_config_with_sections(project_config, "video", "name")
+    if success:
+        return os.path.join(AppConfig.PROJECT_DIR, identifier, video)
+    else:
+        print("ERR: project_video(): Couldn't get video")
+        return None
 
 def update_config_with_sections(config_path, section, option, value):
     """
@@ -70,7 +69,7 @@ def get_config_with_sections(config_path, section, option):
         print("ERR [get_config_with_sections()]: Section {} is not available in {}.".format(section, config_path))
         return (False, None)
     except NoOptionError:
-        print("Option {} is not available in {}.".format(option, AppConfig.CURRENT_PROJECT_CONFIG))
+        print("Option {} is not available in {}.".format(option, config_path))
         return (False, None)
     else:
         return (True, value)
@@ -123,6 +122,7 @@ def update_config_without_sections(config_path, update_dict):
 
     update_dict: i.e. {'nframes': 10, 'video-filename': 'video.avi'}
     """
+    unused_keys = update_dict.keys()
     with open(config_path, 'r') as rf:
         lines = rf.readlines()
     with open(config_path, 'w') as wf:
@@ -130,8 +130,12 @@ def update_config_without_sections(config_path, update_dict):
             line_param = line.split('=')[0].strip()
             if line_param in update_dict.keys():
                 wf.write("{} = {}\n".format(line_param, update_dict[line_param]))
+                unused_keys.remove(line_param)
             else:
                 wf.write(line)
+        for unused_key in unused_keys:
+            wf.write("{} = {}\n".format(unused_key, update_dict[unused_key]))
+            
 
 def get_config_without_sections(config_path):
     """helper function to get params and their values of cfg files that look like run_tracking.cfg
