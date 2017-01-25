@@ -27,7 +27,7 @@ class AnalysisHandler(tornado.web.RequestHandler):
     @apiError error_message The error message to display.
     """
     def post(self):
-        identifier = self.request.identifier
+        identifier = self.request.body_arguments["identifier"]
 
         self.objectTrack(identifier)
         self.safetyAnalysis(identifier)
@@ -35,7 +35,7 @@ class AnalysisHandler(tornado.web.RequestHandler):
         message = "Hello,\n\tWe have finished processing your video and identifying any dangerous interactions.\nThank you for your patience,\nThe Santos Team"
         subject = "Your video has finished processing."
 
-        EmailHelper.send_email(self.request.email, subject, message)
+        EmailHelper.send_email(self.request.body_arguments["email"], subject, message)
 
         self.finish("Analysis")
 

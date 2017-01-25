@@ -13,8 +13,6 @@ import pm
 import video
 from traffic_cloud_utils.emailHelper import EmailHelper
 
-
-
 class ObjectTrackingHandler(tornado.web.RequestHandler):
     """
     @api {post} /objectTracking/ Object Tracking
@@ -32,12 +30,12 @@ class ObjectTrackingHandler(tornado.web.RequestHandler):
     """
 
     def post(self):
-        self.objectTrack(self.request.identifier)
+        self.objectTrack(self.request.body_arguments["identifier"])
         
         message = "Hello,\n\tWe have finished processing your video and identifying all objects.\nThank you for your patience,\nThe Santos Team"
         subject = "Your video has finished processing."
 
-        EmailHelper.send_email(self.request.email, subject, message)
+        EmailHelper.send_email(self.request.body_arguments["email"], subject, message)
 
         self.finish("Object Tracking")
 
