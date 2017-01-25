@@ -4,7 +4,7 @@ import tornado.web
 
 class AnalysisHandler(tornado.web.RequestHandler):
     """
-    @api {post} /analyze/ Analysis
+    @api {post} /analysis/ Analysis
     @apiName Analysis
     @apiVersion 0.0.0
     @apiGroup Analysis
