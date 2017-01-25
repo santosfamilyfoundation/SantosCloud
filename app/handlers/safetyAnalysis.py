@@ -1,6 +1,12 @@
  #!/usr/bin/env python
+import os
+import subprocess
 
 import tornado.web
+
+from app_config import AppConfig as ac
+from app_config import update_config_without_sections
+import pm
 
 class SafetyAnalysisHandler(tornado.web.RequestHandler):
     """
@@ -18,4 +24,26 @@ class SafetyAnalysisHandler(tornado.web.RequestHandler):
     @apiError error_message The error message to display. (Will return unique error message if object tracking has NOT been run on specified project)
     """
     def post(self):
+        self.safetyAnalysis(self.request.identifier)
         self.finish("Safety Analysis")
+
+
+    def safetyAnalysis(self, identifier, prediction_method=None):
+
+        ac.load_application_config()
+        pm.load_project(identifier)
+
+        config_path = os.path.join(ac.CURRENT_PROJECT_PATH, "run", "run_tracking.cfg")
+        db_path = os.path.join(ac.CURRENT_PROJECT_PATH, "run", "results.sqlite")
+        update_dict = {
+            'video-filename': ac.CURRENT_PROJECT_VIDEO_PATH, # use absolute path to video on server
+            'database-filename': db_path # use absolute path to database
+        }
+        update_config_without_sections(config_path, update_dict)
+
+        if prediction_method is None:
+            prediction_method = 'cv' # default to the least resource intensive method
+
+        # Predict Interactions between road users and compute safety metrics describing them
+        subprocess.call(["safety-analysis.py", "--cfg", config_path, "--prediction-method", prediction_method])
+
