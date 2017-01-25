@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
 import tornado.web
+from tornado.web import stream_request_body
 
+@stream_request_body
 class UploadVideoHandler(tornado.web.RequestHandler):
     """
     @api {post} /uploadVideo/ Upload Video
@@ -18,5 +20,21 @@ class UploadVideoHandler(tornado.web.RequestHandler):
 
     @apiError error_message The error message to display.
     """
+    def initialize():
+        self.file_name = 'video.avi'
+        self.num_chunks = 0;
+        print 'Upload Video Initialized'
+
     def post(self):
-        self.finish("Upload Video")
+        print 'Filename: {}'.format(self.file_name)
+        self.finish("Upload Video Finished")
+
+    def prepare():
+        open(self.file_name, 'w').close()
+        print 'Upload Video Prepared'
+
+    def data_received(self, data):
+        with open(self.file_name, 'wb') as f:
+            print('Writing to "{0}"...'.format(self.file_name))
+                    f.write(data)
+                    self.num_chunks += 1
