@@ -27,6 +27,9 @@ from handlers.analysis import AnalysisHandler
 from handlers.objectTracking import ObjectTrackingHandler
 from handlers.safetyAnalysis import SafetyAnalysisHandler
 
+#Status Routes
+from handlers.status import StatusHandler
+
 # Results routes
 from handlers.createHighlightVideo import CreateHighlightVideoHandler
 from handlers.makeReport import MakeReportHandler
@@ -49,6 +52,7 @@ class Application(tornado.web.Application):
             (r"/analysis", AnalysisHandler),
             (r"/objectTracking", ObjectTrackingHandler),
             (r"/safetyAnalysis", SafetyAnalysisHandler),
+            (r"/status", StatusHandler),
             (r"/highlightVideo", CreateHighlightVideoHandler),
             (r"/makeReport", MakeReportHandler),
             (r"/roadUserCounts", RoadUserCountsHandler),
