@@ -24,8 +24,19 @@ class Application(tornado.web.Application):
         handlers = [
             (r"/", MainHandler),
             (r"/upload", UploadHandler),
+            (r"/uploadVideo", UploadVideoHandler),
+            (r"/uploadHomography", UploadHomographyHandler),
+            (r"/config", ConfigHandler),
             (r"/testConfig", TestConfigHandler),
             (r"/analysis", AnalysisHandler),
+            (r"/objectTracking", ObjectTrackingHandler),
+            (r"/safetyAnalysis", SafetyAnalysisHandler),
+            (r"/highlightVideo", CreateHighlightVideoHandler),
+            (r"/makeReport", MakeReportHandler),
+            (r"/roadUserCounts", RoadUserCountsHandler),
+            (r"/speedCDF", CreateSpeedCDFHandler),
+            (r"/retrieveResults", RetrieveResultsHandler)
+
         ]
         settings = dict(
             cookie_secret=os.environ.get('TRAFFICCLOUD_SECRET_KEY'),
