@@ -4,7 +4,7 @@
 import os
 import shutil
 from app_config import AppConfig as ac
-from app_config import update_tracking_config, get_tracking_config
+from app_config import update_config_without_sections
 import pm
 import subprocess
 import video, feat_config
@@ -63,7 +63,7 @@ def runTrajectoryAnalysis(identifier):#, config, ret_type, ret_args, *args):
         'classifier-filename': os.path.join(ac.CURRENT_PROJECT_PATH, "classifier.cfg"),
         'video-filename': ac.CURRENT_PROJECT_VIDEO_PATH,
         'homography-filename': os.path.join(ac.CURRENT_PROJECT_PATH, "homography", "homography.txt")}
-    update_tracking_config(tracking_path, update_dict)
+    update_config_without_sections(tracking_path, update_dict)
 
     db_path = os.path.join(ac.CURRENT_PROJECT_PATH, "run", "results.sqlite")
 
@@ -99,7 +99,7 @@ def runSafetyAnalysis(identifier, prediction_method=None):
         'video-filename': ac.CURRENT_PROJECT_VIDEO_PATH, # use absolute path to video on server
         'database-filename': db_path # use absolute path to database
     }
-    update_tracking_config(config_path, update_dict)
+    update_config_without_sections(config_path, update_dict)
 
     if prediction_method is None:
         prediction_method = 'cv' # default to the least resource intensive method

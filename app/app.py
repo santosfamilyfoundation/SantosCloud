@@ -25,7 +25,7 @@ class Application(tornado.web.Application):
         handlers = [
             (r"/", MainHandler),
             (r"/upload", UploadHandler),
-            (r"/status", TrajectoryAnalysisStatusHandler),
+            (r"/status", StatusHandler),
             (r"/testConfig", TestConfigHandler),
             (r"/analysis", AnalysisHandler),
         ]

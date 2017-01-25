@@ -15,7 +15,7 @@ import cvutils
 import numpy as np
 
 from app_config import AppConfig as ac
-from app_config import check_project_cfg_option, update_project_cfg, check_project_cfg_section
+from app_config import config_section_exists
 from video import get_framerate
 
 import subprocess
@@ -157,9 +157,9 @@ def load_homography(main_window):
         corr_path = pt_corrs_path
 
     # Has a homography been previously computed?
-    if check_project_cfg_section("homography"):  # If we can load homography unit-pix ratio load it
+    if config_section_exists(AppConfig.CURRENT_PROJECT_CONFIG, "homography"):  # If we can load homography unit-pix ratio load it
         # load unit-pixel ratio
-        upr_exists, upr = check_project_cfg_option("homography", "unitpixelratio")
+        upr_exists, upr = get_config_with_sections(ac.CURRENT_PROJECT_CONFIG, "homography", "unitpixelratio")
         if upr_exists:
             gui.unit_px_input.setText(upr)
     if os.path.exists(corr_path):  # If points have been previously selected

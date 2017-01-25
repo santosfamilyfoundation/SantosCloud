@@ -24,44 +24,50 @@ class AppConfig(object):
 
     # TODO: class method for writing to application config file
 
-def update_project_cfg(section, option, value):
+def update_config_with_sections(config_path, section, option, value):
     """
     Updates a single value in the current open project's configuration file.
     Writes nothing and returns -1 if no project currently open. Creates sections
     in the config file if they do not already exist.
 
     Args:
+        config_path (str): Path to the config file
         section (str): Name of the section to write new option-value pair to write.
         option (str): Name of the option to write/update.
         value (str): Value to write/update assocaited with the specified option.
     """
-    if not AppConfig.CURRENT_PROJECT_CONFIG:
+    if not os.path.exists(config_path):
+        print("ERR [update_config_with_sections()]: File {} does not exist.".format(config_path))
         return -1
     cfp = SafeConfigParser()
-    cfp.read(AppConfig.CURRENT_PROJECT_CONFIG)
+    cfp.read(config_path)
     if section not in cfp.sections():  # If the given section does not exist,
         cfp.add_section(section)        # then create it.
     cfp.set(section, option, value)  # Set the option-value pair
-    with open(AppConfig.CURRENT_PROJECT_CONFIG, "wb") as cfg_file:
+    with open(config_paths, "wb") as cfg_file:
         cfp.write(cfg_file)  # Write changes
 
 
-def check_project_cfg_option(section, option):
+def get_config_with_sections(config_path, section, option):
     """
-    Checks the currently open project's configuration file for the specified option
+    Checks the configuration file for the specified option
     in the specified section. If it exists, this returns (True, <value>). If it does not
     exist, this returns (False, None).
 
     Args:
+        config_path (str): Path to the config file to check
         section (str): Name of the section to check for option.
         option (str): Name of the option check/return.
     """
+    if not os.path.exists(config_path):
+        print("ERR [get_config_with_sections()]: File {} does not exist.".format(config_path))
+        return (False, None)
     cfp = SafeConfigParser()
-    cfp.read(AppConfig.CURRENT_PROJECT_CONFIG)
+    cfp.read(config_path)
     try:
         value = cfp.get(section, option)
     except NoSectionError:
-        print("ERR [check_project_cfg_option()]: Section {} is not available in {}.".format(section, AppConfig.CURRENT_PROJECT_CONFIG))
+        print("ERR [get_config_with_sections()]: Section {} is not available in {}.".format(section, config_path))
         return (False, None)
     except NoOptionError:
         print("Option {} is not available in {}.".format(option, AppConfig.CURRENT_PROJECT_CONFIG))
@@ -69,23 +75,50 @@ def check_project_cfg_option(section, option):
     else:
         return (True, value)
 
+def get_config_section(config_path, section):
+    """
+    Checks the configuration file for the specified option
+    in the specified section. If it exists, this returns (True, dict_of_data). If it does not
+    exist, this returns (False, None).
 
-def check_project_cfg_section(section):
+    Args:
+        config_path (str): Path to the config file to check
+        section (str): Name of the section whose data should be returned.
+    """
+    if not os.path.exists(config_path):
+        print("ERR [get_config_section()]: File {} does not exist.".format(config_path))
+        return (False, None)
+    cfp = SafeConfigParser()
+    cfp.read(config_path)
+    try:
+        tuples = cfp.items(section)
+    except NoSectionError:
+        print("ERR [get_config_section()]: Section {} is not available in {}.".format(section, config_path))
+        return (False, None)
+    else:
+        d = {}
+        for (key, value) in tuples:
+            d[key] = value
+        return (True, d)
+
+
+def config_section_exists(config_path, section):
     """
     Checks the currently open project's configuration file for the section. If it exists,
     this returns True. If it does not exist, this returns False.
 
     Args:
+        config_path (str): Path to the config file.
         section (str): Name of the section to check existance of.
     """
     cfp = SafeConfigParser()
-    cfp.read(AppConfig.CURRENT_PROJECT_CONFIG)
+    cfp.read()
     if section in cfp.sections():  # If the given section exists,
         return True                # then return True.
     else:                          # Otherwise,
         return False               # then return False
 
-def update_tracking_config(config_path, update_dict):
+def update_config_without_sections(config_path, update_dict):
     """helper function to edit cfg files that look like run_tracking.cfg
 
     update_dict: i.e. {'nframes': 10, 'video-filename': 'video.avi'}
@@ -100,7 +133,7 @@ def update_tracking_config(config_path, update_dict):
             else:
                 wf.write(line)
 
-def get_tracking_config(config_path):
+def get_config_without_sections(config_path):
     """helper function to get params and their values of cfg files that look like run_tracking.cfg
 
     get_dict: params to their values, as a dictionary
