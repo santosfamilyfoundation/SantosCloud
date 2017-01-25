@@ -6,6 +6,7 @@ class ConfigHandler(tornado.web.RequestHandler):
     """
     @api {post} /config/ Configure Files
     @apiName Configure Files
+    @apiVersion 0.0.0
     @apiGroup Configuration
     @apiDescription Calling this route will modify a specified configuration file using specified key:value pairs. Provides a way to modify configuration files by changing variables rather than uploading complete files.
 

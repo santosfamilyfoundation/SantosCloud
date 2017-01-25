@@ -6,6 +6,7 @@ class UploadHomographyHandler(tornado.web.RequestHandler):
     """
     @api {post} /uploadHomography/ Upload Homography
     @apiName UploadHomography
+    @apiVersion 0.0.0
     @apiGroup Upload
     @apiDescription Use this route to upload homography files for a project.
 

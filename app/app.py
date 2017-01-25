@@ -12,10 +12,30 @@ import os
 from tornado.options import define, options
 
 # Import all of our custom routes
+
+# Upload routes
 from handlers.upload import UploadHandler
-from handlers.status import StatusHandler
+from handlers.uploadVideo import UploadVideoHandler
+from handlers.uploadHomography import UploadHomographyHandler
+
+# Configure routes
+from handlers.config import ConfigHandler
 from handlers.testConfig import TestConfigHandler
+
+# Analysis routes
 from handlers.analysis import AnalysisHandler
+from handlers.objectTracking import ObjectTrackingHandler
+from handlers.safetyAnalysis import SafetyAnalysisHandler
+
+#Status Routes
+from handlers.status import StatusHandler
+
+# Results routes
+from handlers.createHighlightVideo import CreateHighlightVideoHandler
+from handlers.makeReport import MakeReportHandler
+from handlers.roadUserCounts import RoadUserCountsHandler
+from handlers.createSpeedCDF import CreateSpeedCDFHandler
+from handlers.retrieveResults import RetrieveResultsHandler
 
 define("port", default=8888, help="run on the given port", type=int)
 
@@ -25,9 +45,20 @@ class Application(tornado.web.Application):
         handlers = [
             (r"/", MainHandler),
             (r"/upload", UploadHandler),
-            (r"/status", StatusHandler),
+            (r"/uploadVideo", UploadVideoHandler),
+            (r"/uploadHomography", UploadHomographyHandler),
+            (r"/config", ConfigHandler),
             (r"/testConfig", TestConfigHandler),
             (r"/analysis", AnalysisHandler),
+            (r"/objectTracking", ObjectTrackingHandler),
+            (r"/safetyAnalysis", SafetyAnalysisHandler),
+            (r"/status", StatusHandler),
+            (r"/highlightVideo", CreateHighlightVideoHandler),
+            (r"/makeReport", MakeReportHandler),
+            (r"/roadUserCounts", RoadUserCountsHandler),
+            (r"/speedCDF", CreateSpeedCDFHandler),
+            (r"/retrieveResults", RetrieveResultsHandler)
+
         ]
         settings = dict(
             cookie_secret=os.environ.get('TRAFFICCLOUD_SECRET_KEY'),
