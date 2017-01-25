@@ -2,6 +2,8 @@
 import os
 import subprocess
 import shutil
+import smtplib
+from email.mime.text import MIMEText
 
 import tornado.web
 
@@ -9,6 +11,8 @@ from app_config import AppConfig as ac
 from app_config import update_config_without_sections
 import pm
 import video
+
+
 
 class ObjectTrackingHandler(tornado.web.RequestHandler):
     """
@@ -28,8 +32,21 @@ class ObjectTrackingHandler(tornado.web.RequestHandler):
 
     def post(self):
         self.objectTrack(self.request.identifier)
-        self.finish("Object Tracking")
 
+        host_email = os.environ.get('SANTOSCLOUD_EMAIL')
+        
+        msg = MIMEText("Hello,\n\tWe have finished processing your video and identifying all objects.\nThank you for your patience,\nThe Santos Team")
+        msg['Subject'] = "Your video has finished processing."
+        msg['From'] = "SantosTrafficCloud@gmail.com"
+        msg['To'] = self.request.email
+
+        s = smtplib.SMTP('smtp.gmail.com',587)
+        s.starttls()
+        s.login(host_email, os.environ.get('SANTOSCLOUD_EMAIL_PASSWORD'))
+        s.sendmail(host_email, [self.request.email], msg.as_string())
+        s.quit()
+
+        self.finish("Object Tracking")
 
 
     def objectTrack(self, identifier):
@@ -72,3 +89,4 @@ class ObjectTrackingHandler(tornado.web.RequestHandler):
         db_make_objtraj(db_path)  # Make our object_trajectories db table
 
         video.create_tracking_video(ac.CURRENT_PROJECT_PATH, ac.CURRENT_PROJECT_VIDEO_PATH)
+

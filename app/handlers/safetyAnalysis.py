@@ -25,6 +25,20 @@ class SafetyAnalysisHandler(tornado.web.RequestHandler):
     """
     def post(self):
         self.safetyAnalysis(self.request.identifier)
+
+        host_email = os.environ.get('SANTOSCLOUD_EMAIL')
+
+        msg = MIMEText("Hello,\n\tWe have finished looking through your data and identifying any dangerous interactions.\nThank you for your patience,\nThe Santos Team")
+        msg['Subject'] = "Your video has finished processing."
+        msg['From'] = host_email
+        msg['To'] = self.request.email
+
+        s = smtplib.SMTP('smtp.gmail.com',587)
+        s.starttls()
+        s.login(host_email, os.environ.get('SANTOSCLOUD_EMAIL_PASSWORD'))
+        s.sendmail(host_email, [self.request.email], msg.as_string())
+        s.quit()
+
         self.finish("Safety Analysis")
 
 
