@@ -1,6 +1,14 @@
 #!/usr/bin/env python
+import os
+import subprocess
+import shutil
 
 import tornado.web
+
+from app_config import AppConfig as ac
+from app_config import update_config_without_sections
+import pm
+import video
 
 class AnalysisHandler(tornado.web.RequestHandler):
     """
@@ -18,4 +26,69 @@ class AnalysisHandler(tornado.web.RequestHandler):
     @apiError error_message The error message to display.
     """
     def post(self):
+        identifier = self.request.identifier
+
+        self.objectTrack(identifier)
+        self.safetyAnalysis(identifier)
+
         self.finish("Analysis")
+
+    def safetyAnalysis(self, identifier, prediction_method=None):
+
+        ac.load_application_config()
+        pm.load_project(identifier)
+
+        config_path = os.path.join(ac.CURRENT_PROJECT_PATH, "run", "run_tracking.cfg")
+        db_path = os.path.join(ac.CURRENT_PROJECT_PATH, "run", "results.sqlite")
+        update_dict = {
+            'video-filename': ac.CURRENT_PROJECT_VIDEO_PATH, # use absolute path to video on server
+            'database-filename': db_path # use absolute path to database
+        }
+        update_config_without_sections(config_path, update_dict)
+
+        if prediction_method is None:
+            prediction_method = 'cv' # default to the least resource intensive method
+
+        # Predict Interactions between road users and compute safety metrics describing them
+        subprocess.call(["safety-analysis.py", "--cfg", config_path, "--prediction-method", prediction_method])
+
+    def objectTrack(self, identifier):
+        """
+        Runs TrafficIntelligence trackers and support scripts.
+        """
+        ac.load_application_config()
+        pm.load_project(identifier)
+
+        # create test folder
+        if not os.path.exists(ac.CURRENT_PROJECT_PATH + "/run"):
+            os.mkdir(ac.CURRENT_PROJECT_PATH + "/run")
+
+        tracking_path = os.path.join(ac.CURRENT_PROJECT_PATH, "run", "run_tracking.cfg")
+
+        # removes object tracking.cfg
+        if os.path.exists(tracking_path):
+            os.remove(tracking_path)
+
+        # creates new config file
+        shutil.copyfile(ac.CURRENT_PROJECT_PATH + "/.temp/test/test_object/object_tracking.cfg", tracking_path)
+
+        update_dict = {'frame1': 0, 
+            'nframes': 0, 
+            'database-filename': 'results.sqlite', 
+            'classifier-filename': os.path.join(ac.CURRENT_PROJECT_PATH, "classifier.cfg"),
+            'video-filename': ac.CURRENT_PROJECT_VIDEO_PATH,
+            'homography-filename': os.path.join(ac.CURRENT_PROJECT_PATH, "homography", "homography.txt")}
+        update_config_without_sections(tracking_path, update_dict)
+
+        db_path = os.path.join(ac.CURRENT_PROJECT_PATH, "run", "results.sqlite")
+
+        if os.path.exists(db_path):  # If results database already exists,
+            os.remove(db_path)  # then remove it--it'll be recreated.
+        subprocess.call(["feature-based-tracking", tracking_path, "--tf", "--database-filename", db_path])
+        subprocess.call(["feature-based-tracking", tracking_path, "--gf", "--database-filename", db_path])
+
+        subprocess.call(["classify-objects.py", "--cfg", tracking_path, "-d", db_path])  # Classify road users
+
+        db_make_objtraj(db_path)  # Make our object_trajectories db table
+
+        video.create_tracking_video(ac.CURRENT_PROJECT_PATH, ac.CURRENT_PROJECT_VIDEO_PATH)

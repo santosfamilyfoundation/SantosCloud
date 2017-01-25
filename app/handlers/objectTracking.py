@@ -1,6 +1,14 @@
 #!/usr/bin/env python
+import os
+import subprocess
+import shutil
 
 import tornado.web
+
+from app_config import AppConfig as ac
+from app_config import update_config_without_sections
+import pm
+import video
 
 class ObjectTrackingHandler(tornado.web.RequestHandler):
     """
@@ -17,5 +25,50 @@ class ObjectTrackingHandler(tornado.web.RequestHandler):
 
     @apiError error_message The error message to display.
     """
+
     def post(self):
+        self.objectTrack(self.request.identifier)
         self.finish("Object Tracking")
+
+
+
+    def objectTrack(self, identifier):
+        """
+        Runs TrafficIntelligence trackers and support scripts.
+        """
+        ac.load_application_config()
+        pm.load_project(identifier)
+
+        # create test folder
+        if not os.path.exists(ac.CURRENT_PROJECT_PATH + "/run"):
+            os.mkdir(ac.CURRENT_PROJECT_PATH + "/run")
+
+        tracking_path = os.path.join(ac.CURRENT_PROJECT_PATH, "run", "run_tracking.cfg")
+
+        # removes object tracking.cfg
+        if os.path.exists(tracking_path):
+            os.remove(tracking_path)
+
+        # creates new config file
+        shutil.copyfile(ac.CURRENT_PROJECT_PATH + "/.temp/test/test_object/object_tracking.cfg", tracking_path)
+
+        update_dict = {'frame1': 0, 
+            'nframes': 0, 
+            'database-filename': 'results.sqlite', 
+            'classifier-filename': os.path.join(ac.CURRENT_PROJECT_PATH, "classifier.cfg"),
+            'video-filename': ac.CURRENT_PROJECT_VIDEO_PATH,
+            'homography-filename': os.path.join(ac.CURRENT_PROJECT_PATH, "homography", "homography.txt")}
+        update_config_without_sections(tracking_path, update_dict)
+
+        db_path = os.path.join(ac.CURRENT_PROJECT_PATH, "run", "results.sqlite")
+
+        if os.path.exists(db_path):  # If results database already exists,
+            os.remove(db_path)  # then remove it--it'll be recreated.
+        subprocess.call(["feature-based-tracking", tracking_path, "--tf", "--database-filename", db_path])
+        subprocess.call(["feature-based-tracking", tracking_path, "--gf", "--database-filename", db_path])
+
+        subprocess.call(["classify-objects.py", "--cfg", tracking_path, "-d", db_path])  # Classify road users
+
+        db_make_objtraj(db_path)  # Make our object_trajectories db table
+
+        video.create_tracking_video(ac.CURRENT_PROJECT_PATH, ac.CURRENT_PROJECT_VIDEO_PATH)
