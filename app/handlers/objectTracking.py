@@ -11,6 +11,7 @@ from app_config import AppConfig as ac
 from app_config import update_config_without_sections
 import pm
 import video
+import EmailHelper
 
 
 
@@ -32,19 +33,11 @@ class ObjectTrackingHandler(tornado.web.RequestHandler):
 
     def post(self):
         self.objectTrack(self.request.identifier)
-
-        host_email = os.environ.get('SANTOSCLOUD_EMAIL')
         
-        msg = MIMEText("Hello,\n\tWe have finished processing your video and identifying all objects.\nThank you for your patience,\nThe Santos Team")
-        msg['Subject'] = "Your video has finished processing."
-        msg['From'] = "SantosTrafficCloud@gmail.com"
-        msg['To'] = self.request.email
+        message = "Hello,\n\tWe have finished processing your video and identifying all objects.\nThank you for your patience,\nThe Santos Team"
+        subject = "Your video has finished processing."
 
-        s = smtplib.SMTP('smtp.gmail.com',587)
-        s.starttls()
-        s.login(host_email, os.environ.get('SANTOSCLOUD_EMAIL_PASSWORD'))
-        s.sendmail(host_email, [self.request.email], msg.as_string())
-        s.quit()
+        EmailHelper.send_email(self.request.email, subject, message)
 
         self.finish("Object Tracking")
 

@@ -9,6 +9,7 @@ from app_config import AppConfig as ac
 from app_config import update_config_without_sections
 import pm
 import video
+import EmailHelper
 
 class AnalysisHandler(tornado.web.RequestHandler):
     """
@@ -31,18 +32,10 @@ class AnalysisHandler(tornado.web.RequestHandler):
         self.objectTrack(identifier)
         self.safetyAnalysis(identifier)
 
-        host_email = os.environ.get('SANTOSCLOUD_EMAIL')
+        message = "Hello,\n\tWe have finished processing your video and identifying any dangerous interactions.\nThank you for your patience,\nThe Santos Team"
+        subject = "Your video has finished processing."
 
-        msg = MIMEText("Hello,\n\tWe have finished processing your video and identifying any dangerous interactions.\nThank you for your patience,\nThe Santos Team")
-        msg['Subject'] = "Your video has finished processing."
-        msg['From'] = host_email
-        msg['To'] = self.request.email
-
-        s = smtplib.SMTP('smtp.gmail.com',587)
-        s.starttls()
-        s.login(host_email, os.environ.get('SANTOSCLOUD_EMAIL_PASSWORD'))
-        s.sendmail(host_email, [self.request.email], msg.as_string())
-        s.quit()
+        EmailHelper.send_email(self.request.email, subject, message)
 
         self.finish("Analysis")
 
