@@ -7,19 +7,15 @@ import tornado.escape
 import tornado.ioloop
 import tornado.options
 import tornado.web
-import os.path
-import auth
+import os
 
 from tornado.options import define, options
 
 # Import all of our custom routes
 from handlers.upload import UploadHandler
-from handlers.testFeatureTracking import TestFeatureTrackingHandler
-from handlers.testObjectTracking import TestObjectTrackingHandler
-from handlers.trajectoryAnalysis import TrajectoryAnalysisHandler
-from handlers.safetyAnalysis import SafetyAnalysisHandler
-from handlers.trajectoryAnalysisStatus import TrajectoryAnalysisStatusHandler
-from handlers.safetyAnalysisStatus import SafetyAnalysisStatusHandler
+from handlers.status import StatusHandler
+from handlers.testConfig import TestConfigHandler
+from handlers.analysis import AnalysisHandler
 
 define("port", default=8888, help="run on the given port", type=int)
 
@@ -29,15 +25,12 @@ class Application(tornado.web.Application):
         handlers = [
             (r"/", MainHandler),
             (r"/upload", UploadHandler),
-            (r"/test/featureTracking", TestFeatureTrackingHandler),
-            (r"/test/objectTracking", TestObjectTrackingHandler),
-            (r"/trajectoryAnalysis", TrajectoryAnalysisHandler),
-            (r"/safetyAnalysis", SafetyAnalysisHandler),
-            (r"/trajectoryAnalysis/status", TrajectoryAnalysisStatusHandler),
-            (r"/safetyAnalysis/status", SafetyAnalysisStatusHandler),
+            (r"/status", TrajectoryAnalysisStatusHandler),
+            (r"/testConfig", TestConfigHandler),
+            (r"/analysis", AnalysisHandler),
         ]
         settings = dict(
-            cookie_secret=auth.secret,
+            cookie_secret=os.environ.get('TRAFFICCLOUD_SECRET_KEY'),
             template_path=os.path.join(os.path.dirname(__file__), "templates"),
             static_path=os.path.join(os.path.dirname(__file__), "static"),
             xsrf_cookies=False,
@@ -49,9 +42,21 @@ class MainHandler(tornado.web.RequestHandler):
         self.render("index.html")
 
 def main():
+    keys = ['TRAFFICCLOUD_SECRET_KEY', 'TRAFFICCLOUD_EMAIL', 'TRAFFICCLOUD_EMAIL_PASSWORD']
+    for key in keys:
+        if os.environ.get(key) == None:
+            print("Set the "+key+" environment variable")
+            return
+
+    if os.environ.get('TRAFFICCLOUD_SECRET_KEY') == "DefaultSecretKey":
+        print('WARNING: You are using the default secret key. This is insecure! Please create a secret key and set it on the TRAFFICCLOUD_SECRET_KEY environment variable.')
+    if os.environ.get('TRAFFICCLOUD_EMAIL') == '' or os.environ.get('TRAFFICCLOUD_EMAIL_PASSWORD') == '':
+        print("WARNING: Running without email capabilities. Users won't be emailed when their processing completes. To fix this, set the TRAFFICCLOUD_EMAIL and TRAFFICCLOUD_EMAIL_PASSWORD environment variables.")
+
     tornado.options.parse_command_line()
     app = Application()
     app.listen(options.port)
+    print('Listening on port '+str(options.port))
     ioloop = tornado.ioloop.IOLoop().instance()
     tornado.autoreload.start(ioloop)
     ioloop.start()

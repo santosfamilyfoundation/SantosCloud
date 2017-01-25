@@ -7,7 +7,6 @@ from ConfigParser import SafeConfigParser, NoSectionError, NoOptionError
 import time
 import datetime
 from shutil import copy
-import cv2
 try:
     from PIL import Image
 except:
@@ -17,6 +16,7 @@ import numpy as np
 
 from app_config import AppConfig as ac
 from app_config import check_project_cfg_option, update_project_cfg, check_project_cfg_section
+from video import get_framerate
 
 import subprocess
 import uuid
@@ -33,12 +33,12 @@ class ProjectWizard():
         ac.load_application_config()
         self.DEFAULT_PROJECT_DIR = ac.PROJECT_DIR
 
-        self.uuid = uuid.uuid4()
+        self.identifier = str(uuid.uuid4())
         self.config_parser = SafeConfigParser()
-        self.create_project_dir(self.uuid)
+        self.create_project_dir(self.identifier)
 
-    def create_project_dir(self, uuid):
-        self.project_name = str(uuid)
+    def create_project_dir(self, identifier):
+        self.project_name = str(identifier)
         directory_names = ["homography", ".temp/test/test_object/", ".temp/test/test_feature/", "run", "results"]
         pr_path = os.path.join(self.DEFAULT_PROJECT_DIR, self.project_name)
 
@@ -52,8 +52,9 @@ class ProjectWizard():
             for key,value in self.dict_files.iteritems():
                 if key[:5] == 'video':
                     self.videopath = os.path.join(pr_path, key)
-                fh = open(os.path.join(pr_path, key), 'wb')
-                fh.write(value)
+                with open(os.path.join(pr_path, key), 'wb') as fh:
+                    fh.write(value)
+
 
             self._write_to_project_config()
             copy(os.path.join(os.path.dirname(os.path.realpath(__file__)), "default/tracking.cfg"), os.path.join(pr_path, "tracking.cfg"))
@@ -81,16 +82,18 @@ class ProjectWizard():
             print("Project exists. No new project created.")
 
     def _write_to_project_config(self):
+        # Copy information given by the project_name.cfg generated client side
+        client_config_parser = SafeConfigParser()
+        client_config_parser.read(os.path.join(self.PROJECT_PATH, "project_name.cfg"))
+        unitpixelratio = None
+        try:
+            unitpixelratio = client_config_parser.get("homography", "unitpixelratio")
+        except NoSectionError:
+            print("NoSectionError: no 'homography' section found in config file. Unit Pixel Ratio will not be copied.")
+
         ts = time.time()
         vid_ts = datetime.datetime.now()
         #This line needs to be updated to no longer need the ui class. Load video and pull time.
-        list_o = str(subprocess.check_output(["ffprobe",
-         "-v", "error", 
-         "-select_streams", "v:0", 
-         "-show_entries", "stream=avg_frame_rate", 
-         "-of", "default=noprint_wrappers=1:nokey=1", 
-         self.videopath]))
-        vid_framerate = str(int(list_o.strip().split('/')[0])/int(list_o.strip().split('/')[1]))
         timestamp = datetime.datetime.fromtimestamp(ts).strftime('%d-%m-%Y %H:%M:%S %Z')
         video_timestamp = vid_ts.strftime('%d-%m-%Y %H:%M:%S %Z')
         self.config_parser.add_section("info")
@@ -99,8 +102,11 @@ class ProjectWizard():
         self.config_parser.add_section("video")
         self.config_parser.set("video", "name", os.path.basename(self.videopath))
         self.config_parser.set("video", "source", self.videopath)
-        self.config_parser.set("video", "framerate", vid_framerate)
+        self.config_parser.set("video", "framerate", get_framerate(self.videopath))
         self.config_parser.set("video", "start", video_timestamp)
+        if unitpixelratio:
+            self.config_parser.add_section("homography")
+            self.config_parser.set("homography", "unitpixelratio", unitpixelratio)
 
         with open(os.path.join(self.PROJECT_PATH, "{}.cfg".format(self.project_name)), 'wb') as configfile:
             self.config_parser.write(configfile)
@@ -110,7 +116,7 @@ class ProjectWizard():
 
 
 def load_project(folder_path): # main_window):
-    path = os.path.normpath(folder_path)  # Clean path. May not be necessary.
+    path = os.path.join(ac.PROJECT_DIR, os.path.normpath(folder_path))  # Clean path. May not be necessary.
     project_name = os.path.basename(path)
     project_cfg = os.path.join(path, "{}.cfg".format(project_name))
     ac.CURRENT_PROJECT_PATH = path  # Set application-level variables indicating the currently open project

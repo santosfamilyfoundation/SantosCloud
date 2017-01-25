@@ -4,6 +4,7 @@
 import os
 import shutil
 from app_config import AppConfig as ac
+from app_config import update_tracking_config, get_tracking_config
 import pm
 import subprocess
 import video, feat_config
@@ -11,11 +12,9 @@ import video, feat_config
 from plotting.make_object_trajectories import main as db_make_objtraj
 
 def saveFiles(diction, *args):
-    pm.ProjectWizard(diction)
-    return pm.uuid
+    return pm.ProjectWizard(diction).identifier
 
-
-def runConfigTestFeature(uuid, config, frames, ret_type, ret_args, *args):
+def runConfigTestFeature(identifier, config, frames, ret_type, ret_args, *args):
     ac.load_application_config()
     pm.load_project(ac.CURRENT_PROJECT_PATH)
 
@@ -38,43 +37,35 @@ def runConfigTestFeature(uuid, config, frames, ret_type, ret_args, *args):
 
     video.move_images_to_project_dir_folder(images_folder)
 
-def runTrajectoryAnalysis(uuid):#, config, ret_type, ret_args, *args):
+def runTrajectoryAnalysis(identifier):#, config, ret_type, ret_args, *args):
     """
     Runs TrafficIntelligence trackers and support scripts.
     """
     ac.load_application_config()
-    pm.load_project(uuid)
+    pm.load_project(identifier)
 
     # create test folder
     if not os.path.exists(ac.CURRENT_PROJECT_PATH + "/run"):
         os.mkdir(ac.CURRENT_PROJECT_PATH + "/run")
 
+    tracking_path = os.path.join(ac.CURRENT_PROJECT_PATH, "run", "run_tracking.cfg")
+
     # removes object tracking.cfg
-    if os.path.exists(ac.CURRENT_PROJECT_PATH + "/run/run_tracking.cfg"):
-        os.remove(ac.CURRENT_PROJECT_PATH + "/run/run_tracking.cfg")
+    if os.path.exists(tracking_path):
+        os.remove(tracking_path)
 
     # creates new config file
-    shutil.copyfile(ac.CURRENT_PROJECT_PATH + "/.temp/test/test_object/object_tracking.cfg", ac.CURRENT_PROJECT_PATH + "/run/run_tracking.cfg")
+    shutil.copyfile(ac.CURRENT_PROJECT_PATH + "/.temp/test/test_object/object_tracking.cfg", tracking_path)
 
-    path1 = ac.CURRENT_PROJECT_PATH + "/run/run_tracking.cfg"
-
-    f = open(path1, 'r')
-    lines = f.readlines()
-    f.close()
-    with open(path1, "w") as wf:
-        for line in lines:
-            line_param = line.split('=')[0].strip()
-            if "frame1" == line_param:  # Replace parameter "frame1"
-                wf.write("frame1 = 0\n")
-            elif "nframes" == line_param:  # Remove parameter "nframes"
-                wf.write("nframes = 0\n")
-            elif "database-filename" == line_param:
-                wf.write("database-filename = results.sqlite\n")
-            else:
-                wf.write(line)
+    update_dict = {'frame1': 0, 
+        'nframes': 0, 
+        'database-filename': 'results.sqlite', 
+        'classifier-filename': os.path.join(ac.CURRENT_PROJECT_PATH, "classifier.cfg"),
+        'video-filename': ac.CURRENT_PROJECT_VIDEO_PATH,
+        'homography-filename': os.path.join(ac.CURRENT_PROJECT_PATH, "homography", "homography.txt")}
+    update_tracking_config(tracking_path, update_dict)
 
     db_path = os.path.join(ac.CURRENT_PROJECT_PATH, "run", "results.sqlite")
-    tracking_path = os.path.join(ac.CURRENT_PROJECT_PATH, "run", "run_tracking.cfg")
 
     if os.path.exists(db_path):  # If results database already exists,
         os.remove(db_path)  # then remove it--it'll be recreated.
@@ -85,24 +76,49 @@ def runTrajectoryAnalysis(uuid):#, config, ret_type, ret_args, *args):
 
     db_make_objtraj(db_path)  # Make our object_trajectories db table
 
-    video.create_video()
+    video.create_tracking_video(ac.CURRENT_PROJECT_PATH, ac.CURRENT_PROJECT_VIDEO_PATH)
+
+def createVideos(identifier):
+    """
+    Runs TrafficIntelligence trackers and support scripts.
+    """
+    ac.load_application_config()
+    pm.load_project(identifier)
+
+    video.create_tracking_video(ac.CURRENT_PROJECT_PATH, ac.CURRENT_PROJECT_VIDEO_PATH)
 
 
+def runSafetyAnalysis(identifier, prediction_method=None):
 
-def runSafetyAnalysis(uuid, prediction, db, ret_type, ret_args):
+    ac.load_application_config()
+    pm.load_project(identifier)
+
+    config_path = os.path.join(ac.CURRENT_PROJECT_PATH, "run", "run_tracking.cfg")
+    db_path = os.path.join(ac.CURRENT_PROJECT_PATH, "run", "results.sqlite")
+    update_dict = {
+        'video-filename': ac.CURRENT_PROJECT_VIDEO_PATH, # use absolute path to video on server
+        'database-filename': db_path # use absolute path to database
+    }
+    update_tracking_config(config_path, update_dict)
+
+    if prediction_method is None:
+        prediction_method = 'cv' # default to the least resource intensive method
+
+    # Predict Interactions between road users and compute safety metrics describing them
+    subprocess.call(["safety-analysis.py", "--cfg", config_path, "--prediction-method", prediction_method])
+
+
+def runVisualization(identifier, db, ret_form, ret_type, ret_args, *args):
     pass
 
-def runVisualization(uuid, db, ret_form, ret_type, ret_args, *args):
+def getDB(identifier):
     pass
 
-def getDB(uuid):
-    pass
-
-def getStatus(uuid):
+def getStatus(identifier):
     pass
 
 def generateDefaultConfig():
     pass
 
 if __name__ == "__main__":
-	pass
+    pass
