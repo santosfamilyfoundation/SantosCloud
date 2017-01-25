@@ -7,7 +7,7 @@ import tornado.web
 from app_config import AppConfig as ac
 from app_config import update_config_without_sections
 import pm
-import EmailHelper
+from traffic_cloud_utils.emailHelper import EmailHelper
 
 class SafetyAnalysisHandler(tornado.web.RequestHandler):
     """

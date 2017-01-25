@@ -11,7 +11,7 @@ from app_config import AppConfig as ac
 from app_config import update_config_without_sections
 import pm
 import video
-import EmailHelper
+from traffic_cloud_utils.emailHelper import EmailHelper
 
 
 
