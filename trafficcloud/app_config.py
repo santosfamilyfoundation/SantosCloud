@@ -2,18 +2,9 @@
 from ConfigParser import SafeConfigParser
 import os
 
-
 class AppConfig(object):
     PROJECT_DIR = None
     TI_INSTALL_DIR = None
-    # TODO: Link CURRENT_PROJECT_* with a @property.setter which automatically sets all from one, (e.g., set all using just folder dir)
-    CURRENT_PROJECT_PATH = None  # Path to base of currently open project's folder
-    CURRENT_PROJECT_NAME = None
-    CURRENT_PROJECT_CONFIG = None  # Path
-    CURRENT_PROJECT_VIDEO_PATH = None
-
-    def __init__(self):
-        super(AppConfig, self).__init__()
 
     @classmethod
     def load_application_config(cls):
@@ -22,7 +13,23 @@ class AppConfig(object):
         cls.PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), config_parser.get("info", "default_project_dir")))
         cls.TI_INSTALL_DIR = config_parser.get("info", "ti_install_dir")
 
-    # TODO: class method for writing to application config file
+def get_base_project_dir(identifier):
+    return AppConfig.PROJECT_DIR
+
+def get_project_path(identifier):
+    return os.path.join(AppConfig.PROJECT_DIR, identifier)
+
+def get_project_config_path(identifier):
+    return os.path.join(AppConfig.PROJECT_DIR, identifier, identifier + ".cfg")
+
+def get_project_video_path(identifier):
+    project_config = os.path.join(AppConfig.PROJECT_DIR, identifier, identifier + ".cfg")
+    (success, video) = get_config_with_sections(project_config, "video", "name")
+    if success:
+        return os.path.join(AppConfig.PROJECT_DIR, identifier, video)
+    else:
+        print("ERR: project_video(): Couldn't get video")
+        return None
 
 def update_config_with_sections(config_path, section, option, value):
     """
@@ -70,7 +77,7 @@ def get_config_with_sections(config_path, section, option):
         print("ERR [get_config_with_sections()]: Section {} is not available in {}.".format(section, config_path))
         return (False, None)
     except NoOptionError:
-        print("Option {} is not available in {}.".format(option, AppConfig.CURRENT_PROJECT_CONFIG))
+        print("Option {} is not available in {}.".format(option, config_path))
         return (False, None)
     else:
         return (True, value)

@@ -11,6 +11,10 @@ import os
 
 from tornado.options import define, options
 
+# Import custom files
+
+from trafficcloud.app_config import AppConfig as ac
+
 # Import all of our custom routes
 
 # Upload routes
@@ -73,6 +77,8 @@ class MainHandler(tornado.web.RequestHandler):
         self.render("index.html")
 
 def main():
+    ac.load_application_config()
+
     keys = ['TRAFFICCLOUD_SECRET_KEY', 'TRAFFICCLOUD_EMAIL', 'TRAFFICCLOUD_EMAIL_PASSWORD']
     for key in keys:
         if os.environ.get(key) == None:
@@ -93,4 +99,5 @@ def main():
     ioloop.start()
 
 if __name__ == "__main__":
+
     main()
