@@ -4,8 +4,8 @@ import smtplib
 import utils
 
 class EmailHelper(object):
-	def __init__(self):
-		pass
+    def __init__(self):
+        pass
 
 	def send_email(self, to_addr, subject, message):
 		email = os.environ.get('TRAFFICCLOUD_EMAIL')
