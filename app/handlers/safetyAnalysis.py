@@ -6,6 +6,7 @@ class SafetyAnalysisHandler(tornado.web.RequestHandler):
     """
     @api {post} /safetyAnalysis/ Safety Analysis
     @apiName SafetyAnalysis
+    @apiVersion 0.0.0
     @apiGroup Analysis
     @apiDescription Calling this route will perform safety analysis on a project that object tracking has already been run on. When the analysis is done, an email will be sent to the project's user. (Due to the potentially long run duration, it is infeasible to return the results as a response to the HTTP request. In order to check the status of the testing and view results, see the Status group of messages.)
 

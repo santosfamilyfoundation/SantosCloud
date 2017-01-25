@@ -6,6 +6,7 @@ class UploadVideoHandler(tornado.web.RequestHandler):
     """
     @api {post} /uploadVideo/ Upload Video
     @apiName UploadVideo
+    @apiVersion 0.0.0
     @apiGroup Upload
     @apiDescription This route will upload a video to a project (and create a new project if an old one is not specified)
 

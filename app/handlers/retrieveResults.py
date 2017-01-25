@@ -6,6 +6,7 @@ class RetrieveResultsHandler(tornado.web.RequestHandler):
     """
     @api {get} /retrieveResults/ Retrieve Results
     @apiName RetrieveResults
+    @apiVersion 0.0.0
     @apiGroup Results
     @apiDescription This route will retrieve any metadata associated with the project. This includes test video files and safety analysis results.
 

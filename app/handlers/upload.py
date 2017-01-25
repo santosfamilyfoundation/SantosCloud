@@ -16,8 +16,9 @@ class UploadHandler(tornado.web.RequestHandler):
         return name_body_dict
 
     """
-    @api {post} /upload/ Upload Video
-    @apiName UploadVideo
+    @api {post} /upload/ Upload Files
+    @apiName UploadFiles
+    @apiVersion 0.1.0
     @apiGroup Upload
     @apiDescription This route will upload files to a project (and create a new project if an old one is not specified). You may provide a project identifier if you would like to update the files from an old project. If you provide a project identifier for an old project, all of the parameters are optional. If you are creating a new project, all parameters are required. This route will always return a dictionary containing the project identifier.
 
