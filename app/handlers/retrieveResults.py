@@ -16,5 +16,5 @@ class RetrieveResultsHandler(tornado.web.RequestHandler):
 
     @apiError error_message The error message to display.
     """
-    def post(self):
+    def get(self):
         self.finish("Retrieve Results")
