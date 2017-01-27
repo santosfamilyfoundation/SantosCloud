@@ -2,15 +2,12 @@
 import os
 import subprocess
 import shutil
-import smtplib
-from email.mime.text import MIMEText
 
 import tornado.web
 
 from traffic_cloud_utils.app_config import get_project_path, get_project_video_path, update_config_without_sections, get_config_without_sections
-import pm
-import video
 from traffic_cloud_utils.emailHelper import EmailHelper
+import video
 
 class TestConfigHandler(tornado.web.RequestHandler):
     """
@@ -35,17 +32,18 @@ class TestConfigHandler(tornado.web.RequestHandler):
         identifier = self.request.body_arguments["identifier"]
         test_flag = self.request.body_arguments["test_flag"]
 
-        try:
+        frame_start = 0
+        num_frames = 120
+
+        if "frame_start" in self.request.body_arguments:
             frame_start = int(self.request.body_arguments["frame_start"])
+
+        if "num_frames" in self.request.body_arguments:
             num_frames = int(self.request.body_arguments["num_frames"])
-        except Exception as e:
-            frame_start = 0
-            num_frames = 120
-            print e
 
         if test_flag == "feature":
             runConfigTestFeature(identifier, frame_start, num_frames)
-        if test_flag == "object":
+        elif test_flag == "object":
             runConfigTestObject(identifier, frame_start, num_frames)
 
         message = "Hello,\n\tWe have finished processing your video and identifying all objects.\nThank you for your patience,\nThe Santos Team"

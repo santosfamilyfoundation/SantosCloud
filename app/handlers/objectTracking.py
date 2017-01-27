@@ -2,15 +2,12 @@
 import os
 import subprocess
 import shutil
-import smtplib
-from email.mime.text import MIMEText
 
 import tornado.web
 
 from traffic_cloud_utils.app_config import get_project_path, get_project_video_path, update_config_without_sections, get_config_without_sections
-import pm
-import video
 from traffic_cloud_utils.emailHelper import EmailHelper
+import video
 
 class ObjectTrackingHandler(tornado.web.RequestHandler):
     """
@@ -44,10 +41,6 @@ class ObjectTrackingHandler(tornado.web.RequestHandler):
         Runs TrafficIntelligence trackers and support scripts.
         """
         project_path = get_project_path(identifier)
-
-        # create test folder
-        if not os.path.exists(os.path.join(project_path, "run")):
-            os.mkdir(os.path.join(project_path, "run"))
 
         tracking_path = os.path.join(project_path, "run", "run_tracking.cfg")
 
