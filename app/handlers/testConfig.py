@@ -13,7 +13,7 @@ class TestConfigHandler(tornado.web.RequestHandler):
     """
     @api {post} /testConfig/ Test Configuration
     @apiName TestConfig
-    @apiVersion 0.0.0
+    @apiVersion 0.1.0
     @apiGroup Configuration
     @apiDescription Calling this route will test the video's configuration. When testing is done, an email will be sent to the project's user. This test consists of running object tracking on a small subset of the video, and producing a video showing the results of the tracking. (Due to the potentially long duration of testing, it is infeasible to return the results as a response to the HTTP request. In order to check the status of the testing and view results, see the Status group of messages.)
 
