@@ -4,7 +4,7 @@ import subprocess
 
 import tornado.web
 
-from app_config import get_project_path, get_project_video_path, update_config_without_sections, get_config_without_sections
+from traffic_cloud_utils.app_config import get_project_path, get_project_video_path, update_config_without_sections, get_config_without_sections
 import pm
 from traffic_cloud_utils.emailHelper import EmailHelper
 
