@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import tornado.web
+from trafficcloud.app_config import get_project_path
 
 class UploadHomographyHandler(tornado.web.RequestHandler):
     """
@@ -19,5 +20,15 @@ class UploadHomographyHandler(tornado.web.RequestHandler):
 
     @apiError error_message The error message to display.
     """
+    def initialize(self):
+        self.identifier = None
+
     def post(self):
+        print self.request.files.keys()
+        args = self.get_body_argument('identifier')
+        print args
         self.finish("Upload Homography")
+        
+    
+    def write_homography_files(self):
+        project_dir = get_project_path(self.identifier)

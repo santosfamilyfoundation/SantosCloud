@@ -77,17 +77,21 @@ def main():
     for key in keys:
         if os.environ.get(key) == None:
             print("Set the "+key+" environment variable")
-            return
+            #return
 
     if os.environ.get('TRAFFICCLOUD_SECRET_KEY') == "DefaultSecretKey":
         print('WARNING: You are using the default secret key. This is insecure! Please create a secret key and set it on the TRAFFICCLOUD_SECRET_KEY environment variable.')
     if os.environ.get('TRAFFICCLOUD_EMAIL') == '' or os.environ.get('TRAFFICCLOUD_EMAIL_PASSWORD') == '':
         print("WARNING: Running without email capabilities. Users won't be emailed when their processing completes. To fix this, set the TRAFFICCLOUD_EMAIL and TRAFFICCLOUD_EMAIL_PASSWORD environment variables.")
 
+    if not os.path.exists(os.path.join('..','.temp')):
+        os.mkdir(os.path.join('..','.temp'));
     tornado.options.parse_command_line()
     app = Application()
-    app.listen(options.port)
+    #app.listen(options.port, max_buffer_size = 104857600, max_body_size = 104857600)
+    app.listen(options.port, max_buffer_size = (int)(1024*1024*1024*1.25))
     print('Listening on port '+str(options.port))
+    print('Max_buffer_size: {}',(int)(1024*1024*1024*1.25))
     ioloop = tornado.ioloop.IOLoop().instance()
     tornado.autoreload.start(ioloop)
     ioloop.start()
