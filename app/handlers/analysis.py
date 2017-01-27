@@ -7,9 +7,8 @@ import tornado.web
 
 from traffic_cloud_utils.app_config import get_project_path, get_project_video_path, update_config_without_sections, get_config_without_sections
 from traffic_cloud_utils.emailHelper import EmailHelper
-from objectTracking import objectTrack
-from safetyAnalysis import safetyAnalysis
-import video
+from objectTracking import ObjectTrackingHandler
+from safetyAnalysis import SafetyAnalysisHandler
 
 class AnalysisHandler(tornado.web.RequestHandler):
     """
@@ -27,14 +26,14 @@ class AnalysisHandler(tornado.web.RequestHandler):
     @apiError error_message The error message to display.
     """
     def post(self):
-        identifier = self.request.body_arguments["identifier"]
+        identifier = self.get_body_argument("identifier")
 
-        objectTrack(identifier)
-        safetyAnalysis(identifier)
+        ObjectTrackingHandler.handler(identifier)
+        SafetyAnalysisHandler.handler(identifier)
 
         message = "Hello,\n\tWe have finished processing your video and identifying any dangerous interactions.\nThank you for your patience,\nThe Santos Team"
         subject = "Your video has finished processing."
 
-        EmailHelper.send_email(self.request.body_arguments["email"], subject, message)
+        EmailHelper.send_email(self.get_body_argument("email"), subject, message)
 
         self.finish("Analysis")

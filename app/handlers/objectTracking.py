@@ -7,7 +7,7 @@ import tornado.web
 
 from traffic_cloud_utils.app_config import get_project_path, get_project_video_path, update_config_without_sections, get_config_without_sections
 from traffic_cloud_utils.emailHelper import EmailHelper
-import video
+import trafficcloud.video
 
 class ObjectTrackingHandler(tornado.web.RequestHandler):
     """
@@ -26,17 +26,17 @@ class ObjectTrackingHandler(tornado.web.RequestHandler):
     """
 
     def post(self):
-        self.objectTrack(self.request.body_arguments["identifier"])
+        self.objectTrack(self.get_body_argument("identifier"))
         
         message = "Hello,\n\tWe have finished processing your video and identifying all objects.\nThank you for your patience,\nThe Santos Team"
         subject = "Your video has finished processing."
 
-        EmailHelper.send_email(self.request.body_arguments["email"], subject, message)
+        EmailHelper.send_email(self.get_body_argument("email"), subject, message)
 
         self.finish("Object Tracking")
 
-
-    def objectTrack(self, identifier):
+    @staticmethod
+    def handler(identifier):
         """
         Runs TrafficIntelligence trackers and support scripts.
         """

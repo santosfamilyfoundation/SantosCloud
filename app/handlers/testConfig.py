@@ -7,7 +7,7 @@ import tornado.web
 
 from traffic_cloud_utils.app_config import get_project_path, get_project_video_path, update_config_without_sections, get_config_without_sections
 from traffic_cloud_utils.emailHelper import EmailHelper
-import video
+import trafficcloud.video
 
 class TestConfigHandler(tornado.web.RequestHandler):
     """
@@ -29,39 +29,32 @@ class TestConfigHandler(tornado.web.RequestHandler):
     """
     def post(self):
 
-        identifier = self.request.body_arguments["identifier"]
-        test_flag = self.request.body_arguments["test_flag"]
+        identifier = self.get_body_argument("identifier")
+        test_flag = self.get_body_argument("test_flag")
+        print test_flag
 
-        frame_start = 0
-        num_frames = 120
-
-        if "frame_start" in self.request.body_arguments:
-            frame_start = int(self.request.body_arguments["frame_start"])
-
-        if "num_frames" in self.request.body_arguments:
-            num_frames = int(self.request.body_arguments["num_frames"])
+        frame_start = int(self.get_body_argument("frame_start", default = 0))
+        num_frames = int(self.request.get_body_argument("num_frames", deafult = 120))
 
         if test_flag == "feature":
-            runConfigTestFeature(identifier, frame_start, num_frames)
+            print "running feature"
+            self.runConfigTestFeature(identifier, frame_start, num_frames)
         elif test_flag == "object":
-            runConfigTestObject(identifier, frame_start, num_frames)
+            print "running object"
+            self.runConfigTestObject(identifier, frame_start, num_frames)
 
-        message = "Hello,\n\tWe have finished processing your video and identifying all objects.\nThank you for your patience,\nThe Santos Team"
-        subject = "Your video has finished processing."
-
-        EmailHelper.send_email(self.request.body_arguments["email"], subject, message)
         self.finish("Test feature tracking")
 
     def runConfigTestFeature(self, identifier, frame_start, num_frames):
         project_path = get_project_path(identifier)
 
-        tracking_path = os.path.join(ac.CURRENT_PROJECT_PATH, ".temp", "test", "test_feature", "feature_tracking.cfg")
-        db_path = os.path.join(ac.CURRENT_PROJECT_PATH, ".temp", "test", "test_feature", "test1.sqlite")
+        tracking_path = os.path.join(project_path, ".temp", "test", "test_feature", "feature_tracking.cfg")
+        db_path = os.path.join(project_path, ".temp", "test", "test_feature", "test1.sqlite")
         if os.path.exists(db_path):
             os.remove(db_path)
 
         images_folder = "feature_images"
-        video.delete_images(images_folder)
+        video.delete_files(images_folder)
 
         subprocess.call(["feature-based-tracking", tracking_path, "--tf", "--database-filename", db_path])
         subprocess.call(["display-trajectories.py", "-i", get_project_video_path(identifier), "-d", db_path, "-o", ac.CURRENT_PROJECT_PATH + "/homography/homography.txt", "-t", "feature", "--save-images", "-f", str(frame_start), "--last-frame", str(frame_start+num_frames)])
@@ -79,7 +72,7 @@ class TestConfigHandler(tornado.web.RequestHandler):
         shutil.copyfile(feat_db_path, obj_db_path)
 
         images_folder = "object_images"
-        video.delete_images(images_folder)
+        video.delete_files(images_folder)
 
         subprocess.call(["feature-based-tracking",tracking_path,"--gf","--database-filename",obj_db_path])
         subprocess.call(["classify-objects.py", "--cfg", tracking_path, "-d", obj_db_path])  # Classify road users
