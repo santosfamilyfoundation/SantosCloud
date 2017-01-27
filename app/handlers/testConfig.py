@@ -55,7 +55,7 @@ class TestConfigHandler(tornado.web.RequestHandler):
         self.finish("Test feature tracking")
 
     def runConfigTestFeature(self, identifier, frame_start, num_frames):
-        pm.load_project(ac.CURRENT_PROJECT_PATH)
+        project_path = get_project_path(identifier)
 
         tracking_path = os.path.join(ac.CURRENT_PROJECT_PATH, ".temp", "test", "test_feature", "feature_tracking.cfg")
         db_path = os.path.join(ac.CURRENT_PROJECT_PATH, ".temp", "test", "test_feature", "test1.sqlite")
@@ -66,16 +66,16 @@ class TestConfigHandler(tornado.web.RequestHandler):
         video.delete_images(images_folder)
 
         subprocess.call(["feature-based-tracking", tracking_path, "--tf", "--database-filename", db_path])
-        subprocess.call(["display-trajectories.py", "-i", ac.CURRENT_PROJECT_VIDEO_PATH, "-d", db_path, "-o", ac.CURRENT_PROJECT_PATH + "/homography/homography.txt", "-t", "feature", "--save-images", "-f", str(frame_start), "--last-frame", str(frame_start+num_frames)])
+        subprocess.call(["display-trajectories.py", "-i", get_project_video_path(identifier), "-d", db_path, "-o", ac.CURRENT_PROJECT_PATH + "/homography/homography.txt", "-t", "feature", "--save-images", "-f", str(frame_start), "--last-frame", str(frame_start+num_frames)])
 
         video.move_images_to_project_dir_folder(images_folder)
 
     def runConfigTestObject(self, identifier, frame_start, num_frames):
-        pm.load_project(ac.CURRENT_PROJECT_PATH)
+        project_path = get_project_path(identifier)
 
-        tracking_path = os.path.join(ac.CURRENT_PROJECT_PATH, ".temp", "test", "test_object", "object_tracking.cfg")
-        obj_db_path = os.path.join(ac.CURRENT_PROJECT_PATH,".temp", "test", "test_object", "test1.sqlite")
-        feat_db_path = os.path.join(ac.CURRENT_PROJECT_PATH, ".temp", "test", "test_feature", "test1.sqlite")
+        tracking_path = os.path.join(project_path, ".temp", "test", "test_object", "object_tracking.cfg")
+        obj_db_path = os.path.join(project_path,".temp", "test", "test_object", "test1.sqlite")
+        feat_db_path = os.path.join(project_path, ".temp", "test", "test_feature", "test1.sqlite")
         if os.path.exists(obj_db_path):
             os.remove(obj_db_path)
         shutil.copyfile(feat_db_path, obj_db_path)
@@ -85,7 +85,7 @@ class TestConfigHandler(tornado.web.RequestHandler):
 
         subprocess.call(["feature-based-tracking",tracking_path,"--gf","--database-filename",obj_db_path])
         subprocess.call(["classify-objects.py", "--cfg", tracking_path, "-d", obj_db_path])  # Classify road users
-        subprocess.call(["display-trajectories.py", "-i", ac.CURRENT_PROJECT_VIDEO_PATH,"-d", obj_db_path, "-o", ac.CURRENT_PROJECT_PATH + "/homography/homography.txt", "-t", "object", "--save-images", "-f", str(frame_start), "--last-frame", str(frame_start+num_frames)])
+        subprocess.call(["display-trajectories.py", "-i", get_project_video_path(identifier),"-d", obj_db_path, "-o", ac.CURRENT_PROJECT_PATH + "/homography/homography.txt", "-t", "object", "--save-images", "-f", str(frame_start), "--last-frame", str(frame_start+num_frames)])
         
         video.move_images_to_project_dir_folder(images_folder)
 
