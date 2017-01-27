@@ -5,8 +5,7 @@ import shutil
 
 import tornado.web
 
-from app_config import AppConfig as ac
-from app_config import update_config_without_sections
+from app_config import get_project_path, get_project_video_path, update_config_without_sections, get_config_without_sections
 import pm
 import video
 from traffic_cloud_utils.emailHelper import EmailHelper
@@ -41,13 +40,12 @@ class AnalysisHandler(tornado.web.RequestHandler):
 
     def safetyAnalysis(self, identifier, prediction_method=None):
 
-        ac.load_application_config()
-        pm.load_project(identifier)
+        project_path = get_project_path(identifier)
 
-        config_path = os.path.join(ac.CURRENT_PROJECT_PATH, "run", "run_tracking.cfg")
-        db_path = os.path.join(ac.CURRENT_PROJECT_PATH, "run", "results.sqlite")
+        config_path = os.path.join(project_path, "run", "run_tracking.cfg")
+        db_path = os.path.join(project_path, "run", "results.sqlite")
         update_dict = {
-            'video-filename': ac.CURRENT_PROJECT_VIDEO_PATH, # use absolute path to video on server
+            'video-filename': get_project_video_path(identifier), # use absolute path to video on server
             'database-filename': db_path # use absolute path to database
         }
         update_config_without_sections(config_path, update_dict)
@@ -58,35 +56,36 @@ class AnalysisHandler(tornado.web.RequestHandler):
         # Predict Interactions between road users and compute safety metrics describing them
         subprocess.call(["safety-analysis.py", "--cfg", config_path, "--prediction-method", prediction_method])
 
+
     def objectTrack(self, identifier):
         """
         Runs TrafficIntelligence trackers and support scripts.
         """
-        ac.load_application_config()
-        pm.load_project(identifier)
+        project_path = get_project_path(identifier)
 
         # create test folder
-        if not os.path.exists(ac.CURRENT_PROJECT_PATH + "/run"):
-            os.mkdir(ac.CURRENT_PROJECT_PATH + "/run")
+        if not os.path.exists(os.path.join(project_path, "run")):
+            os.mkdir(os.path.join(project_path, "run"))
 
-        tracking_path = os.path.join(ac.CURRENT_PROJECT_PATH, "run", "run_tracking.cfg")
+        tracking_path = os.path.join(project_path, "run", "run_tracking.cfg")
 
         # removes object tracking.cfg
         if os.path.exists(tracking_path):
             os.remove(tracking_path)
 
         # creates new config file
-        shutil.copyfile(ac.CURRENT_PROJECT_PATH + "/.temp/test/test_object/object_tracking.cfg", tracking_path)
+        prev_tracking_path = os.path.join(project_path, ".temp", "test", "test_object", "object_tracking.cfg")
+        shutil.copyfile(prev_tracking_path, tracking_path)
 
         update_dict = {'frame1': 0, 
             'nframes': 0, 
             'database-filename': 'results.sqlite', 
-            'classifier-filename': os.path.join(ac.CURRENT_PROJECT_PATH, "classifier.cfg"),
-            'video-filename': ac.CURRENT_PROJECT_VIDEO_PATH,
-            'homography-filename': os.path.join(ac.CURRENT_PROJECT_PATH, "homography", "homography.txt")}
+            'classifier-filename': os.path.join(project_path, "classifier.cfg"),
+            'video-filename': get_project_video_path(identifier),
+            'homography-filename': os.path.join(project_path, "homography", "homography.txt")}
         update_config_without_sections(tracking_path, update_dict)
 
-        db_path = os.path.join(ac.CURRENT_PROJECT_PATH, "run", "results.sqlite")
+        db_path = os.path.join(project_path, "run", "results.sqlite")
 
         if os.path.exists(db_path):  # If results database already exists,
             os.remove(db_path)  # then remove it--it'll be recreated.
@@ -97,4 +96,6 @@ class AnalysisHandler(tornado.web.RequestHandler):
 
         db_make_objtraj(db_path)  # Make our object_trajectories db table
 
-        video.create_tracking_video(ac.CURRENT_PROJECT_PATH, ac.CURRENT_PROJECT_VIDEO_PATH)
+        video.create_tracking_video(project_path, get_project_video_path(identifier))
+
+        

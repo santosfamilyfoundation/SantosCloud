@@ -7,8 +7,7 @@ from email.mime.text import MIMEText
 
 import tornado.web
 
-from app_config import AppConfig as ac
-from app_config import update_config_without_sections
+from app_config import get_project_path, get_project_video_path, update_config_without_sections, get_config_without_sections
 import pm
 import video
 from traffic_cloud_utils.emailHelper import EmailHelper

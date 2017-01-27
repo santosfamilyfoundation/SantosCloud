@@ -4,8 +4,7 @@ import subprocess
 
 import tornado.web
 
-from app_config import AppConfig as ac
-from app_config import update_config_without_sections
+from app_config import get_project_path, get_project_video_path, update_config_without_sections, get_config_without_sections
 import pm
 from traffic_cloud_utils.emailHelper import EmailHelper
 
@@ -37,13 +36,12 @@ class SafetyAnalysisHandler(tornado.web.RequestHandler):
 
     def safetyAnalysis(self, identifier, prediction_method=None):
 
-        ac.load_application_config()
-        pm.load_project(identifier)
+        project_path = get_project_path(identifier)
 
-        config_path = os.path.join(ac.CURRENT_PROJECT_PATH, "run", "run_tracking.cfg")
-        db_path = os.path.join(ac.CURRENT_PROJECT_PATH, "run", "results.sqlite")
+        config_path = os.path.join(project_path, "run", "run_tracking.cfg")
+        db_path = os.path.join(project_path, "run", "results.sqlite")
         update_dict = {
-            'video-filename': ac.CURRENT_PROJECT_VIDEO_PATH, # use absolute path to video on server
+            'video-filename': get_project_video_path(identifier), # use absolute path to video on server
             'database-filename': db_path # use absolute path to database
         }
         update_config_without_sections(config_path, update_dict)
