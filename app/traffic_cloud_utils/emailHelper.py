@@ -8,8 +8,8 @@ class EmailHelper(object):
         pass
 
 	def send_email(self, to_addr, subject, message):
-		email = os.environ.get('TRAFFICCLOUD_EMAIL')
-		password = os.environ.get('TRAFFICCLOUD_EMAIL_PASSWORD')
+		email = os.environ.get('SANTOSCLOUD_EMAIL')
+		password = os.environ.get('SANTOSCLOUD_EMAIL_PASSWORD')
 
     	if email == '' or password == '' or email == None or password == None:
     		print("WARNING: No email provided, failed to email user.")
