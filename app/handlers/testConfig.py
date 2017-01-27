@@ -34,7 +34,7 @@ class TestConfigHandler(tornado.web.RequestHandler):
         print test_flag
 
         frame_start = int(self.get_body_argument("frame_start", default = 0))
-        num_frames = int(self.request.get_body_argument("num_frames", deafult = 120))
+        num_frames = int(self.get_body_argument("num_frames", deafult = 120))
 
         if test_flag == "feature":
             print "running feature"
