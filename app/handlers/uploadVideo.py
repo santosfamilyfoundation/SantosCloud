@@ -51,9 +51,9 @@ class UploadVideoHandler(tornado.web.RequestHandler):
         video = files['video'][0]
         vdict = {'video':(video['filename'],video['body'])}
         project_identifier = api.saveFiles(vdict)
-        #TO-DO: Hookup identifier
         #TO-DO: Error checking for correct arguments
-        self.finish("Upload Video Finished")
+        self.write({'identifier':project_identifier})
+        self.finish()
 
     def prepare(self):
         open(self.file_path, 'wb').close()
