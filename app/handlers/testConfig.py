@@ -61,7 +61,7 @@ class TestConfigHandler(tornado.web.RequestHandler):
         subprocess.call(["feature-based-tracking", tracking_path, "--tf", "--database-filename", db_path])
         subprocess.call(["display-trajectories.py", "-i", get_project_video_path(identifier), "-d", db_path, "-o", project_path + "/homography/homography.txt", "-t", "feature", "--save-images", "-f", str(frame_start), "--last-frame", str(frame_start+num_frames)])
 
-        video.move_images_to_project_dir_folder(images_folder)
+        video.move_files_to_folder(os.getcwd(),images_folder,'image-', '.png')
 
     def runConfigTestObject(self, identifier, frame_start, num_frames):
         project_path = get_project_path(identifier)
