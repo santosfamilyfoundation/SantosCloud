@@ -77,7 +77,7 @@ def main():
     for key in keys:
         if os.environ.get(key) == None:
             print("Set the "+key+" environment variable")
-            #return
+            return
 
     if os.environ.get('SANTOSCLOUD_SECRET_KEY') == "DefaultSecretKey":
         print('WARNING: You are using the default secret key. This is insecure! Please create a secret key and set it on the SANTOSCLOUD_SECRET_KEY environment variable.')
@@ -88,7 +88,6 @@ def main():
         os.mkdir(os.path.join('..','.temp'));
     tornado.options.parse_command_line()
     app = Application()
-    #app.listen(options.port, max_buffer_size = 104857600, max_body_size = 104857600)
     app.listen(options.port, max_buffer_size = (int)(1024*1024*1024*1.25))
     print('Listening on port '+str(options.port))
     print('Max_buffer_size: {}',(int)(1024*1024*1024*1.25))
