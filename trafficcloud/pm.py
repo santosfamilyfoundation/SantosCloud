@@ -27,7 +27,7 @@ class ProjectWizard():
 
         self.identifier = str(uuid.uuid4())
         self.create_project_dir(self.identifier)
-
+        
     def create_project_dir(self, identifier):
         directory_names = ["homography", os.path.join(".temp", "test", "test_object"), os.path.join(".temp", "test", "test_feature"), "run", "results"]
         project_path = get_project_path(identifier)
@@ -39,10 +39,10 @@ class ProjectWizard():
 
             # Write files from client
             for key,value in self.dict_files.iteritems():
-                if key[:5] == 'video':
-                    self.videopath = os.path.join(project_path, key)
-                with open(os.path.join(project_path, key), 'wb') as fh:
-                    fh.write(value)
+                if key == 'video':
+                    self.videopath = os.path.join(project_path, value[0])
+                with open(self.videopath, 'wb') as fh:
+                    fh.write(value[1])
 
 
             self._write_to_project_config(identifier)
@@ -70,6 +70,7 @@ class ProjectWizard():
         # Copy information given by the project_name.cfg generated client side
         client_config_parser = SafeConfigParser()
         client_config_parser.read(os.path.join(get_project_path(identifier), "project_name.cfg"))
+     
         unitpixelratio = None
         try:
             unitpixelratio = client_config_parser.get("homography", "unitpixelratio")
@@ -97,4 +98,7 @@ class ProjectWizard():
         with open(get_project_config_path(identifier), 'wb') as configfile:
             config_parser.write(configfile)
 
-        os.remove(os.path.join(get_project_path(identifier), "project_name.cfg"))
+        if os.path.exists(os.path.join(get_project_path(identifier), "project_name.cfg")):
+            os.remove(os.path.join(get_project_path(identifier), "project_name.cfg"))
+        else:
+            print("No project_name.cfg found")

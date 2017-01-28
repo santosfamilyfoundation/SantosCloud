@@ -5,7 +5,6 @@ from tornado.web import stream_request_body
 from tornado.httputil import parse_multipart_form_data
 import trafficcloud.api as api
 
-from pprint import pprint
 from uuid import uuid4
 import os
 
@@ -15,7 +14,7 @@ class UploadVideoHandler(tornado.web.RequestHandler):
     """
     @api {post} /uploadVideo/ Upload Video
     @apiName UploadVideo
-    @apiVersion 0.0.0
+    @apiVersion 0.1.0
     @apiGroup Upload
     @apiDescription This route will upload a video to a project (and create a new project if an old one is not specified)
 
@@ -50,7 +49,7 @@ class UploadVideoHandler(tornado.web.RequestHandler):
         if 'identifier' in arguments:
             identifier = arguments['identifier']
         video = files['video'][0]
-        vdict = {video['filename']:video['body']}
+        vdict = {'video':(video['filename'],video['body'])}
         project_identifier = api.saveFiles(vdict)
         #TO-DO: Hookup identifier
         #TO-DO: Error checking for correct arguments
