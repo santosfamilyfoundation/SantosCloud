@@ -167,11 +167,11 @@ define({ "api": [
   {
     "type": "post",
     "url": "/config/",
-    "title": "Configure Files",
-    "name": "Configure_Files",
+    "title": "Configure Project",
+    "name": "Configure_Project",
     "version": "0.0.0",
     "group": "Configuration",
-    "description": "<p>Calling this route will modify a specified configuration file using specified key:value pairs. Provides a way to modify configuration files by changing variables rather than uploading complete files.</p>",
+    "description": "<p>Calling this route will modify a specified configuration file using values of the provided arguments.</p>",
     "parameter": {
       "fields": {
         "Parameter": [
@@ -184,17 +184,52 @@ define({ "api": [
           },
           {
             "group": "Parameter",
-            "type": "String",
-            "optional": false,
-            "field": "filename",
-            "description": "<p>The name of the configuration file to be modified</p>"
+            "type": "Integer",
+            "optional": true,
+            "field": "max_features_per_frame",
+            "description": "<p>This is the maximum number of features to track per frame. If not provided, a value of 1000 will be used. The recommended value for this is 1000 or greater.</p>"
           },
           {
             "group": "Parameter",
-            "type": "Dictionary",
-            "optional": false,
-            "field": "config_data",
-            "description": "<p>A dictionary of key:value pairs containing the configuration variables to be modified.</p>"
+            "type": "Integer",
+            "optional": true,
+            "field": "num_displacement_frames",
+            "description": "<p>This parameter determines how long features will be tracked. If not provided, a value of 10 will be used. The recommended value for this is 2-15.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Number",
+            "optional": true,
+            "field": "min_feature_displacement",
+            "description": "<p>This is the displacement needed to track a feature. If not provided, a value of 0.0001 will be used. The recommended value for this is 0.0001-0.1.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Integer",
+            "optional": true,
+            "field": "max_iterations_to_persist",
+            "description": "<p>This is the maximum number of iterations that an unmoving feature should persist. If not provided, a value of 200 will be used. The recommended value for this is 10-1000.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Integer",
+            "optional": true,
+            "field": "min_feature_frames",
+            "description": "<p>This is the minimum number of frames that a feature must persist in order to be considered a feature. If not provided, a value of 15 will be used. The recommended value for this is 10-25.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Number",
+            "optional": true,
+            "field": "max_connection_distance",
+            "description": "<p>This is the maximum distance that two features can be apart and still be considered part of the same object. If not provided, a value of 1 will be used.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Number",
+            "optional": true,
+            "field": "max_segmentation_distance",
+            "description": "<p>This is the maximum distance that two features that are moving relative to each other can be apart and still be considered part of the same object. If not provided, a value of .7 will be used.</p>"
           }
         ]
       }
