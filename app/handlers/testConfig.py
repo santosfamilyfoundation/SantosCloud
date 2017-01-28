@@ -33,8 +33,8 @@ class TestConfigHandler(tornado.web.RequestHandler):
         test_flag = self.get_body_argument("test_flag")
         print test_flag
 
-        frame_start = self.get_body_argument("frame_start", default = '0')
-        num_frames = self.get_body_argument("num_frames", default = '120')
+        frame_start = int(self.get_body_argument("frame_start", default = 0))
+        num_frames = int(self.get_body_argument("num_frames", default = 120))
 
         if test_flag == "feature":
             print "running feature"
@@ -55,6 +55,8 @@ class TestConfigHandler(tornado.web.RequestHandler):
 
         images_folder = "feature_images"
         video.delete_files(images_folder)
+
+        print get_project_video_path(identifier)
 
         subprocess.call(["feature-based-tracking", tracking_path, "--tf", "--database-filename", db_path])
         subprocess.call(["display-trajectories.py", "-i", get_project_video_path(identifier), "-d", db_path, "-o", project_path + "/homography/homography.txt", "-t", "feature", "--save-images", "-f", str(frame_start), "--last-frame", str(frame_start+num_frames)])
