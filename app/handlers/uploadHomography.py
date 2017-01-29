@@ -6,6 +6,7 @@ import os
 from traffic_cloud_utils.app_config import get_project_path
 import numpy as np
 import cv2
+from ast import literal_eval
 
 class UploadHomographyHandler(tornado.web.RequestHandler):
     """
@@ -18,7 +19,9 @@ class UploadHomographyHandler(tornado.web.RequestHandler):
     @apiParam {String} identifier The identifier of the project to upload files to.
     @apiParam {File} aerial An aerial photo of the intersection.
     @apiParam {File} camera A screenshot of the intersection from the video.
-    @apiParam {File} homography The homography text file to use.
+    @apiParam {Integer} unit_pixel_ratio The unit_pixel_ratio of the images (ie. 0.05 meters per pixel).
+    @apiParam {JSON} aerial_pts A JSON array containing the coordinates of point clicks on the aerial image as arrays in the form [x_coord, y_coord]
+    @apiParam {JSON} camera_pts A JSON array containing the coordinates of point clicks on the camera image as arrays in the form [x_coord, y_coord]
 
     @apiSuccess status_code The API will return a status code of 200 upon success.
 
@@ -37,30 +40,14 @@ class UploadHomographyHandler(tornado.web.RequestHandler):
         
     def write_homography_files(self):
         project_dir = get_project_path(self.identifier)
-        num_points = int(self.get_body_argument('num_points')) 
-        points = [ (self.get_body_arguments('p'+str(i))[0],\
-                    self.get_body_arguments('p'+str(i))[1]) for i in xrange(num_points)]
+        aerial_pts = self.get_body_argument('aerial_pts')
+        camera_pts = self.get_body_argument('camera_pts')
 
-        homography = self.handler(self.up_ratio, points)
+        homography, mask = cv2.findHomography(\
+                            self.up_ratio*np.array(literal_eval(aerial_pts)),\
+                            np.array(literal_eval(camera_pts)))
         np.savetxt(os.path.join(project_dir,'homography','homography.txt'),homography)
-
+        #TO-DO Write the unit_pixel_ratio to some config file
         for key,value in self.files.iteritems():
             with open(os.path.join(project_dir,'homography',value[0]['filename']), 'wb') as f:
                 f.write(value[0]['body'])
-
-    @staticmethod
-    def handler(up_ratio, pts):
-        aerial, camera=  zip(*pts)
-
-        unscaled_world = []
-        for i in aerial:
-            h,t = i.split(', ')
-            unscaled_world.append((float(h[1:]),float(t[:-2])))
-
-        scaled_video = []
-        for i in camera:
-            h,t = i.split(', ')
-            scaled_video.append((float(h[1:]),float(t[:-2])))
-
-        homography, mask = cv2.findHomography(up_ratio*np.array(unscaled_world), np.array(scaled_video))
-        return homography
