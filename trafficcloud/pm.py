@@ -19,11 +19,11 @@ import uuid
 from app_config import get_project_path, get_project_config_path, config_section_exists, update_config_without_sections
 from video import get_framerate
 
-def create_project(identifier, video_filename):
+def create_project(identifier, video_dict):
     config_dict = {}
     _update_config_dict_with_defaults(config_dict)
 
-    _create_project_dir(identifier, config_dict)
+    _create_project_dir(identifier, config_dict, video_dict)
 
 def update_homography(identifier, homography_path, unitpixelratio):
     pass
@@ -59,7 +59,7 @@ def _update_config_dict_with_defaults(config_dict):
         if key not in config_dict.keys():
             config_dict[key] = value
 
-def _create_project_dir(identifier, config_dict, video_filename):
+def _create_project_dir(identifier, config_dict, video_dict):
     test_object_dir = os.path.join(".temp", "test", "test_object")
     test_feature_dir = os.path.join(".temp", "test", "test_feature")
 
@@ -71,15 +71,11 @@ def _create_project_dir(identifier, config_dict, video_filename):
         for new_dir in directory_names:
             os.makedirs(os.path.join(project_path, new_dir))
 
-        # Write files from client -> For reference
-        #for key,value in self.dict_files.iteritems():
-        #    if key == 'video':
-        #        self.videopath = os.path.join(project_path, value[0])
-        #    with open(self.videopath, 'wb') as fh:
-        #        fh.write(value[1])    
-            
+        with open(os.path.join(project_path,video_dict['filename']), 'wb') as v:
+            v.write(video_dict['body'])
+
         # TODO: unitpixelratio
-        _write_to_project_config(identifier, video_filename)
+        _write_to_project_config(identifier, video_dict['filename'])
 
         default_files_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "default")
 

@@ -3,7 +3,8 @@
 import tornado.web
 from tornado.web import stream_request_body
 from tornado.httputil import parse_multipart_form_data
-import trafficcloud.api as api
+from trafficcloud.api import uploadVideo 
+from traffic_cloud_utils.app_config import get_project_path
 
 from uuid import uuid4
 import os
@@ -48,11 +49,13 @@ class UploadVideoHandler(tornado.web.RequestHandler):
                         status_code = 507)
         if 'identifier' in arguments:
             identifier = arguments['identifier']
+        else:
+            identifier = str(uuid4())
         video = files['video'][0]
-        vdict = {'video':(video['filename'],video['body'])}
-        project_identifier = api.saveFiles(vdict)
+        uploadVideo(identifier, video) 
+
         #TO-DO: Error checking for correct arguments
-        self.write({'identifier':project_identifier})
+        self.write({'identifier': identifier})
         self.finish()
 
     def prepare(self):
