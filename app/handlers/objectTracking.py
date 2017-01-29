@@ -26,7 +26,7 @@ class ObjectTrackingHandler(tornado.web.RequestHandler):
     """
 
     def post(self):
-        handler(self.get_body_argument("identifier"))
+        self.handler(self.get_body_argument("identifier"))
         
         message = "Hello,\n\tWe have finished processing your video and identifying all objects.\nThank you for your patience,\nThe Santos Team"
         subject = "Your video has finished processing."

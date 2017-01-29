@@ -23,7 +23,7 @@ class SafetyAnalysisHandler(tornado.web.RequestHandler):
     @apiError error_message The error message to display. (Will return unique error message if object tracking has NOT been run on specified project)
     """
     def post(self):
-        handler(self.get_body_argument("identifier"))
+        self.handler(self.get_body_argument("identifier"))
 
         subject = "Your video has finished processing."
         message = "Hello,\n\tWe have finished looking through your data and identifying any dangerous interactions.\nThank you for your patience,\nThe Santos Team"
