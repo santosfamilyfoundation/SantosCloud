@@ -5,7 +5,7 @@ import tornado.web
 import tornado.escape
 from traffic_cloud_utils.video import create_highlight_video, get_framerate
 from storage import alterInteractionsWithRoadUserType, getNearMissFrames
-from trafficcloud.app_config import get_project_path, get_project_video_path
+from traffic_cloud_utils.app_config import get_project_path, get_project_video_path
 import baseHandler
 
 # TODO: remove once pip's error request handler is written
