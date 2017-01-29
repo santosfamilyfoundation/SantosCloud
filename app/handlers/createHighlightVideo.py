@@ -43,6 +43,7 @@ class CreateHighlightVideoHandler(baseHandler.BaseHandler):
             return (500, 'Project directory does not exist. Check your identifier?')
 
         db = os.path.join(project_dir, 'run', 'results.sqlite')
+        #TO-DO: Check to see if tables like "interactions" exist
         if not os.path.exists(db):
             return (500, 'Database file does not exist. Trajectory analysis needs to be called first ')
 
