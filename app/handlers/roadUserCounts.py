@@ -3,8 +3,8 @@
 import os
 import tornado.web
 import tornado.escape
-from trafficcloud.plotting.visualization import road_user_counts, road_user_icon_counts
-from trafficcloud.app_config import get_project_path
+from traffic_cloud_utils.plotting.visualization import road_user_counts, road_user_icon_counts
+from traffic_cloud_utils.app_config import get_project_path
 
 # TODO(rlouie): remove once we have Philips error handler base class
 import json
