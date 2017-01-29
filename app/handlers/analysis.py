@@ -31,9 +31,12 @@ class AnalysisHandler(tornado.web.RequestHandler):
         ObjectTrackingHandler.handler(identifier)
         SafetyAnalysisHandler.handler(identifier)
 
-        message = "Hello,\n\tWe have finished processing your video and identifying any dangerous interactions.\nThank you for your patience,\nThe Santos Team"
-        subject = "Your video has finished processing."
+        if status_code == 200:
+                    message = "Hello,\n\tWe have finished processing your video and identifying any dangerous interactions.\nThank you for your patience,\nThe Santos Team"
+                    subject = "Your video has finished processing."
 
-        EmailHelper.send_email(self.get_body_argument("email"), subject, message)
-
-        self.finish("Analysis")
+                    EmailHelper.send_email(self.get_body_argument("email"), subject, message)
+            self.finish("Analysis")
+        else:
+            raise tornado.web.HTTPError(reason=reason, status_code=status_code)
+        

@@ -43,10 +43,15 @@ class TestConfigHandler(tornado.web.RequestHandler):
             print "running object"
             self.runConfigTestObject(identifier, frame_start, num_frames)
 
-        self.finish("Test feature tracking")
+        if status_code == 200:
+            self.finish("Testing tracking")
+        else:
+            raise tornado.web.HTTPError(reason=reason, status_code=status_code)
 
     def runConfigTestFeature(self, identifier, frame_start, num_frames):
         project_path = get_project_path(identifier)
+        if not os.path.exists(project_dir):
+           return (500, 'Project directory does not exist. Check your identifier?')
 
         tracking_path = os.path.join(project_path, ".temp", "test", "test_feature", "feature_tracking.cfg")
         db_path = os.path.join(project_path, ".temp", "test", "test_feature", "test1.sqlite")
@@ -54,17 +59,22 @@ class TestConfigHandler(tornado.web.RequestHandler):
             os.remove(db_path)
 
         images_folder = "feature_images"
-        video.delete_files(images_folder)
+        video.delete_files(images_folder)        
 
-        print get_project_video_path(identifier)
-
-        subprocess.call(["feature-based-tracking", tracking_path, "--tf", "--database-filename", db_path])
-        subprocess.call(["display-trajectories.py", "-i", get_project_video_path(identifier), "-d", db_path, "-o", project_path + "/homography/homography.txt", "-t", "feature", "--save-images", "-f", str(frame_start), "--last-frame", str(frame_start+num_frames)])
+        try:
+            subprocess.call(["feature-based-tracking", tracking_path, "--tf", "--database-filename", db_path])
+            subprocess.call(["display-trajectories.py", "-i", get_project_video_path(identifier), "-d", db_path, "-o", project_path + "/homography/homography.txt", "-t", "feature", "--save-images", "-f", str(frame_start), "--last-frame", str(frame_start+num_frames)])
+        except Exception as err_msg:
+            return (500, err_msg)
 
         video.move_files_to_folder(os.getcwd(),images_folder,'image-', '.png')
 
+        return (200, "Success")
+
     def runConfigTestObject(self, identifier, frame_start, num_frames):
         project_path = get_project_path(identifier)
+        if not os.path.exists(project_dir):
+           return (500, 'Project directory does not exist. Check your identifier?')
 
         tracking_path = os.path.join(project_path, ".temp", "test", "test_object", "object_tracking.cfg")
         obj_db_path = os.path.join(project_path,".temp", "test", "test_object", "test1.sqlite")
@@ -76,8 +86,14 @@ class TestConfigHandler(tornado.web.RequestHandler):
         images_folder = "object_images"
         video.delete_files(images_folder)
 
-        subprocess.call(["feature-based-tracking",tracking_path,"--gf","--database-filename",obj_db_path])
-        subprocess.call(["classify-objects.py", "--cfg", tracking_path, "-d", obj_db_path])  # Classify road users
-        subprocess.call(["display-trajectories.py", "-i", get_project_video_path(identifier),"-d", obj_db_path, "-o", project_path + "/homography/homography.txt", "-t", "object", "--save-images", "-f", str(frame_start), "--last-frame", str(frame_start+num_frames)])
-        
+        try:
+            subprocess.call(["feature-based-tracking",tracking_path,"--gf","--database-filename",obj_db_path])
+            subprocess.call(["classify-objects.py", "--cfg", tracking_path, "-d", obj_db_path])  # Classify road users
+            subprocess.call(["display-trajectories.py", "-i", get_project_video_path(identifier),"-d", obj_db_path, "-o", project_path + "/homography/homography.txt", "-t", "object", "--save-images", "-f", str(frame_start), "--last-frame", str(frame_start+num_frames)])
+        except Exception as err_msg:
+            return (500, err_msg)
+
         video.move_files_to_folder(os.getcwd(),images_folder,'image-', '.png')
+
+        return (200, "Success")
+
