@@ -36,6 +36,7 @@ from handlers.makeReport import MakeReportHandler
 from handlers.roadUserCounts import RoadUserCountsHandler
 from handlers.createSpeedCDF import CreateSpeedCDFHandler
 from handlers.retrieveResults import RetrieveResultsHandler
+from handlers.createHighlightVideo import CreateHighlightVideoHandler
 
 define("port", default=8888, help="run on the given port", type=int)
 
@@ -90,7 +91,6 @@ def main():
     app = Application()
     app.listen(options.port, max_buffer_size = (int)(1024*1024*1024*1.25))
     print('Listening on port '+str(options.port))
-    print('Max_buffer_size: {}',(int)(1024*1024*1024*1.25))
     ioloop = tornado.ioloop.IOLoop().instance()
     tornado.autoreload.start(ioloop)
     ioloop.start()
