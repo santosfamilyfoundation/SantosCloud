@@ -36,6 +36,7 @@ from handlers.makeReport import MakeReportHandler
 from handlers.roadUserCounts import RoadUserCountsHandler
 from handlers.createSpeedCDF import CreateSpeedCDFHandler
 from handlers.retrieveResults import RetrieveResultsHandler
+from handlers.createHighlightVideo import CreateHighlightVideoHandler
 
 define("port", default=8888, help="run on the given port", type=int)
 
