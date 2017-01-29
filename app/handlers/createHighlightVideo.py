@@ -6,36 +6,10 @@ import tornado.escape
 from trafficcloud.video import create_highlight_video, get_framerate
 from storage import alterInteractionsWithRoadUserType, getNearMissFrames
 from trafficcloud.app_config import get_project_path, get_project_video_path
+import baseHandler
 
 # TODO: remove once pip's error request handler is written
-import json
-import traceback
-class MyAppBaseHandler(tornado.web.RequestHandler):
-
-    def write_error(self, status_code, **kwargs):
-
-        self.set_header('Content-Type', 'application/json')
-        if self.settings.get("serve_traceback") and "exc_info" in kwargs:
-            # in debug mode, try to send a traceback
-            lines = []
-            for line in traceback.format_exception(*kwargs["exc_info"]):
-                lines.append(line)
-            self.finish(json.dumps({
-                'error': {
-                    'code': status_code,
-                    'message': self._reason,
-                    'traceback': lines,
-                }
-            }))
-        else:
-            self.finish(json.dumps({
-                'error': {
-                    'code': status_code,
-                    'message': self._reason,
-                }
-}))
-
-class CreateHighlightVideoHandler(MyAppBaseHandler):
+class CreateHighlightVideoHandler(baseHandler.BaseHandler):
     """
     @api {post} /highlightVideo/ Highlight Video
     @apiName HighlightVideo
