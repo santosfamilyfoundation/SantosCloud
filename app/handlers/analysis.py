@@ -28,8 +28,9 @@ class AnalysisHandler(tornado.web.RequestHandler):
     def post(self):
         identifier = self.get_body_argument("identifier")
 
-        ObjectTrackingHandler.handler(identifier)
-        SafetyAnalysisHandler.handler(identifier)
+        status_code, reason = ObjectTrackingHandler.handler(identifier)
+        if status_code == 200:
+            status_code, reason = SafetyAnalysisHandler.handler(identifier)
 
         if status_code == 200:
                     message = "Hello,\n\tWe have finished processing your video and identifying any dangerous interactions.\nThank you for your patience,\nThe Santos Team"

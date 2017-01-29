@@ -38,10 +38,10 @@ class TestConfigHandler(tornado.web.RequestHandler):
 
         if test_flag == "feature":
             print "running feature"
-            self.runConfigTestFeature(identifier, frame_start, num_frames)
+            status_code, reason = self.runConfigTestFeature(identifier, frame_start, num_frames)
         elif test_flag == "object":
             print "running object"
-            self.runConfigTestObject(identifier, frame_start, num_frames)
+            status_code, reason = self.runConfigTestObject(identifier, frame_start, num_frames)
 
         if status_code == 200:
             self.finish("Testing tracking")

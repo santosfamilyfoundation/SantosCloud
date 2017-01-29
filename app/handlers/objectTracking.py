@@ -44,7 +44,6 @@ class ObjectTrackingHandler(tornado.web.RequestHandler):
         """
         Runs TrafficIntelligence trackers and support scripts.
         """
-        status_code = 200
         project_path = get_project_path(identifier)
         if not os.path.exists(project_dir):
            return (500, 'Project directory does not exist. Check your identifier?')
@@ -81,10 +80,8 @@ class ObjectTrackingHandler(tornado.web.RequestHandler):
             subprocess.call(["classify-objects.py", "--cfg", tracking_path, "-d", db_path])  # Classify road users
         except Exception as err_msg:
             return (500, err_msg)
-        try:
-            db_make_objtraj(db_path)  # Make our object_trajectories db table
-        except Exception as err_msg:
-            return(500, err_msg)
+
+        db_make_objtraj(db_path)  # Make our object_trajectories db table
 
         return (200, "Success")
         # video.create_tracking_video(project_path, get_project_video_path(identifier))
