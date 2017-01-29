@@ -80,5 +80,4 @@ class TestConfigHandler(tornado.web.RequestHandler):
         subprocess.call(["classify-objects.py", "--cfg", tracking_path, "-d", obj_db_path])  # Classify road users
         subprocess.call(["display-trajectories.py", "-i", get_project_video_path(identifier),"-d", obj_db_path, "-o", project_path + "/homography/homography.txt", "-t", "object", "--save-images", "-f", str(frame_start), "--last-frame", str(frame_start+num_frames)])
         
-        video.move_images_to_project_dir_folder(images_folder)
-
+        video.move_files_to_folder(os.getcwd(),images_folder,'image-', '.png')
