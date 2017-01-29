@@ -4,42 +4,15 @@ import os
 import tornado.web
 import tornado.escape
 from trafficcloud.plotting.visualization import road_user_counts, road_user_icon_counts
-from trafficcloud.app_config import get_project_path
-
-# TODO(rlouie): remove once we have Philips error handler base class
-import json
-import traceback
-class MyAppBaseHandler(tornado.web.RequestHandler):
-
-    def write_error(self, status_code, **kwargs):
-
-        self.set_header('Content-Type', 'application/json')
-        if self.settings.get("serve_traceback") and "exc_info" in kwargs:
-            # in debug mode, try to send a traceback
-            lines = []
-            for line in traceback.format_exception(*kwargs["exc_info"]):
-                lines.append(line)
-            self.finish(json.dumps({
-                'error': {
-                    'code': status_code,
-                    'message': self._reason,
-                    'traceback': lines,
-                }
-            }))
-        else:
-            self.finish(json.dumps({
-                'error': {
-                    'code': status_code,
-                    'message': self._reason,
-                }
-            }))
+from traffic_cloud_utils.app_config import get_project_path
+import baseHandler
 
 #TODO(rlouie): replace with SantosBaseHandler class pip makes
-class RoadUserCountsHandler(MyAppBaseHandler):
+class RoadUserCountsHandler(baseHandler.BaseHandler):
     """
     @api {post} /roadUserCounts/ Road User Counts
     @apiName RoadUserCounts
-    @apiVersion 0.0.0
+    @apiVersion 0.1.0
     @apiGroup Results
     @apiDescription Calling this route will create a road user counts image from a specified project. When the image is created, an email will be sent to the project's user. This route requires running object tracking on the video, and then running safety analysis on the results of the object tracking beforehand. (Due to the potentially long duration, it is infeasible to return the results as a response to the HTTP request. In order to check the status of the testing and view results, see the Status group of messages.)
 

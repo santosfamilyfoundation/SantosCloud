@@ -3,8 +3,8 @@
 import os
 import tornado.web
 import baseHandler
-from trafficcloud.app_config import get_project_path, get_project_video_path
-from trafficcloud.video import get_framerate
+from traffic_cloud_utils.app_config import get_project_path, get_project_video_path
+from traffic_cloud_utils.video import get_framerate
 from trafficcloud.plotting.visualization import vel_cdf
 
 import json

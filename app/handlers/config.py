@@ -8,7 +8,7 @@ class ConfigHandler(tornado.web.RequestHandler):
     """
     @api {post} /config/ Configure Project
     @apiName Configure Project
-    @apiVersion 0.0.0
+    @apiVersion 0.1.0
     @apiGroup Configuration
     @apiDescription Calling this route will modify a specified configuration file using values of the provided arguments.
 

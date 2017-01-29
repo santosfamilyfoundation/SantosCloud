@@ -91,7 +91,6 @@ def main():
     app = Application()
     app.listen(options.port, max_buffer_size = (int)(1024*1024*1024*1.25))
     print('Listening on port '+str(options.port))
-    print('Max_buffer_size: {}',(int)(1024*1024*1024*1.25))
     ioloop = tornado.ioloop.IOLoop().instance()
     tornado.autoreload.start(ioloop)
     ioloop.start()
