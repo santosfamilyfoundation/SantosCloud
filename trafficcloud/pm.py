@@ -13,6 +13,8 @@ except:
     import Image
 import cvutils
 import numpy as np
+import subprocess
+import uuid
 
 from app_config import get_project_path, get_project_config_path, config_section_exists, update_config_without_sections
 from video import get_framerate
@@ -69,6 +71,13 @@ def _create_project_dir(identifier, config_dict, video_filename):
         for new_dir in directory_names:
             os.makedirs(os.path.join(project_path, new_dir))
 
+        # Write files from client -> For reference
+        #for key,value in self.dict_files.iteritems():
+        #    if key == 'video':
+        #        self.videopath = os.path.join(project_path, value[0])
+        #    with open(self.videopath, 'wb') as fh:
+        #        fh.write(value[1])    
+            
         # TODO: unitpixelratio
         _write_to_project_config(identifier, video_filename)
 
@@ -92,7 +101,7 @@ def _create_project_dir(identifier, config_dict, video_filename):
 
     else:
         print("Project exists. No new project created.")
-
+                
 def _write_to_project_config(identifier, video_filename, unitpixelratio=None):
     ts = time.time()
     vid_ts = datetime.datetime.now()
