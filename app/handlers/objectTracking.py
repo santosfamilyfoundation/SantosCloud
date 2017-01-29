@@ -48,15 +48,7 @@ class ObjectTrackingHandler(tornado.web.RequestHandler):
         if not os.path.exists(project_dir):
            return (500, 'Project directory does not exist. Check your identifier?')
 
-        tracking_path = os.path.join(project_path, "run", "run_tracking.cfg")
-
-        # removes object tracking.cfg
-        if os.path.exists(tracking_path):
-            os.remove(tracking_path)
-
-        # creates new config file
-        prev_tracking_path = os.path.join(project_path, ".temp", "test", "test_object", "object_tracking.cfg")
-        shutil.copyfile(prev_tracking_path, tracking_path)
+        tracking_path = os.path.join(project_path, "tracking.cfg")
 
         update_dict = {'frame1': 0, 
             'nframes': 0, 

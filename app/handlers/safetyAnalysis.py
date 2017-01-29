@@ -42,7 +42,7 @@ class SafetyAnalysisHandler(tornado.web.RequestHandler):
         if not os.path.exists(project_dir):
            return (500, 'Project directory does not exist. Check your identifier?')
 
-        config_path = os.path.join(project_path, "run", "run_tracking.cfg")
+        config_path = os.path.join(project_path, "tracking.cfg")
         db_path = os.path.join(project_path, "run", "results.sqlite")
         update_dict = {
             'video-filename': get_project_video_path(identifier), # use absolute path to video on server
