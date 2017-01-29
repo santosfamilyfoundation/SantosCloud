@@ -49,5 +49,6 @@ class SafetyAnalysisHandler(tornado.web.RequestHandler):
             prediction_method = 'cv' # default to the least resource intensive method
 
         # Predict Interactions between road users and compute safety metrics describing them
+        print "Running safety analysis. Please wait as this may take a while."
         subprocess.call(["safety-analysis.py", "--cfg", config_path, "--prediction-method", prediction_method])
 
