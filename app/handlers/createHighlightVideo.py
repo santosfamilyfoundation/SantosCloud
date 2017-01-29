@@ -3,7 +3,7 @@
 import os
 import tornado.web
 import tornado.escape
-from trafficcloud.video import create_highlight_video, get_framerate
+from traffic_cloud_utils.video import create_highlight_video, get_framerate
 from storage import alterInteractionsWithRoadUserType, getNearMissFrames
 from trafficcloud.app_config import get_project_path, get_project_video_path
 import baseHandler
