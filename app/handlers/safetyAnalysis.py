@@ -39,7 +39,7 @@ class SafetyAnalysisHandler(tornado.web.RequestHandler):
     def handler(identifier, prediction_method=None):
 
         project_path = get_project_path(identifier)
-        if not os.path.exists(project_dir):
+        if not os.path.exists(project_path):
            return (500, 'Project directory does not exist. Check your identifier?')
 
         config_path = os.path.join(project_path, "run", "run_tracking.cfg")

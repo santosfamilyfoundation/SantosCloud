@@ -50,7 +50,7 @@ class TestConfigHandler(tornado.web.RequestHandler):
 
     def runConfigTestFeature(self, identifier, frame_start, num_frames):
         project_path = get_project_path(identifier)
-        if not os.path.exists(project_dir):
+        if not os.path.exists(project_path):
            return (500, 'Project directory does not exist. Check your identifier?')
 
         tracking_path = os.path.join(project_path, ".temp", "test", "test_feature", "feature_tracking.cfg")
@@ -73,7 +73,7 @@ class TestConfigHandler(tornado.web.RequestHandler):
 
     def runConfigTestObject(self, identifier, frame_start, num_frames):
         project_path = get_project_path(identifier)
-        if not os.path.exists(project_dir):
+        if not os.path.exists(project_path):
            return (500, 'Project directory does not exist. Check your identifier?')
 
         tracking_path = os.path.join(project_path, ".temp", "test", "test_object", "object_tracking.cfg")

@@ -45,7 +45,7 @@ class ObjectTrackingHandler(tornado.web.RequestHandler):
         Runs TrafficIntelligence trackers and support scripts.
         """
         project_path = get_project_path(identifier)
-        if not os.path.exists(project_dir):
+        if not os.path.exists(project_path):
            return (500, 'Project directory does not exist. Check your identifier?')
 
         tracking_path = os.path.join(project_path, "run", "run_tracking.cfg")
