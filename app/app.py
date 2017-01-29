@@ -85,7 +85,7 @@ def main():
         print("WARNING: Running without email capabilities. Users won't be emailed when their processing completes. To fix this, set the SANTOSCLOUD_EMAIL and SANTOSCLOUD_EMAIL_PASSWORD environment variables.")
 
     if not os.path.exists(os.path.join(os.path.dirname(__file__),'..','.temp')):
-        os.mkdir(os.path.join(os.path.dirname(__file__),'..','.temp'));
+        os.mkdir(os.path.join(os.path.dirname(__file__),'..','.temp'))
     tornado.options.parse_command_line()
     app = Application()
     app.listen(options.port, max_buffer_size = (int)(1024*1024*1024*1.25))
