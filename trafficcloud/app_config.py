@@ -118,7 +118,7 @@ def config_section_exists(config_path, section):
         return False               # then return False
 
 def update_config_without_sections(config_path, update_dict):
-    """helper function to edit cfg files that look like run_tracking.cfg
+    """helper function to edit cfg files that look like tracking.cfg
 
     update_dict: i.e. {'nframes': 10, 'video-filename': 'video.avi'}
     """
@@ -138,7 +138,7 @@ def update_config_without_sections(config_path, update_dict):
             
 
 def get_config_without_sections(config_path):
-    """helper function to get params and their values of cfg files that look like run_tracking.cfg
+    """helper function to get params and their values of cfg files that look like tracking.cfg
 
     get_dict: params to their values, as a dictionary
     """
