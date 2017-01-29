@@ -2,38 +2,15 @@
 
 import os
 import tornado.web
+import baseHandler
 from trafficcloud.app_config import get_project_path, get_project_video_path
 from trafficcloud.video import get_framerate
 from trafficcloud.plotting.visualization import vel_cdf
 
 import json
 import traceback
-class MyAppBaseHandler(tornado.web.RequestHandler):
 
-    def write_error(self, status_code, **kwargs):
-
-        self.set_header('Content-Type', 'application/json')
-        if self.settings.get("serve_traceback") and "exc_info" in kwargs:
-            # in debug mode, try to send a traceback
-            lines = []
-            for line in traceback.format_exception(*kwargs["exc_info"]):
-                lines.append(line)
-            self.finish(json.dumps({
-                'error': {
-                    'code': status_code,
-                    'message': self._reason,
-                    'traceback': lines,
-                }
-            }))
-        else:
-            self.finish(json.dumps({
-                'error': {
-                    'code': status_code,
-                    'message': self._reason,
-                }
-}))
-
-class CreateSpeedCDFHandler(MyAppBaseHandler):
+class CreateSpeedCDFHandler(baseHandler.BaseHandler):
     """
     @api {post} /speedCDF/ Speed CDF
     @apiName SpeedCDF
@@ -80,4 +57,3 @@ class CreateSpeedCDFHandler(MyAppBaseHandler):
         vel_cdf(db, float(get_framerate(video_path)), speed_limit, final_images, vehicle_only)
 
         return (200, "Success")
-
