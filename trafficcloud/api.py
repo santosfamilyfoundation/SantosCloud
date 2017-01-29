@@ -4,19 +4,21 @@
 import os
 import shutil
 from app_config import get_project_path, get_project_video_path, update_config_without_sections, get_config_without_sections
-import pm
 import subprocess
 import video, feat_config
 
+from pm import create_project
+
 from plotting.make_object_trajectories import main as db_make_objtraj
 
-def saveFiles(diction, *args):
-    return pm.ProjectWizard(diction).identifier
+def uploadVideo(identifier, video_filename):
+    return create_project(identifier, video_filename)
 
 def runConfigTestFeature(identifier, config, frames, ret_type, ret_args, *args):
     project_path = get_project_path(identifier)
-    tracking_path = os.path.join(project_path, ".temp", "test", "test_feature", "feature_tracking.cfg")
+    tracking_path = os.path.join(project_path, "tracking.cfg")
     db_path = os.path.join(project_path, ".temp", "test", "test_feature", "test1.sqlite")
+    
     if os.path.exists(db_path):
         os.remove(db_path)
 
@@ -46,15 +48,7 @@ def runTrajectoryAnalysis(identifier):#, config, ret_type, ret_args, *args):
     if not os.path.exists(os.path.join(project_path, "run")):
         os.mkdir(os.path.join(project_path, "run"))
 
-    tracking_path = os.path.join(project_path, "run", "run_tracking.cfg")
-
-    # removes object tracking.cfg
-    if os.path.exists(tracking_path):
-        os.remove(tracking_path)
-
-    # creates new config file
-    prev_tracking_path = os.path.join(project_path, ".temp", "test", "test_object", "object_tracking.cfg")
-    shutil.copyfile(prev_tracking_path, tracking_path)
+    tracking_path = os.path.join(project_path, "tracking.cfg")
 
     update_dict = {'frame1': 0, 
         'nframes': 0, 
@@ -86,7 +80,7 @@ def createVideos(identifier):
 
 def runSafetyAnalysis(identifier, prediction_method=None):
     project_path = get_project_path(identifier)
-    config_path = os.path.join(project_path, "run", "run_tracking.cfg")
+    config_path = os.path.join(project_path, "tracking.cfg")
     db_path = os.path.join(project_path, "run", "results.sqlite")
     update_dict = {
         'video-filename': get_project_video_path(identifier), # use absolute path to video on server

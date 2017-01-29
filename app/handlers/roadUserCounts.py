@@ -1,8 +1,41 @@
 #!/usr/bin/env python
 
+import os
 import tornado.web
+import tornado.escape
+from trafficcloud.plotting.visualization import road_user_counts, road_user_icon_counts
+from trafficcloud.app_config import get_project_path
 
-class RoadUserCountsHandler(tornado.web.RequestHandler):
+# TODO(rlouie): remove once we have Philips error handler base class
+import json
+import traceback
+class MyAppBaseHandler(tornado.web.RequestHandler):
+
+    def write_error(self, status_code, **kwargs):
+
+        self.set_header('Content-Type', 'application/json')
+        if self.settings.get("serve_traceback") and "exc_info" in kwargs:
+            # in debug mode, try to send a traceback
+            lines = []
+            for line in traceback.format_exception(*kwargs["exc_info"]):
+                lines.append(line)
+            self.finish(json.dumps({
+                'error': {
+                    'code': status_code,
+                    'message': self._reason,
+                    'traceback': lines,
+                }
+            }))
+        else:
+            self.finish(json.dumps({
+                'error': {
+                    'code': status_code,
+                    'message': self._reason,
+                }
+            }))
+
+#TODO(rlouie): replace with SantosBaseHandler class pip makes
+class RoadUserCountsHandler(MyAppBaseHandler):
     """
     @api {post} /roadUserCounts/ Road User Counts
     @apiName RoadUserCounts
@@ -17,4 +50,41 @@ class RoadUserCountsHandler(tornado.web.RequestHandler):
     @apiError error_message The error message to display.
     """
     def post(self):
-        self.finish("Visualize Road User Counts")
+        identifier = self.get_body_argument('identifier')
+        status_code, reason = RoadUserCountsHandler.handler(identifier)
+        print status_code
+        print reason
+        if status_code == 200:
+            self.finish("Visualize Road User Counts")
+        else:
+            raise tornado.web.HTTPError(reason=reason, status_code=status_code)
+
+    @staticmethod
+    def handler(identifier):
+        project_dir = get_project_path(identifier)
+        if not os.path.exists(project_dir):
+            return (500, 'Project directory does not exist. Check your identifier?')
+
+        db = os.path.join(project_dir, 'run', 'results.sqlite')
+        if not os.path.exists(db):
+            return (500, 'Database file does not exist. Trajectory analysis needs to be called first ')
+
+        final_images = os.path.join(project_dir, 'final_images')
+        if not os.path.exists(final_images):
+            os.mkdir(final_images)
+
+        try:        
+            counts = road_user_counts(db)
+        except Exception as err_msg:
+            return (500, err_msg)
+
+        try:
+            road_user_icon_counts('Road User Counts',
+                car=counts['car'],
+                bike=counts['bicycle'],
+                pedestrian=counts['pedestrian'],
+                save_path=os.path.join(final_images, 'road_user_icon_counts.png'))
+        except Exception as err_msg:
+            return (500, err_msg)
+
+        return (200, "Success")
