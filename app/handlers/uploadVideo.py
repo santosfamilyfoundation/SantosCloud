@@ -28,7 +28,7 @@ class UploadVideoHandler(tornado.web.RequestHandler):
     """
     def initialize(self):
         self.file_name  = str(uuid4().int)
-        self.file_path = os.path.realpath(os.path.join('..','.temp',self.file_name))
+        self.file_path = os.path.realpath(os.path.join(os.path.dirname(__file__),'..','..','.temp',self.file_name))
         print 'Upload Video Initialized @{}'.format(self.file_path)
 
     def post(self):
