@@ -1,7 +1,7 @@
 
 import os
 
-from trafficcloud.app_config import get_project_config_path, update_config_with_sections, get_config_section
+from app_config import get_project_config_path, update_config_with_sections, get_config_section
 
 class Status(object):
     class StatusType:

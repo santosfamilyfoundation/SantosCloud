@@ -1,12 +1,20 @@
 #!/usr/bin/env python
+import os
+import subprocess
+import shutil
 
 import tornado.web
+
+from traffic_cloud_utils.make_object_trajectories import main as db_make_objtraj
+from traffic_cloud_utils.app_config import get_project_path, get_project_video_path, update_config_without_sections, get_config_without_sections
+from traffic_cloud_utils.emailHelper import EmailHelper
+from trafficcloud import video
 
 class ObjectTrackingHandler(tornado.web.RequestHandler):
     """
     @api {post} /objectTracking/ Object Tracking
     @apiName ObjectTracking
-    @apiVersion 0.0.0
+    @apiVersion 0.1.0
     @apiGroup Analysis
     @apiDescription Calling this route will perform object tracking on the video. When the analysis is done, an email will be sent to the project's user. (Due to the potentially long run duration, it is infeasible to return the results as a response to the HTTP request. In order to check the status of the testing and view results, see the Status group of messages.)
 
@@ -17,5 +25,64 @@ class ObjectTrackingHandler(tornado.web.RequestHandler):
 
     @apiError error_message The error message to display.
     """
+
     def post(self):
-        self.finish("Object Tracking")
+        # TODO: Implement rerun flag to prevent unnecessary computation
+        status_code, reason = self.handler(self.get_body_argument("identifier"))
+
+        if status_code == 200:
+            message = "Hello,\n\tWe have finished processing your video and identifying all objects.\nThank you for your patience,\nThe Santos Team"
+            subject = "Your video has finished processing."
+
+            EmailHelper.send_email(self.get_body_argument("email"), subject, message)
+            self.finish("Object Tracking")
+        else:
+            raise tornado.web.HTTPError(reason=reason, status_code=status_code)
+
+    @staticmethod
+    def handler(identifier):
+        """
+        Runs TrafficIntelligence trackers and support scripts.
+        """
+        project_path = get_project_path(identifier)
+        if not os.path.exists(project_dir):
+           return (500, 'Project directory does not exist. Check your identifier?')
+
+        tracking_path = os.path.join(project_path, "run", "run_tracking.cfg")
+
+        # removes object tracking.cfg
+        if os.path.exists(tracking_path):
+            os.remove(tracking_path)
+
+        # creates new config file
+        prev_tracking_path = os.path.join(project_path, ".temp", "test", "test_object", "object_tracking.cfg")
+        shutil.copyfile(prev_tracking_path, tracking_path)
+
+        update_dict = {'frame1': 0, 
+            'nframes': 0, 
+            'database-filename': 'results.sqlite', 
+            'classifier-filename': os.path.join(project_path, "classifier.cfg"),
+            'video-filename': get_project_video_path(identifier),
+            'homography-filename': os.path.join(project_path, "homography", "homography.txt")}
+        update_config_without_sections(tracking_path, update_dict)
+
+        db_path = os.path.join(project_path, "run", "results.sqlite")
+
+        if os.path.exists(db_path):  # If results database already exists,
+            os.remove(db_path)  # then remove it--it'll be recreated.
+        try:
+            subprocess.call(["feature-based-tracking", tracking_path, "--tf", "--database-filename", db_path])
+            subprocess.call(["feature-based-tracking", tracking_path, "--gf", "--database-filename", db_path])
+        except Exception as err_msg:
+            return (500, err_msg)
+        
+        try:
+            subprocess.call(["classify-objects.py", "--cfg", tracking_path, "-d", db_path])  # Classify road users
+        except Exception as err_msg:
+            return (500, err_msg)
+
+        db_make_objtraj(db_path)  # Make our object_trajectories db table
+
+        return (200, "Success")
+        # video.create_tracking_video(project_path, get_project_video_path(identifier))
+
