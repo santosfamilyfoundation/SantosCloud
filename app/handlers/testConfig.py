@@ -7,7 +7,8 @@ import tornado.web
 
 from traffic_cloud_utils.app_config import get_project_path, get_project_video_path, update_config_without_sections, get_config_without_sections
 from traffic_cloud_utils.emailHelper import EmailHelper
-from trafficcloud import video
+from traffic_cloud_utils.app_config import update_config_without_sections
+from traffic_cloud_utils import video
 
 class TestConfigHandler(tornado.web.RequestHandler):
     """
@@ -53,10 +54,13 @@ class TestConfigHandler(tornado.web.RequestHandler):
         if not os.path.exists(project_path):
            return (500, 'Project directory does not exist. Check your identifier?')
 
-        tracking_path = os.path.join(project_path,"tracking.cfg")
+        tracking_path = os.path.join(project_path, "tracking.cfg")
         db_path = os.path.join(project_path, ".temp", "test", "test_feature", "test1.sqlite")
         if os.path.exists(db_path):
             os.remove(db_path)
+
+        testing_dict = {'frame1': frame_start, 'nframes': num_frames}
+        update_config_without_sections(tracking_path, testing_dict)
 
         images_folder = "feature_images"
         video.delete_files(images_folder)        
@@ -76,12 +80,16 @@ class TestConfigHandler(tornado.web.RequestHandler):
         if not os.path.exists(project_path):
            return (500, 'Project directory does not exist. Check your identifier?')
 
-        tracking_path = os.path.join(project_path,"tracking.cfg")
+
+        tracking_path = os.path.join(project_path, "tracking.cfg")
         obj_db_path = os.path.join(project_path,".temp", "test", "test_object", "test1.sqlite")
         feat_db_path = os.path.join(project_path, ".temp", "test", "test_feature", "test1.sqlite")
         if os.path.exists(obj_db_path):
             os.remove(obj_db_path)
         shutil.copyfile(feat_db_path, obj_db_path)
+
+        testing_dict = {'frame1': frame_start, 'nframes': num_frames}
+        update_config_without_sections(tracking_path, testing_dict)
 
         images_folder = "object_images"
         video.delete_files(images_folder)
