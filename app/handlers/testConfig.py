@@ -53,7 +53,6 @@ class TestConfigHandler(tornado.web.RequestHandler):
         if not os.path.exists(project_path):
            return (500, 'Project directory does not exist. Check your identifier?')
 
-
         tracking_path = os.path.join(project_path, "tracking.cfg")
         db_path = os.path.join(project_path, ".temp", "test", "test_feature", "test1.sqlite")
         if os.path.exists(db_path):
