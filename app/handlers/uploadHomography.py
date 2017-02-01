@@ -49,5 +49,6 @@ class UploadHomographyHandler(tornado.web.RequestHandler):
         np.savetxt(os.path.join(project_dir,'homography','homography.txt'),homography)
         #TO-DO Write the unit_pixel_ratio to some config file
         for key,value in self.files.iteritems():
-            with open(os.path.join(project_dir,'homography',value[0]['filename']), 'wb') as f:
-                f.write(value[0]['body'])
+            if (key == 'aerial' or key == 'camera'):
+                with open(os.path.join(project_dir,'homography',value[0]['filename']), 'wb') as f:
+                    f.write(value[0]['body'])
