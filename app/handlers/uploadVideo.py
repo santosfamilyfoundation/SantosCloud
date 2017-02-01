@@ -3,7 +3,7 @@
 import tornado.web
 from tornado.web import stream_request_body
 from tornado.httputil import parse_multipart_form_data
-from traffic_cloud_utils import pm 
+from traffic_cloud_utils.pm import create_project
 from traffic_cloud_utils.app_config import get_project_path
 
 from uuid import uuid4
@@ -52,7 +52,7 @@ class UploadVideoHandler(tornado.web.RequestHandler):
         else:
             identifier = str(uuid4())
         video = files['video'][0]
-        pm.create_project(identifier, video) 
+        create_project(identifier, video) 
 
         #TO-DO: Error checking for correct arguments
         self.write({'identifier': identifier})
