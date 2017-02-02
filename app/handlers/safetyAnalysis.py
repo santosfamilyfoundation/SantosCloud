@@ -24,12 +24,14 @@ class SafetyAnalysisHandler(tornado.web.RequestHandler):
     """
     def post(self):
         status_code, reason = self.handler(self.get_body_argument("identifier"))
+        email = self.get_body_argument("email", default = None) 
 
         if status_code == 200:
-            subject = "Your video has finished processing."
-            message = "Hello,\n\tWe have finished looking through your data and identifying any dangerous interactions.\nThank you for your patience,\nThe Santos Team"
+            if not email == None:
+                subject = "Your video has finished processing."
+                message = "Hello,\n\tWe have finished looking through your data and identifying any dangerous interactions.\nThank you for your patience,\nThe Santos Team"
 
-            EmailHelper.send_email(self.get_body_argument("email"), subject, message)
+                EmailHelper.send_email(self.get_body_argument("email"), subject, message)
             self.finish("Safety Analysis")
         else:
             raise tornado.web.HTTPError(reason=reason, status_code=status_code)
@@ -57,9 +59,9 @@ class SafetyAnalysisHandler(tornado.web.RequestHandler):
         # Predict Interactions between road users and compute safety metrics describing them
         try:
             print "Running safety analysis. Please wait as this may take a while."
-            subprocess.call(["safety-analysis.py", "--cfg", config_path, "--prediction-method", prediction_method])
-        except Exception as err_msg:
-            return (500, err_msg)
+            subprocess.check_output(["safety-analysis.py", "--cfg", config_path, "--prediction-method", prediction_method])
+        except subprocess.CalledProgramError as err_msg:
+            return (500, err_msg.output)
 
         return (200, "Success")
 
