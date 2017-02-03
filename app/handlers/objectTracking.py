@@ -72,7 +72,7 @@ class ObjectTrackingThread(threading.Thread):
         self.email = email
 
     def run(self):
-        statusHelper.setStatus(self.identifier, "object_tracking", 1)
+        statusHelper.set_status(self.identifier, "object_tracking", 1)
         project_path = get_project_path(self.identifier)
         tracking_path = os.path.join(project_path, "tracking.cfg")
 
@@ -94,12 +94,12 @@ class ObjectTrackingThread(threading.Thread):
             subprocess.check_output(["feature-based-tracking", tracking_path, "--gf", "--database-filename", db_path])
             subprocess.check_output(["classify-objects.py", "--cfg", tracking_path, "-d", db_path])  # Classify road users
         except subprocess.CalledProcessError as excp:
-            statusHelper.setStatus(self.identifier, "object_tracking", -1)
+            statusHelper.set_status(self.identifier, "object_tracking", -1)
             return (500, excp.output)
 
         db_make_objtraj(db_path)  # Make our object_trajectories db table
 
-        statusHelper.setStatus(self.identifier, "object_tracking", 2)
+        statusHelper.set_status(self.identifier, "object_tracking", 2)
         return self.callback(200, "Success", self.email)
         # video.create_tracking_video(project_path, get_project_video_path(identifier))
 

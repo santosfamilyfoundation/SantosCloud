@@ -50,10 +50,10 @@ class TestConfigHandler(tornado.web.RequestHandler):
             raise tornado.web.HTTPError(reason=reason, status_code=status_code)
 
     def runConfigTestFeature(self, identifier, frame_start, num_frames):
-        statusHelper.setStatus(self.identifier, "configuration_test", 1)
+        statusHelper.set_status(self.identifier, "configuration_test", 1)
         project_path = get_project_path(identifier)
         if not os.path.exists(project_path):
-            statusHelper.setStatus(self.identifier, "configuration_test", -1)
+            statusHelper.set_status(self.identifier, "configuration_test", -1)
             return (500, 'Project directory does not exist. Check your identifier?')
 
         tracking_path = os.path.join(project_path, "tracking.cfg")
@@ -71,20 +71,20 @@ class TestConfigHandler(tornado.web.RequestHandler):
             subprocess.check_output(["feature-based-tracking", tracking_path, "--tf", "--database-filename", db_path])
             subprocess.check_output(["display-trajectories.py", "-i", get_project_video_path(identifier), "-d", db_path, "-o", project_path + "/homography/homography.txt", "-t", "feature", "--save-images", "-f", str(frame_start), "--last-frame", str(frame_start+num_frames)])
         except subprocess.CalledProcessError as err_msg:
-            statusHelper.setStatus(self.identifier, "configuration_test", -1)
+            statusHelper.set_status(self.identifier, "configuration_test", -1)
             return (500, err_msg.output)
 
 
         video.move_files_to_folder(os.getcwd(),images_folder,'image-', '.png')
 
-        statusHelper.setStatus(self.identifier, "configuration_test", 2)
+        statusHelper.set_status(self.identifier, "configuration_test", 2)
         return (200, "Success")
 
     def runConfigTestObject(self, identifier, frame_start, num_frames):
-        statusHelper.setStatus(self.identifier, "configuration_test", 1)
+        statusHelper.set_status(self.identifier, "configuration_test", 1)
         project_path = get_project_path(identifier)
         if not os.path.exists(project_path):
-            statusHelper.setStatus(self.identifier, "configuration_test", -1)
+            statusHelper.set_status(self.identifier, "configuration_test", -1)
             return (500, 'Project directory does not exist. Check your identifier?')
 
 
@@ -106,12 +106,12 @@ class TestConfigHandler(tornado.web.RequestHandler):
             subprocess.check_output(["classify-objects.py", "--cfg", tracking_path, "-d", obj_db_path])  # Classify road users
             subprocess.check_output(["display-trajectories.py", "-i", get_project_video_path(identifier),"-d", obj_db_path, "-o", project_path + "/homography/homography.txt", "-t", "object", "--save-images", "-f", str(frame_start), "--last-frame", str(frame_start+num_frames)])
         except subprocess.CalledProcessError as err_msg:
-            statusHelper.setStatus(self.identifier, "configuration_test", -1)
+            statusHelper.set_status(self.identifier, "configuration_test", -1)
             return (500, err_msg.output)
 
 
         video.move_files_to_folder(os.getcwd(),images_folder,'image-', '.png')
 
-        statusHelper.setStatus(self.identifier, "configuration_test", 2)
+        statusHelper.set_status(self.identifier, "configuration_test", 2)
         return (200, "Success")
 
