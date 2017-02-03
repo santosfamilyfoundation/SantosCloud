@@ -36,8 +36,9 @@ class StatusHelper(object):
             update_config_with_sections(config_path, "status", status_type, status)
 
     @staticmethod
-    def set_status(identifier, status_type, status):
+    def set_status(identifier, status_type, val):
         config_path = get_project_config_path(identifier)
+        status = str(val)
         update_config_with_sections(config_path, "status", status_type, status)
 
     @staticmethod
@@ -45,7 +46,7 @@ class StatusHelper(object):
         config_path = get_project_config_path(identifier)
         (success, value) = get_config_section(config_path, "status")
         if success:
-            return value
+            return int(value)
         else:
             return None
 
