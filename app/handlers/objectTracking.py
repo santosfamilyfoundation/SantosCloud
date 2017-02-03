@@ -31,8 +31,10 @@ class ObjectTrackingHandler(tornado.web.RequestHandler):
 
     def post(self):
         # TODO: Implement rerun flag to prevent unnecessary computation
-        status_code, reason = self.handler(self.get_body_argument("identifier"), self.get_body_argument("email"))
 
+        email = self.get_body_argument("email", default = None)
+        status_code, reason = self.handler(self.get_body_argument("identifier"), email)
+        
         if status_code == 200:
             self.finish("Object Tracking")
         else:
@@ -41,10 +43,11 @@ class ObjectTrackingHandler(tornado.web.RequestHandler):
     @staticmethod
     def callback(status_code, response_message, email):
         if status_code == 200:
-            message = "Hello,\n\tWe have finished processing your video and identifying all objects.\nThank you for your patience,\nThe Santos Team"
-            subject = "Your video has finished processing."
+            if not email == None:
+                message = "Hello,\n\tWe have finished processing your video and identifying all objects.\nThank you for your patience,\nThe Santos Team"
+                subject = "Your video has finished processing."
 
-            EmailHelper.send_email(email, subject, message)
+                EmailHelper.send_email(email, subject, message)
 
         print (status_code, response_message)
 
@@ -85,18 +88,14 @@ class ObjectTrackingThread(threading.Thread):
 
         if os.path.exists(db_path):  # If results database already exists,
             os.remove(db_path)  # then remove it--it'll be recreated.
+        
         try:
-            subprocess.call(["feature-based-tracking", tracking_path, "--tf", "--database-filename", db_path])
-            subprocess.call(["feature-based-tracking", tracking_path, "--gf", "--database-filename", db_path])
-        except Exception as err_msg:
+            subprocess.check_output(["feature-based-tracking", tracking_path, "--tf", "--database-filename", db_path])     
+            subprocess.check_output(["feature-based-tracking", tracking_path, "--gf", "--database-filename", db_path])
+            subprocess.check_output(["classify-objects.py", "--cfg", tracking_path, "-d", db_path])  # Classify road users
+        except subprocess.CalledProcessError as excp:
             statusHelper.setStatus(self.identifier, "object_tracking", -1)
-            return self.callback(500, err_msg, self.email)
-
-        try:
-            subprocess.call(["classify-objects.py", "--cfg", tracking_path, "-d", db_path])  # Classify road users
-        except Exception as err_msg:
-            statusHelper.setStatus(self.identifier, "object_tracking", -1)
-            return self.callback(500, err_msg, self.email)
+            return (500, excp.output)
 
         db_make_objtraj(db_path)  # Make our object_trajectories db table
 
