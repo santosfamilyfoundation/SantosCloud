@@ -7,7 +7,6 @@ class Status(object):
     class StatusType:
         UPLOAD_HOMOGRAPHY = "upload_homography"
         CONFIGURATION_TEST = "configuration_test"
-        FEATURE_TRACKING = "feature_tracking"
         OBJECT_TRACKING = "object_tracking"
         SAFETY_ANALYSIS = "safety_analysis"
         HIGHLIGHT_VIDEO = "highlight_video"
@@ -23,7 +22,6 @@ class Status(object):
         return {
             self.Type.UPLOAD_HOMOGRAPHY: 0,
             self.Type.CONFIGURATION_TEST: 0,
-            self.Type.FEATURE_TRACKING: 0,
             self.Type.OBJECT_TRACKING: 0,
             self.Type.SAFETY_ANALYSIS: 0,
             self.Type.HIGHLIGHT_VIDEO: 0,

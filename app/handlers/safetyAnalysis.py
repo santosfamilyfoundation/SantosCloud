@@ -37,10 +37,11 @@ class SafetyAnalysisHandler(tornado.web.RequestHandler):
 
     @staticmethod
     def handler(identifier, prediction_method=None):
-
+        statusHelper.setStatus(self.identifier, "safety_analysis", 1)
         project_path = get_project_path(identifier)
         if not os.path.exists(project_path):
-           return (500, 'Project directory does not exist. Check your identifier?')
+            statusHelper.setStatus(self.identifier, "safety_analysis", -1)
+            return (500, 'Project directory does not exist. Check your identifier?')
 
         config_path = os.path.join(project_path, "tracking.cfg")
         db_path = os.path.join(project_path, "run", "results.sqlite")
@@ -59,8 +60,10 @@ class SafetyAnalysisHandler(tornado.web.RequestHandler):
             print "Running safety analysis. Please wait as this may take a while."
             subprocess.call(["safety-analysis.py", "--cfg", config_path, "--prediction-method", prediction_method])
         except Exception as err_msg:
+            statusHelper.setStatus(self.identifier, "safety_analysis", -1)
             return (500, err_msg)
 
+        statusHelper.setStatus(self.identifier, "safety_analysis", 2)
         return (200, "Success")
 
 
