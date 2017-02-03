@@ -4,6 +4,7 @@ import tornado.web
 from tornado.escape import json_decode
 import os
 from traffic_cloud_utils.app_config import get_project_path
+from traffic_cloud_utils.statusHelper import StatusHelper
 import numpy as np
 import cv2
 from ast import literal_eval
@@ -39,7 +40,7 @@ class UploadHomographyHandler(tornado.web.RequestHandler):
         self.finish("Upload Homography")
         
     def write_homography_files(self):
-        statusHelper.set_status(self.identifier, "upload_homography", 1)
+        StatusHelper.set_status(self.identifier, "upload_homography", 1)
         project_dir = get_project_path(self.identifier)
         aerial_pts = self.get_body_argument('aerial_pts')
         camera_pts = self.get_body_argument('camera_pts')
@@ -54,6 +55,6 @@ class UploadHomographyHandler(tornado.web.RequestHandler):
                 with open(os.path.join(project_dir,'homography',value[0]['filename']), 'wb') as f:
                     f.write(value[0]['body'])
         
-        statusHelper.set_status(self.identifier, "upload_homography", 2)
+        StatusHelper.set_status(self.identifier, "upload_homography", 2)
 
 

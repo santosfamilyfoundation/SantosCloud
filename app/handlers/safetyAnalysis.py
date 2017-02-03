@@ -6,6 +6,8 @@ import tornado.web
 
 from traffic_cloud_utils.app_config import get_project_path, get_project_video_path, update_config_without_sections, get_config_without_sections
 from traffic_cloud_utils.emailHelper import EmailHelper
+from traffic_cloud_utils.statusHelper import StatusHelper
+
 
 class SafetyAnalysisHandler(tornado.web.RequestHandler):
     """
@@ -39,10 +41,10 @@ class SafetyAnalysisHandler(tornado.web.RequestHandler):
 
     @staticmethod
     def handler(identifier, prediction_method=None):
-        statusHelper.set_status(self.identifier, "safety_analysis", 1)
+        StatusHelper.set_status(self.identifier, "safety_analysis", 1)
         project_path = get_project_path(identifier)
         if not os.path.exists(project_path):
-            statusHelper.set_status(self.identifier, "safety_analysis", -1)
+            StatusHelper.set_status(self.identifier, "safety_analysis", -1)
             return (500, 'Project directory does not exist. Check your identifier?')
 
         config_path = os.path.join(project_path, "tracking.cfg")
@@ -63,10 +65,10 @@ class SafetyAnalysisHandler(tornado.web.RequestHandler):
 
             subprocess.check_output(["safety-analysis.py", "--cfg", config_path, "--prediction-method", prediction_method])
         except subprocess.CalledProgramError as err_msg:
-            statusHelper.set_status(self.identifier, "safety_analysis", -1)
+            StatusHelper.set_status(self.identifier, "safety_analysis", -1)
             return (500, err_msg.output)
 
-        statusHelper.set_status(self.identifier, "safety_analysis", 2)
+        StatusHelper.set_status(self.identifier, "safety_analysis", 2)
         return (200, "Success")
 
 
