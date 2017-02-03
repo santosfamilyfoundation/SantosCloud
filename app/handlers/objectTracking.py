@@ -31,7 +31,9 @@ class ObjectTrackingHandler(tornado.web.RequestHandler):
 
     def post(self):
         # TODO: Implement rerun flag to prevent unnecessary computation
-        status_code, reason = self.handler(self.get_body_argument("identifier"), self.get_body_argument("email"))
+        identifier = self.get_body_argument("identifier")
+        email = self.get_body_argument("email")
+        status_code, reason = ObjectTrackingHandler.handler(identifier, email, ObjectTrackingHandler.callback)
 
         if status_code == 200:
             self.finish("Object Tracking")
@@ -49,7 +51,7 @@ class ObjectTrackingHandler(tornado.web.RequestHandler):
         print (status_code, response_message)
 
     @staticmethod
-    def handler(identifier, email):
+    def handler(identifier, email, callback):
         """
         Runs TrafficIntelligence trackers and support scripts.
         """
@@ -57,7 +59,7 @@ class ObjectTrackingHandler(tornado.web.RequestHandler):
         if not os.path.exists(project_path):
            return (500, 'Project directory does not exist. Check your identifier?')
 
-        ObjectTrackingThread(identifier, email, ObjectTrackingHandler.callback).start()
+        ObjectTrackingThread(identifier, email, callback).start()
 
         return (200, "Success")
 
