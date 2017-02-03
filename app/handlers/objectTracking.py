@@ -10,7 +10,7 @@ import threading
 from traffic_cloud_utils.plotting.make_object_trajectories import main as db_make_objtraj
 from traffic_cloud_utils.app_config import get_project_path, get_project_video_path, update_config_without_sections, get_config_without_sections
 from traffic_cloud_utils.emailHelper import EmailHelper
-from traffic_cloud_utils import video
+from traffic_cloud_utils import video, statusHelper
 
 
 class ObjectTrackingHandler(tornado.web.RequestHandler):
@@ -69,6 +69,7 @@ class ObjectTrackingThread(threading.Thread):
         self.email = email
 
     def run(self):
+        statusHelper.setStatus(self.identifier, "object_tracking", 1)
         project_path = get_project_path(self.identifier)
         tracking_path = os.path.join(project_path, "tracking.cfg")
 
@@ -88,15 +89,18 @@ class ObjectTrackingThread(threading.Thread):
             subprocess.call(["feature-based-tracking", tracking_path, "--tf", "--database-filename", db_path])
             subprocess.call(["feature-based-tracking", tracking_path, "--gf", "--database-filename", db_path])
         except Exception as err_msg:
+            statusHelper.setStatus(self.identifier, "object_tracking", -1)
             return self.callback(500, err_msg, self.email)
 
         try:
             subprocess.call(["classify-objects.py", "--cfg", tracking_path, "-d", db_path])  # Classify road users
         except Exception as err_msg:
+            statusHelper.setStatus(self.identifier, "object_tracking", -1)
             return self.callback(500, err_msg, self.email)
 
         db_make_objtraj(db_path)  # Make our object_trajectories db table
 
+        statusHelper.setStatus(self.identifier, "object_tracking", 2)
         return self.callback(200, "Success", self.email)
         # video.create_tracking_video(project_path, get_project_video_path(identifier))
 
