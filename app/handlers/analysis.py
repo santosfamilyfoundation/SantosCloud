@@ -45,7 +45,7 @@ class AnalysisHandler(tornado.web.RequestHandler):
         return (status_code, reason)
 
     @staticmethod
-    def object_tracking_callback(status_code, response_message, email):
+    def object_tracking_callback(status_code, response_message, identifier, email):
         if status_code == 200:
             message = "Hello,\n\tWe have finished processing your video and identifying all objects.\nWe will perform safety analysis now.\nThank you for your patience,\nThe Santos Team"
             subject = "Your video has finished processing."
@@ -57,7 +57,7 @@ class AnalysisHandler(tornado.web.RequestHandler):
         print (status_code, response_message)
 
     @staticmethod
-    def safety_analysis_callback(status_code, response_message, email):
+    def safety_analysis_callback(status_code, response_message, identifier, email):
         if status_code == 200:
             subject = "Your video has finished processing."
             message = "Hello,\n\tWe have finished looking through your data and identifying any dangerous interactions.\nThank you for your patience,\nThe Santos Team"

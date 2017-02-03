@@ -3,6 +3,8 @@
 import os
 import tornado.web
 import tornado.escape
+import threading
+
 from traffic_cloud_utils.video import create_highlight_video, get_framerate
 from storage import alterInteractionsWithRoadUserType, getNearMissFrames
 from traffic_cloud_utils.app_config import get_project_path, get_project_video_path
@@ -27,17 +29,18 @@ class CreateHighlightVideoHandler(baseHandler.BaseHandler):
     """
     def post(self):
         identifier = self.get_body_argument('identifier')
+        email = self.get_body_argument('email')
         ttc_threshold = float(self.get_body_argument('ttc_threshold', default=1.5))
         vehicle_only = bool(self.get_body_argument('vehicle_only', default=True))
 
-        status_code, reason = CreateHighlightVideoHandler.handler(identifier, ttc_threshold, vehicle_only)
+        status_code, reason = CreateHighlightVideoHandler.handler(identifier, email, ttc_threshold, vehicle_only)
         if status_code == 200:
             self.finish("Create Highlight Video")
         else:
             raise tornado.web.HTTPError(reason=reason, status_code=status_code)
 
     @staticmethod
-    def handler(identifier, ttc_threshold, vehicle_only):
+    def handler(identifier, email, ttc_threshold, vehicle_only):
         project_dir = get_project_path(identifier)
         if not os.path.exists(project_dir):
             return (500, 'Project directory does not exist. Check your identifier?')
@@ -64,12 +67,36 @@ class CreateHighlightVideoHandler(baseHandler.BaseHandler):
             return (500, error_message)
 
         try:
-            create_highlight_video(project_dir, video_path, near_misses)
+            CreateHighlightVideoThread(project_dir, video_path, near_misses, email, CreateHighlightVideoHandler.callback)
         except Exception as error_message:
             return (500, error_message)
 
 
         return (200, "Success")
 
+    @staticmethod
+    def callback(status_code, response_message, email):
+        if status_code == 200:
+            subject = "Your video has been created."
+            message = "Hello,\n\tWe have finished creating your output video.\nThank you for your patience,\nThe Santos Team"
+
+            EmailHelper.send_email(email, subject, message)
+
+        print(status_code, response_message)
+
+
+class CreateHighlightVideoThread(threading.Thread):
+    def __init__(self, project_dir, video_path, near_misses, email, callback):
+        threading.Thread.__init__(self)
+        self.project_dir = project_dir
+        self.video_path = video_path
+        self.near_misses = near_misses
+        self.callback = callback
+        self.email = email
+
+    def run(self):
+        create_highlight_video(self.project_dir, self.video_path, self.near_misses)
+
+        self.callback(200, "Highlight video complete.", self.email)
 
 

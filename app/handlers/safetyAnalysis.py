@@ -35,7 +35,7 @@ class SafetyAnalysisHandler(tornado.web.RequestHandler):
             raise tornado.web.HTTPError(reason=reason, status_code=status_code)
 
     @staticmethod
-    def callback(status_code, response_message, email):
+    def callback(status_code, response_message, identifier, email):
         if status_code == 200:
             subject = "Your video has finished processing."
             message = "Hello,\n\tWe have finished looking through your data and identifying any dangerous interactions.\nThank you for your patience,\nThe Santos Team"
@@ -82,8 +82,9 @@ class SafetyAnalysisThread(threading.Thread):
         try:
             print "Running safety analysis. Please wait as this may take a while."
             subprocess.call(["safety-analysis.py", "--cfg", config_path, "--prediction-method", self.prediction_method])
+            self.callback(200, "Safety Analysis Done", self.identifier, self.email)
         except Exception as err_msg:
-            return (500, err_msg)
+            self.callback(500, err_msg, self.identifier, self.email)
 
 
 

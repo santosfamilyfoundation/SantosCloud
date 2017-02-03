@@ -41,7 +41,7 @@ class ObjectTrackingHandler(tornado.web.RequestHandler):
             raise tornado.web.HTTPError(reason=reason, status_code=status_code)
 
     @staticmethod
-    def callback(status_code, response_message, email):
+    def callback(status_code, response_message, identifier, email):
         if status_code == 200:
             message = "Hello,\n\tWe have finished processing your video and identifying all objects.\nThank you for your patience,\nThe Santos Team"
             subject = "Your video has finished processing."
@@ -90,16 +90,16 @@ class ObjectTrackingThread(threading.Thread):
             subprocess.call(["feature-based-tracking", tracking_path, "--tf", "--database-filename", db_path])
             subprocess.call(["feature-based-tracking", tracking_path, "--gf", "--database-filename", db_path])
         except Exception as err_msg:
-            return self.callback(500, err_msg, self.email)
+            return self.callback(500, err_msg, self.identifier, self.email)
 
         try:
             subprocess.call(["classify-objects.py", "--cfg", tracking_path, "-d", db_path])  # Classify road users
         except Exception as err_msg:
-            return self.callback(500, err_msg, self.email)
+            return self.callback(500, err_msg, self.identifier, self.email)
 
         db_make_objtraj(db_path)  # Make our object_trajectories db table
 
-        return self.callback(200, "Success", self.email)
+        return self.callback(200, "Success", self.identifier, self.email)
         # video.create_tracking_video(project_path, get_project_video_path(identifier))
 
 
