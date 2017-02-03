@@ -67,7 +67,7 @@ class CreateHighlightVideoHandler(baseHandler.BaseHandler):
             return (500, error_message)
 
         try:
-            CreateHighlightVideoThread(project_dir, video_path, near_misses, email, CreateHighlightVideoHandler.callback)
+            CreateHighlightVideoThread(project_dir, video_path, near_misses, email, CreateHighlightVideoHandler.callback).start()
         except Exception as error_message:
             return (500, error_message)
 
@@ -95,6 +95,7 @@ class CreateHighlightVideoThread(threading.Thread):
         self.email = email
 
     def run(self):
+        print("create_highlight_video")
         create_highlight_video(self.project_dir, self.video_path, self.near_misses)
 
         self.callback(200, "Highlight video complete.", self.email)
