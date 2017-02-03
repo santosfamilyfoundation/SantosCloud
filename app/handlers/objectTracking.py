@@ -73,6 +73,6 @@ class ObjectTrackingHandler(tornado.web.RequestHandler):
 
         db_make_objtraj(db_path)  # Make our object_trajectories db table
 
-        return (200, "Sucess")
+        return (200, "Success")
         # video.create_tracking_video(project_path, get_project_video_path(identifier))
 

@@ -31,7 +31,7 @@ class SafetyAnalysisHandler(tornado.web.RequestHandler):
                 subject = "Your video has finished processing."
                 message = "Hello,\n\tWe have finished looking through your data and identifying any dangerous interactions.\nThank you for your patience,\nThe Santos Team"
 
-                EmailHelper.send_email(self.get_body_argument("email"), subject, message)
+                EmailHelper.send_email(email, subject, message)
             self.finish("Safety Analysis")
         else:
             raise tornado.web.HTTPError(reason=reason, status_code=status_code)
