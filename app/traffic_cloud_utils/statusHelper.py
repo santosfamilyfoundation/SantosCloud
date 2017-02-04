@@ -46,7 +46,7 @@ class StatusHelper(object):
         config_path = get_project_config_path(identifier)
         (success, value) = get_config_section(config_path, "status")
         if success:
-            return int(value)
+            return value
         else:
             return None
 
