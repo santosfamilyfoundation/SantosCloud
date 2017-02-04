@@ -29,7 +29,6 @@ class TestConfigHandler(tornado.web.RequestHandler):
     @apiError error_message The error message to display.
     """
     def post(self):
-
         identifier = self.get_body_argument("identifier")
         test_flag = self.get_body_argument("test_flag")
         print test_flag
@@ -102,6 +101,7 @@ class TestConfigFeatureThread(threading.Thread):
         video.move_files_to_folder(os.getcwd(),images_folder,temp_image_prefix, '.png')
         video.renumber_frames(images_folder, 0, temp_image_prefix, "png")
         video.convert_frames_to_video(get_project_video_path(self.identifier), images_folder, videos_folder, temp_image_prefix, video_filename, 1.0)
+        video.delete_files(images_folder, prefix=temp_image_prefix, extensions=["png"])
 
         self.callback(200, "Test config done", self.identifier)
 
@@ -125,7 +125,7 @@ class TestConfigObjectThread(threading.Thread):
         testing_dict = {'frame1': self.frame_start, 'nframes': self.num_frames}
         update_config_without_sections(tracking_path, testing_dict)
 
-        images_folder = "object_images"
+        images_folder = os.path.join(get_project_path(self.identifier), "object_images")
         video.delete_files(images_folder)
 
         try:
@@ -135,7 +135,13 @@ class TestConfigObjectThread(threading.Thread):
         except Exception as err_msg:
             self.callback(500, err_msg, self.identifier)
 
-        video.move_files_to_folder(os.getcwd(),images_folder,'image-', '.png')
+        videos_folder = os.path.join(get_project_path(self.identifier), "object_images")
+        video_filename = "object_video.mp4"
+        temp_image_prefix = 'image-'
+        video.move_files_to_folder(os.getcwd(),images_folder,temp_image_prefix, '.png')
+        video.renumber_frames(images_folder, 0, temp_image_prefix, "png")
+        video.convert_frames_to_video(get_project_video_path(self.identifier), images_folder, videos_folder, temp_image_prefix, video_filename, 1.0)
+        video.delete_files(images_folder, prefix=temp_image_prefix, extensions=["png"])
 
         self.callback(200, "Test config done", self.identifier)
 
