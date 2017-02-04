@@ -4,6 +4,8 @@ import subprocess
 
 import tornado.web
 
+import threading
+
 from traffic_cloud_utils.app_config import get_project_path, get_project_video_path, update_config_without_sections, get_config_without_sections
 from traffic_cloud_utils.emailHelper import EmailHelper
 
@@ -23,45 +25,66 @@ class SafetyAnalysisHandler(tornado.web.RequestHandler):
     @apiError error_message The error message to display. (Will return unique error message if object tracking has NOT been run on specified project)
     """
     def post(self):
-        status_code, reason = self.handler(self.get_body_argument("identifier"))
+        identifier = self.get_body_argument("identifier")
+        email = self.get_body_argument("email")
+        status_code, reason = SafetyAnalysisHandler.handler(identifier, email, SafetyAnalysisHandler.callback)
 
         if status_code == 200:
-            subject = "Your video has finished processing."
-            message = "Hello,\n\tWe have finished looking through your data and identifying any dangerous interactions.\nThank you for your patience,\nThe Santos Team"
-
-            EmailHelper.send_email(self.get_body_argument("email"), subject, message)
             self.finish("Safety Analysis")
         else:
             raise tornado.web.HTTPError(reason=reason, status_code=status_code)
 
+    @staticmethod
+    def callback(status_code, response_message, identifier, email):
+        if status_code == 200:
+            subject = "Your video has finished processing."
+            message = "Hello,\n\tWe have finished looking through your data and identifying any dangerous interactions.\nThank you for your patience,\nThe Santos Team"
+
+            EmailHelper.send_email(email, subject, message)
+
+        print(status_code, response_message)
+
 
     @staticmethod
-    def handler(identifier, prediction_method=None):
-
+    def handler(identifier, email, callback, prediction_method=None):
         project_path = get_project_path(identifier)
         if not os.path.exists(project_path):
            return (500, 'Project directory does not exist. Check your identifier?')
 
+        SafetyAnalysisThread(identifier, email, callback, prediction_method=prediction_method).start()
+
+        return (200, "Success")
+
+
+class SafetyAnalysisThread(threading.Thread):
+    def __init__(self, identifier, email, callback, prediction_method=None):
+        threading.Thread.__init__(self)
+        self.identifier = identifier
+        self.callback = callback
+        self.email = email
+        self.prediction_method = prediction_method
+
+    def run(self):
+        project_path = get_project_path(self.identifier)
         config_path = os.path.join(project_path, "tracking.cfg")
         db_path = os.path.join(project_path, "run", "results.sqlite")
         update_dict = {
-            'video-filename': get_project_video_path(identifier), # use absolute path to video on server
+            'video-filename': get_project_video_path(self.identifier), # use absolute path to video on server
             'database-filename': db_path # use absolute path to database
         }
-        
+
         update_config_without_sections(config_path, update_dict)
 
-        if prediction_method is None:
-            prediction_method = 'cv' # default to the least resource intensive method
+        if self.prediction_method is None:
+            self.prediction_method = 'cv' # default to the least resource intensive method
 
         # Predict Interactions between road users and compute safety metrics describing them
         try:
             print "Running safety analysis. Please wait as this may take a while."
-            subprocess.call(["safety-analysis.py", "--cfg", config_path, "--prediction-method", prediction_method])
+            subprocess.call(["safety-analysis.py", "--cfg", config_path, "--prediction-method", self.prediction_method])
+            self.callback(200, "Safety Analysis Done", self.identifier, self.email)
         except Exception as err_msg:
-            return (500, err_msg)
-
-        return (200, "Success")
+            self.callback(500, err_msg, self.identifier, self.email)
 
 
 

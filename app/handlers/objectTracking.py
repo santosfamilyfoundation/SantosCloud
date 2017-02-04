@@ -31,7 +31,9 @@ class ObjectTrackingHandler(tornado.web.RequestHandler):
 
     def post(self):
         # TODO: Implement rerun flag to prevent unnecessary computation
-        status_code, reason = self.handler(self.get_body_argument("identifier"), self.get_body_argument("email"))
+        identifier = self.get_body_argument("identifier")
+        email = self.get_body_argument("email")
+        status_code, reason = ObjectTrackingHandler.handler(identifier, email, ObjectTrackingHandler.callback)
 
         if status_code == 200:
             self.finish("Object Tracking")
@@ -39,7 +41,7 @@ class ObjectTrackingHandler(tornado.web.RequestHandler):
             raise tornado.web.HTTPError(reason=reason, status_code=status_code)
 
     @staticmethod
-    def callback(status_code, response_message, email):
+    def callback(status_code, response_message, identifier, email):
         if status_code == 200:
             message = "Hello,\n\tWe have finished processing your video and identifying all objects.\nThank you for your patience,\nThe Santos Team"
             subject = "Your video has finished processing."
@@ -49,7 +51,7 @@ class ObjectTrackingHandler(tornado.web.RequestHandler):
         print (status_code, response_message)
 
     @staticmethod
-    def handler(identifier, email):
+    def handler(identifier, email, callback):
         """
         Runs TrafficIntelligence trackers and support scripts.
         """
@@ -57,7 +59,7 @@ class ObjectTrackingHandler(tornado.web.RequestHandler):
         if not os.path.exists(project_path):
            return (500, 'Project directory does not exist. Check your identifier?')
 
-        ObjectTrackingThread(identifier, email, ObjectTrackingHandler.callback).start()
+        ObjectTrackingThread(identifier, email, callback).start()
 
         return (200, "Success")
 
@@ -88,16 +90,16 @@ class ObjectTrackingThread(threading.Thread):
             subprocess.call(["feature-based-tracking", tracking_path, "--tf", "--database-filename", db_path])
             subprocess.call(["feature-based-tracking", tracking_path, "--gf", "--database-filename", db_path])
         except Exception as err_msg:
-            return self.callback(500, err_msg, self.email)
+            return self.callback(500, err_msg, self.identifier, self.email)
 
         try:
             subprocess.call(["classify-objects.py", "--cfg", tracking_path, "-d", db_path])  # Classify road users
         except Exception as err_msg:
-            return self.callback(500, err_msg, self.email)
+            return self.callback(500, err_msg, self.identifier, self.email)
 
         db_make_objtraj(db_path)  # Make our object_trajectories db table
 
-        return self.callback(200, "Success", self.email)
+        return self.callback(200, "Success", self.identifier, self.email)
         # video.create_tracking_video(project_path, get_project_video_path(identifier))
 
 
