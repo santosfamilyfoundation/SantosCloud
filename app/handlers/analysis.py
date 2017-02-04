@@ -28,9 +28,9 @@ class AnalysisHandler(tornado.web.RequestHandler):
     def post(self):
         identifier = self.get_body_argument("identifier")
         email = self.get_body_argument("email", default = None)
-        status_code, reason = ObjectTrackingHandler.handler(identifier)
+        status_code, reason = ObjectTrackingHandler.handler(identifier, email)
         if status_code == 200:
-            status_code, reason = SafetyAnalysisHandler.handler(identifier)
+            status_code, reason = SafetyAnalysisHandler.handler(identifier, email)
 
         if status_code == 200:
             if not email == None:
