@@ -36,11 +36,12 @@ class UploadHomographyHandler(tornado.web.RequestHandler):
         self.files = self.request.files
         self.identifier = self.get_body_argument('identifier')
         self.up_ratio = float(self.get_body_argument('unit_pixel_ratio'))
+        StatusHelper.set_status(self.identifier, "upload_homography", 1)
         self.write_homography_files()
+        StatusHelper.set_status(self.identifier, "upload_homography", 2)
         self.finish("Upload Homography")
         
     def write_homography_files(self):
-        StatusHelper.set_status(self.identifier, "upload_homography", 1)
         project_dir = get_project_path(self.identifier)
         aerial_pts = self.get_body_argument('aerial_pts')
         camera_pts = self.get_body_argument('camera_pts')
@@ -55,6 +56,6 @@ class UploadHomographyHandler(tornado.web.RequestHandler):
                 with open(os.path.join(project_dir,'homography',value[0]['filename']), 'wb') as f:
                     f.write(value[0]['body'])
         
-        StatusHelper.set_status(self.identifier, "upload_homography", 2)
+        
 
 
