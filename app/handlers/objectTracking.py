@@ -32,10 +32,11 @@ class ObjectTrackingHandler(tornado.web.RequestHandler):
     def post(self):
         # TODO: Implement rerun flag to prevent unnecessary computation
         identifier = self.get_body_argument("identifier")
-        email = self.get_body_argument("email")
+        email = self.get_body_argument("email", default = None)
         status_code, reason = ObjectTrackingHandler.handler(identifier, email, ObjectTrackingHandler.callback)
 
         if status_code == 200:
+
             self.finish("Object Tracking")
         else:
             raise tornado.web.HTTPError(reason=reason, status_code=status_code)
@@ -86,16 +87,14 @@ class ObjectTrackingThread(threading.Thread):
 
         if os.path.exists(db_path):  # If results database already exists,
             os.remove(db_path)  # then remove it--it'll be recreated.
+        
         try:
-            subprocess.call(["feature-based-tracking", tracking_path, "--tf", "--database-filename", db_path])
-            subprocess.call(["feature-based-tracking", tracking_path, "--gf", "--database-filename", db_path])
-        except Exception as err_msg:
-            return self.callback(500, err_msg, self.identifier, self.email)
+            subprocess.check_output(["feature-based-tracking", tracking_path, "--tf", "--database-filename", db_path])     
+            subprocess.check_output(["feature-based-tracking", tracking_path, "--gf", "--database-filename", db_path])
+            subprocess.check_output(["classify-objects.py", "--cfg", tracking_path, "-d", db_path])  # Classify road users
+        except subprocess.CalledProcessError as excp:
+            return (500, excp.output, self.identifier, self.email)
 
-        try:
-            subprocess.call(["classify-objects.py", "--cfg", tracking_path, "-d", db_path])  # Classify road users
-        except Exception as err_msg:
-            return self.callback(500, err_msg, self.identifier, self.email)
 
         db_make_objtraj(db_path)  # Make our object_trajectories db table
 

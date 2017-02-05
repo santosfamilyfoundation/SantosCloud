@@ -90,10 +90,11 @@ class TestConfigFeatureThread(threading.Thread):
         video.delete_files(images_folder)
 
         try:
-            subprocess.call(["feature-based-tracking", tracking_path, "--tf", "--database-filename", db_path])
-            subprocess.call(["display-trajectories.py", "-i", get_project_video_path(self.identifier), "-d", db_path, "-o", project_path + "/homography/homography.txt", "-t", "feature", "--save-images", "-f", str(self.frame_start), "--last-frame", str(self.frame_start+self.num_frames)])
-        except Exception as err_msg:
-            return self.callback(500, err_msg, self.identifier)
+            subprocess.check_output(["feature-based-tracking", tracking_path, "--tf", "--database-filename", db_path])
+            subprocess.check_output(["display-trajectories.py", "-i", get_project_video_path(identifier), "-d", db_path, "-o", project_path + "/homography/homography.txt", "-t", "feature", "--save-images", "-f", str(frame_start), "--last-frame", str(frame_start+num_frames)])
+        except subprocess.CalledProcessError as err_msg:
+            return (500, err_msg.output, self.identifier)
+
 
         videos_folder = os.path.join(get_project_path(self.identifier), "feature_images")
         video_filename = "feature_video.mp4"
@@ -129,11 +130,11 @@ class TestConfigObjectThread(threading.Thread):
         video.delete_files(images_folder)
 
         try:
-            subprocess.call(["feature-based-tracking",tracking_path,"--gf","--database-filename",obj_db_path])
-            subprocess.call(["classify-objects.py", "--cfg", tracking_path, "-d", obj_db_path])  # Classify road users
-            subprocess.call(["display-trajectories.py", "-i", get_project_video_path(self.identifier),"-d", obj_db_path, "-o", project_path + "/homography/homography.txt", "-t", "object", "--save-images", "-f", str(self.frame_start), "--last-frame", str(self.frame_start+self.num_frames)])
-        except Exception as err_msg:
-            self.callback(500, err_msg, self.identifier)
+            subprocess.check_output(["feature-based-tracking",tracking_path,"--gf","--database-filename",obj_db_path])
+            subprocess.check_output(["classify-objects.py", "--cfg", tracking_path, "-d", obj_db_path])  # Classify road users
+            subprocess.check_output(["display-trajectories.py", "-i", get_project_video_path(identifier),"-d", obj_db_path, "-o", project_path + "/homography/homography.txt", "-t", "object", "--save-images", "-f", str(frame_start), "--last-frame", str(frame_start+num_frames)])
+        except subprocess.CalledProcessError as err_msg:
+            return (500, err_msg.output, self.identifier)
 
         videos_folder = os.path.join(get_project_path(self.identifier), "object_images")
         video_filename = "object_video.mp4"
@@ -144,6 +145,7 @@ class TestConfigObjectThread(threading.Thread):
         video.delete_files(images_folder, prefix=temp_image_prefix, extensions=["png"])
 
         self.callback(200, "Test config done", self.identifier)
+
 
 
 

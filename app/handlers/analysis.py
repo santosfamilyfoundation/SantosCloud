@@ -27,7 +27,8 @@ class AnalysisHandler(tornado.web.RequestHandler):
     """
     def post(self):
         identifier = self.get_body_argument("identifier")
-        email = self.get_body_argument("email")
+        
+        email = self.get_body_argument("email", default = None)
         status_code, reason = AnalysisHandler.handler(identifier, email)
 
         if status_code == 200:

@@ -26,10 +26,11 @@ class SafetyAnalysisHandler(tornado.web.RequestHandler):
     """
     def post(self):
         identifier = self.get_body_argument("identifier")
-        email = self.get_body_argument("email")
+        email = self.get_body_argument("email", default = None)
         status_code, reason = SafetyAnalysisHandler.handler(identifier, email, SafetyAnalysisHandler.callback)
 
         if status_code == 200:
+
             self.finish("Safety Analysis")
         else:
             raise tornado.web.HTTPError(reason=reason, status_code=status_code)
@@ -81,10 +82,11 @@ class SafetyAnalysisThread(threading.Thread):
         # Predict Interactions between road users and compute safety metrics describing them
         try:
             print "Running safety analysis. Please wait as this may take a while."
-            subprocess.call(["safety-analysis.py", "--cfg", config_path, "--prediction-method", self.prediction_method])
-            self.callback(200, "Safety Analysis Done", self.identifier, self.email)
-        except Exception as err_msg:
-            self.callback(500, err_msg, self.identifier, self.email)
+            subprocess.check_output(["safety-analysis.py", "--cfg", config_path, "--prediction-method", prediction_method])
+        except subprocess.CalledProgramError as err_msg:
+            return (500, err_msg.output, self.identifier, self.email)
+
+        return (200, "Success")
 
 
 
