@@ -9,8 +9,9 @@ from traffic_cloud_utils.app_config import get_project_path, get_project_video_p
 from traffic_cloud_utils.emailHelper import EmailHelper
 from objectTracking import ObjectTrackingHandler
 from safetyAnalysis import SafetyAnalysisHandler
+from baseHandler import BaseHandler
 
-class AnalysisHandler(tornado.web.RequestHandler):
+class AnalysisHandler(BaseHandler):
     """
     @api {post} /analysis/ Analysis
     @apiName Analysis
@@ -40,5 +41,6 @@ class AnalysisHandler(tornado.web.RequestHandler):
                 EmailHelper.send_email(email, subject, message)
             self.finish("Analysis")
         else:
-            raise tornado.web.HTTPError(reason=reason, status_code=status_code)
-        
+            self.error_message = reason
+            raise tornado.web.HTTPError(status_code=status_code)
+

@@ -5,9 +5,9 @@ import tornado.web
 from traffic_cloud_utils.pdf_generate import makePdf
 from traffic_cloud_utils.app_config import get_project_path
 
-import baseHandler
+from baseHandler import BaseHandler
 
-class MakeReportHandler(baseHandler.BaseHandler):
+class MakeReportHandler(BaseHandler):
     """
     @api {post} /makeReport/ Make Report
     @apiName MakeReport

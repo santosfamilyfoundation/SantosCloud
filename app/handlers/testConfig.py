@@ -5,13 +5,14 @@ import shutil
 
 import tornado.web
 
+from baseHandler import BaseHandler
 from traffic_cloud_utils.app_config import get_project_path, get_project_video_path, update_config_without_sections, get_config_without_sections
 from traffic_cloud_utils.emailHelper import EmailHelper
 from traffic_cloud_utils.app_config import update_config_without_sections
 from traffic_cloud_utils.statusHelper import StatusHelper
 from traffic_cloud_utils import video
 
-class TestConfigHandler(tornado.web.RequestHandler):
+class TestConfigHandler(BaseHandler):
     """
     @api {post} /testConfig/ Test Configuration
     @apiName TestConfig
@@ -48,7 +49,8 @@ class TestConfigHandler(tornado.web.RequestHandler):
         if status_code == 200:
             self.finish("Testing tracking")
         else:
-            raise tornado.web.HTTPError(reason=reason, status_code=status_code)
+            self.error_message = reason
+            raise tornado.web.HTTPError(status_code=status_code)
 
     def runConfigTestFeature(self, identifier, frame_start, num_frames):
         StatusHelper.set_status(identifier, "configuration_test", 1)
@@ -66,7 +68,7 @@ class TestConfigHandler(tornado.web.RequestHandler):
         update_config_without_sections(tracking_path, testing_dict)
 
         images_folder = "feature_images"
-        video.delete_files(images_folder)        
+        video.delete_files(images_folder)
 
         try:
             subprocess.check_output(["feature-based-tracking", tracking_path, "--tf", "--database-filename", db_path])

@@ -4,12 +4,13 @@ import subprocess
 
 import tornado.web
 
+from baseHandler import BaseHandler
 from traffic_cloud_utils.app_config import get_project_path, get_project_video_path, update_config_without_sections, get_config_without_sections
 from traffic_cloud_utils.emailHelper import EmailHelper
 from traffic_cloud_utils.statusHelper import StatusHelper
 
 
-class SafetyAnalysisHandler(tornado.web.RequestHandler):
+class SafetyAnalysisHandler(BaseHandler):
     """
     @api {post} /safetyAnalysis/ Safety Analysis
     @apiName SafetyAnalysis
@@ -26,7 +27,7 @@ class SafetyAnalysisHandler(tornado.web.RequestHandler):
     """
     def post(self):
         status_code, reason = self.handler(self.get_body_argument("identifier"))
-        email = self.get_body_argument("email", default = None) 
+        email = self.get_body_argument("email", default = None)
 
         if status_code == 200:
             if not email == None:
@@ -36,7 +37,8 @@ class SafetyAnalysisHandler(tornado.web.RequestHandler):
                 EmailHelper.send_email(email, subject, message)
             self.finish("Safety Analysis")
         else:
-            raise tornado.web.HTTPError(reason=reason, status_code=status_code)
+            self.error_message = reason
+            raise tornado.web.HTTPError(status_code=status_code)
 
 
     @staticmethod
@@ -53,7 +55,7 @@ class SafetyAnalysisHandler(tornado.web.RequestHandler):
             'video-filename': get_project_video_path(identifier), # use absolute path to video on server
             'database-filename': db_path # use absolute path to database
         }
-        
+
         update_config_without_sections(config_path, update_dict)
 
         if prediction_method is None:

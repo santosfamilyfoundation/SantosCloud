@@ -7,10 +7,10 @@ from traffic_cloud_utils.video import create_highlight_video, get_framerate
 from storage import alterInteractionsWithRoadUserType, getNearMissFrames
 from traffic_cloud_utils.app_config import get_project_path, get_project_video_path
 from traffic_cloud_utils.statusHelper import StatusHelper
-import baseHandler
+from baseHandler import BaseHandler
 
 # TODO: remove once pip's error request handler is written
-class CreateHighlightVideoHandler(baseHandler.BaseHandler):
+class CreateHighlightVideoHandler(BaseHandler):
     """
     @api {post} /highlightVideo/ Highlight Video
     @apiName HighlightVideo
@@ -35,7 +35,8 @@ class CreateHighlightVideoHandler(baseHandler.BaseHandler):
         if status_code == 200:
             self.finish("Create Highlight Video")
         else:
-            raise tornado.web.HTTPError(reason=reason, status_code=status_code)
+            self.error_message = reason
+            raise tornado.web.HTTPError(status_code=status_code)
 
     @staticmethod
     def handler(identifier, ttc_threshold, vehicle_only):
