@@ -43,7 +43,7 @@ class CreateHighlightVideoHandler(baseHandler.BaseHandler):
     @staticmethod
     def handler(identifier, email, ttc_threshold, vehicle_only):
         StatusHelper.set_status(self.identifier, "highlight_video", 1)
-      project_dir = get_project_path(identifier)
+        project_dir = get_project_path(identifier)
         if not os.path.exists(project_dir):
             StatusHelper.set_status(self.identifier, "highlight_video", -1)
             return (500, 'Project directory does not exist. Check your identifier?')
@@ -79,7 +79,6 @@ class CreateHighlightVideoHandler(baseHandler.BaseHandler):
             StatusHelper.set_status(self.identifier, "highlight_video", -1)
             return (500, error_message)
 
-        StatusHelper.set_status(self.identifier, "highlight_video", 2)
         return (200, "Success")
 
     @staticmethod
@@ -106,6 +105,7 @@ class CreateHighlightVideoThread(threading.Thread):
         print("create_highlight_video")
         create_highlight_video(self.project_dir, self.video_path, self.near_misses)
 
+        StatusHelper.set_status(self.identifier, "highlight_video", 2)
         self.callback(200, "Highlight video complete.", self.email)
 
 

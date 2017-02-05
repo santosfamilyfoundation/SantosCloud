@@ -137,6 +137,15 @@ def get_resolution(videopath):
 
 #### Video Creation
 
+def create_video_from_images(images_dir, prefix, video_dir, video_filename, framerate, extension="png"):
+    '''
+    Creates a video for images that are of the form prefix+number+.extension
+    '''
+    video.move_files_to_folder(images_dir,video_dir,prefix, extension)
+    video.renumber_frames(video_dir, 0, prefix, extension)
+    video.convert_frames_to_video(framerate, video_dir, video_dir, prefix, video_filename, 1.0)
+    video.delete_files(video_dir, prefix=prefix, extensions=[extension])
+
 def create_video_snippet(project_path, video_path, videos_folder, file_prefix, video_number, start_frame, end_frame, pts_multiplier=1.0):
     images_folder = os.path.join(project_path, "temp_images")
     db_path = os.path.join(project_path, "run", "results.sqlite")
@@ -153,7 +162,7 @@ def create_video_snippet(project_path, video_path, videos_folder, file_prefix, v
 
     # Get the frames, and create a short video out of them
     renumber_frames(images_folder, start_frame, temp_image_prefix, "png")
-    convert_frames_to_video(video_path, images_folder, videos_folder, temp_image_prefix, file_prefix + str(video_number) + ".mpg", pts_multiplier)
+    convert_frames_to_video(get_framerate(video_path), images_folder, videos_folder, temp_image_prefix, file_prefix + str(video_number) + ".mpg", pts_multiplier)
 
 def create_video_from_image(folder, image_filename, video_filename, duration):
     subprocess.call(["ffmpeg",
@@ -212,9 +221,9 @@ def renumber_frames(folder, start_frame, prefix, extension):
 
     os.removedirs(temp_folder)
 
-def convert_frames_to_video(video_path, images_folder, videos_folder, images_prefix, filename, pts_multiplier):
+def convert_frames_to_video(framerate, images_folder, videos_folder, images_prefix, filename, pts_multiplier):
     subprocess.call(["ffmpeg",
-        "-framerate", get_framerate(video_path),
+        "-framerate", framerate,
         "-i", os.path.join(images_folder, images_prefix+"%d.png"),
         "-filter:v", "setpts={:0.1f}*PTS".format(pts_multiplier),
         "-c:v", "libx264",

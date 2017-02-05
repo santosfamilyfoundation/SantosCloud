@@ -32,7 +32,6 @@ class TestConfigHandler(tornado.web.RequestHandler):
     def post(self):
         identifier = self.get_body_argument("identifier")
         test_flag = self.get_body_argument("test_flag")
-        print test_flag
 
         frame_start = int(self.get_body_argument("frame_start", default = 0))
         num_frames = int(self.get_body_argument("num_frames", default = 120))
@@ -58,6 +57,9 @@ class TestConfigHandler(tornado.web.RequestHandler):
         elif test_flag == "object":
             print "running object"
             TestConfigObjectThread(identifier, frame_start, num_frames, TestConfigHandler.test_feature_callback).start()
+        else:
+            print "Incorrect flag passed: " + test_flag
+            return (500, "Incorrect flag passed: " + test_flag)
 
         return (200, "Success")
 
@@ -102,10 +104,8 @@ class TestConfigFeatureThread(threading.Thread):
         videos_folder = os.path.join(get_project_path(self.identifier), "feature_images")
         video_filename = "feature_video.mp4"
         temp_image_prefix = 'image-'
-        video.move_files_to_folder(os.getcwd(),images_folder,temp_image_prefix, '.png')
-        video.renumber_frames(images_folder, 0, temp_image_prefix, "png")
-        video.convert_frames_to_video(get_project_video_path(self.identifier), images_folder, videos_folder, temp_image_prefix, video_filename, 1.0)
-        video.delete_files(images_folder, prefix=temp_image_prefix, extensions=["png"])
+        video.create_video_from_images(os.getcwd(), temp_image_prefix, videos_folder, video_filename, video.get_framerate(get_project_video_path(identifier)))
+
         StatusHelper.set_status(self.identifier, "configuration_test", 2)
         self.callback(200, "Test config done", self.identifier)
 
@@ -145,10 +145,7 @@ class TestConfigObjectThread(threading.Thread):
         videos_folder = os.path.join(get_project_path(self.identifier), "object_images")
         video_filename = "object_video.mp4"
         temp_image_prefix = 'image-'
-        video.move_files_to_folder(os.getcwd(),images_folder,temp_image_prefix, '.png')
-        video.renumber_frames(images_folder, 0, temp_image_prefix, "png")
-        video.convert_frames_to_video(get_project_video_path(self.identifier), images_folder, videos_folder, temp_image_prefix, video_filename, 1.0)
-        video.delete_files(images_folder, prefix=temp_image_prefix, extensions=["png"])
+        video.create_video_from_images(os.getcwd(), temp_image_prefix, videos_folder, video_filename, video.get_framerate(get_project_video_path(identifier)))
 
         self.callback(200, "Test config done", self.identifier)
 

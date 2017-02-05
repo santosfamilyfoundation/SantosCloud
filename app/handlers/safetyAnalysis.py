@@ -71,6 +71,8 @@ class SafetyAnalysisThread(threading.Thread):
         self.prediction_method = prediction_method
 
     def run(self):
+        StatusHelper.set_status(self.identifier, "safety_analysis", 1)
+
         project_path = get_project_path(self.identifier)
         config_path = os.path.join(project_path, "tracking.cfg")
         db_path = os.path.join(project_path, "run", "results.sqlite")

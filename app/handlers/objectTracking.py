@@ -90,13 +90,13 @@ class ObjectTrackingThread(threading.Thread):
 
         if os.path.exists(db_path):  # If results database already exists,
             os.remove(db_path)  # then remove it--it'll be recreated.
-        
+
         try:
-            subprocess.check_output(["feature-based-tracking", tracking_path, "--tf", "--database-filename", db_path])     
+            subprocess.check_output(["feature-based-tracking", tracking_path, "--tf", "--database-filename", db_path])
             subprocess.check_output(["feature-based-tracking", tracking_path, "--gf", "--database-filename", db_path])
             subprocess.check_output(["classify-objects.py", "--cfg", tracking_path, "-d", db_path])  # Classify road users
         except subprocess.CalledProcessError as excp:
-        StatusHelper.set_status(self.identifier, "object_tracking", -1)
+            StatusHelper.set_status(self.identifier, "object_tracking", -1)
 
             return (500, excp.output, self.identifier, self.email)
 
