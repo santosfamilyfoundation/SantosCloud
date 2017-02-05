@@ -17,14 +17,14 @@ class Status(object):
         IN_PROGRESS = 1
         COMPLETE = 2
 
-    @staticmethod
-    def create_status_dict():
+    @classmethod
+    def create_status_dict(cls):
         return {
-            self.Type.UPLOAD_HOMOGRAPHY: 0,
-            self.Type.CONFIGURATION_TEST: 0,
-            self.Type.OBJECT_TRACKING: 0,
-            self.Type.SAFETY_ANALYSIS: 0,
-            self.Type.HIGHLIGHT_VIDEO: 0,
+            cls.StatusType.UPLOAD_HOMOGRAPHY: 0,
+            cls.StatusType.CONFIGURATION_TEST: 0,
+            cls.StatusType.OBJECT_TRACKING: 0,
+            cls.StatusType.SAFETY_ANALYSIS: 0,
+            cls.StatusType.HIGHLIGHT_VIDEO: 0,
         }
 
 class StatusHelper(object):
@@ -33,7 +33,7 @@ class StatusHelper(object):
         d = Status.create_status_dict()
         config_path = get_project_config_path(identifier)
         for (status_type, status) in d.iteritems():
-            update_config_with_sections(config_path, "status", status_type, status)
+            update_config_with_sections(config_path, "status", status_type, str(status))
 
     @staticmethod
     def set_status(identifier, status_type, val):

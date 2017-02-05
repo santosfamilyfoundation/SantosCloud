@@ -141,10 +141,10 @@ def create_video_from_images(images_dir, prefix, video_dir, video_filename, fram
     '''
     Creates a video for images that are of the form prefix+number+.extension
     '''
-    video.move_files_to_folder(images_dir,video_dir,prefix, extension)
-    video.renumber_frames(video_dir, 0, prefix, extension)
-    video.convert_frames_to_video(framerate, video_dir, video_dir, prefix, video_filename, 1.0)
-    video.delete_files(video_dir, prefix=prefix, extensions=[extension])
+    move_files_to_folder(images_dir,video_dir,prefix, extension)
+    renumber_frames(video_dir, 0, prefix, extension)
+    convert_frames_to_video(framerate, video_dir, video_dir, prefix, video_filename, 1.0)
+    delete_files(video_dir, prefix=prefix, extensions=[extension])
 
 def create_video_snippet(project_path, video_path, videos_folder, file_prefix, video_number, start_frame, end_frame, pts_multiplier=1.0):
     images_folder = os.path.join(project_path, "temp_images")

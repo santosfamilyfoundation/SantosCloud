@@ -36,7 +36,7 @@ class TestConfigHandler(tornado.web.RequestHandler):
         frame_start = int(self.get_body_argument("frame_start", default = 0))
         num_frames = int(self.get_body_argument("num_frames", default = 120))
 
-        status_code, response_message = TestConfigHandler.handler(identifier, frame_start, num_frames, test_flag)
+        status_code, reason = TestConfigHandler.handler(identifier, frame_start, num_frames, test_flag)
 
         if status_code == 200:
             self.finish("Testing tracking")
@@ -45,10 +45,11 @@ class TestConfigHandler(tornado.web.RequestHandler):
 
     @staticmethod
     def handler(identifier, frame_start, num_frames, test_flag):
-        StatusHelper.set_status(self.identifier, "configuration_test", 1)
+        StatusHelper.set_status(identifier, "configuration_test", 1)
+
         project_path = get_project_path(identifier)
         if not os.path.exists(project_path):
-            StatusHelper.set_status(self.identifier, "configuration_test", -1)
+            StatusHelper.set_status(identifier, "configuration_test", -1)
             return (500, 'Project directory does not exist. Check your identifier?')
 
         if test_flag == "feature":
@@ -96,7 +97,7 @@ class TestConfigFeatureThread(threading.Thread):
 
         try:
             subprocess.check_output(["feature-based-tracking", tracking_path, "--tf", "--database-filename", db_path])
-            subprocess.check_output(["display-trajectories.py", "-i", get_project_video_path(identifier), "-d", db_path, "-o", project_path + "/homography/homography.txt", "-t", "feature", "--save-images", "-f", str(frame_start), "--last-frame", str(frame_start+num_frames)])
+            subprocess.check_output(["display-trajectories.py", "-i", get_project_video_path(self.identifier), "-d", db_path, "-o", project_path + "/homography/homography.txt", "-t", "feature", "--save-images", "-f", str(self.frame_start), "--last-frame", str(self.frame_start + self.num_frames)])
         except subprocess.CalledProcessError as err_msg:
             StatusHelper.set_status(self.identifier, "configuration_test", -1)
             return (500, err_msg.output, self.identifier)
@@ -104,7 +105,7 @@ class TestConfigFeatureThread(threading.Thread):
         videos_folder = os.path.join(get_project_path(self.identifier), "feature_images")
         video_filename = "feature_video.mp4"
         temp_image_prefix = 'image-'
-        video.create_video_from_images(os.getcwd(), temp_image_prefix, videos_folder, video_filename, video.get_framerate(get_project_video_path(identifier)))
+        video.create_video_from_images(os.getcwd(), temp_image_prefix, videos_folder, video_filename, video.get_framerate(get_project_video_path(self.identifier)))
 
         StatusHelper.set_status(self.identifier, "configuration_test", 2)
         self.callback(200, "Test config done", self.identifier)
@@ -128,6 +129,7 @@ class TestConfigObjectThread(threading.Thread):
             os.remove(obj_db_path)
         shutil.copyfile(feat_db_path, obj_db_path)
 
+        print "HI"
         testing_dict = {'frame1': self.frame_start, 'nframes': self.num_frames}
         update_config_without_sections(tracking_path, testing_dict)
 
