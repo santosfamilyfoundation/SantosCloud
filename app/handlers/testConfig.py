@@ -9,6 +9,7 @@ import threading
 from traffic_cloud_utils.app_config import get_project_path, get_project_video_path, update_config_without_sections, get_config_without_sections
 from traffic_cloud_utils.emailHelper import EmailHelper
 from traffic_cloud_utils.app_config import update_config_without_sections
+from traffic_cloud_utils.statusHelper import StatusHelper
 from traffic_cloud_utils import video
 
 class TestConfigHandler(tornado.web.RequestHandler):
@@ -45,9 +46,11 @@ class TestConfigHandler(tornado.web.RequestHandler):
 
     @staticmethod
     def handler(identifier, frame_start, num_frames, test_flag):
+        StatusHelper.set_status(self.identifier, "configuration_test", 1)
         project_path = get_project_path(identifier)
         if not os.path.exists(project_path):
-           return (500, 'Project directory does not exist. Check your identifier?')
+            StatusHelper.set_status(self.identifier, "configuration_test", -1)
+            return (500, 'Project directory does not exist. Check your identifier?')
 
         if test_flag == "feature":
             print "running feature"
@@ -93,8 +96,8 @@ class TestConfigFeatureThread(threading.Thread):
             subprocess.check_output(["feature-based-tracking", tracking_path, "--tf", "--database-filename", db_path])
             subprocess.check_output(["display-trajectories.py", "-i", get_project_video_path(identifier), "-d", db_path, "-o", project_path + "/homography/homography.txt", "-t", "feature", "--save-images", "-f", str(frame_start), "--last-frame", str(frame_start+num_frames)])
         except subprocess.CalledProcessError as err_msg:
+            StatusHelper.set_status(self.identifier, "configuration_test", -1)
             return (500, err_msg.output, self.identifier)
-
 
         videos_folder = os.path.join(get_project_path(self.identifier), "feature_images")
         video_filename = "feature_video.mp4"
@@ -103,8 +106,9 @@ class TestConfigFeatureThread(threading.Thread):
         video.renumber_frames(images_folder, 0, temp_image_prefix, "png")
         video.convert_frames_to_video(get_project_video_path(self.identifier), images_folder, videos_folder, temp_image_prefix, video_filename, 1.0)
         video.delete_files(images_folder, prefix=temp_image_prefix, extensions=["png"])
-
+        StatusHelper.set_status(self.identifier, "configuration_test", 2)
         self.callback(200, "Test config done", self.identifier)
+
 
 class TestConfigObjectThread(threading.Thread):
     def __init__(self, identifier, frame_start, num_frames, callback):
@@ -115,6 +119,7 @@ class TestConfigObjectThread(threading.Thread):
         self.callback = callback
 
     def run(self):
+        StatusHelper.set_status(self.identifier, "configuration_test", 1)
         project_path = get_project_path(self.identifier)
         tracking_path = os.path.join(project_path, "tracking.cfg")
         obj_db_path = os.path.join(project_path,".temp", "test", "test_object", "test1.sqlite")
@@ -134,6 +139,7 @@ class TestConfigObjectThread(threading.Thread):
             subprocess.check_output(["classify-objects.py", "--cfg", tracking_path, "-d", obj_db_path])  # Classify road users
             subprocess.check_output(["display-trajectories.py", "-i", get_project_video_path(identifier),"-d", obj_db_path, "-o", project_path + "/homography/homography.txt", "-t", "object", "--save-images", "-f", str(frame_start), "--last-frame", str(frame_start+num_frames)])
         except subprocess.CalledProcessError as err_msg:
+            StatusHelper.set_status(self.identifier, "configuration_test", -1)
             return (500, err_msg.output, self.identifier)
 
         videos_folder = os.path.join(get_project_path(self.identifier), "object_images")
@@ -145,7 +151,5 @@ class TestConfigObjectThread(threading.Thread):
         video.delete_files(images_folder, prefix=temp_image_prefix, extensions=["png"])
 
         self.callback(200, "Test config done", self.identifier)
-
-
 
 
