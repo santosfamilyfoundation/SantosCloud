@@ -7,6 +7,8 @@ import tornado.web
 
 import threading
 
+from baseHandler import BaseHandler
+
 from traffic_cloud_utils.plotting.make_object_trajectories import main as db_make_objtraj
 from traffic_cloud_utils.app_config import get_project_path, get_project_video_path, update_config_without_sections, get_config_without_sections
 from traffic_cloud_utils.emailHelper import EmailHelper
@@ -14,7 +16,7 @@ from traffic_cloud_utils.statusHelper import StatusHelper
 from traffic_cloud_utils import video
 
 
-class ObjectTrackingHandler(tornado.web.RequestHandler):
+class ObjectTrackingHandler(BaseHandler):
     """
     @api {post} /objectTracking/ Object Tracking
     @apiName ObjectTracking
@@ -35,11 +37,12 @@ class ObjectTrackingHandler(tornado.web.RequestHandler):
 
         email = self.get_body_argument("email", default = None)
         status_code, reason = self.handler(self.get_body_argument("identifier"), email)
-        
+
         if status_code == 200:
             self.finish("Object Tracking")
         else:
-            raise tornado.web.HTTPError(reason=reason, status_code=status_code)
+            self.error_message = reason
+            raise tornado.web.HTTPError(status_code=status_code)
 
     @staticmethod
     def callback(status_code, response_message, email):
@@ -89,9 +92,9 @@ class ObjectTrackingThread(threading.Thread):
 
         if os.path.exists(db_path):  # If results database already exists,
             os.remove(db_path)  # then remove it--it'll be recreated.
-        
+
         try:
-            subprocess.check_output(["feature-based-tracking", tracking_path, "--tf", "--database-filename", db_path])     
+            subprocess.check_output(["feature-based-tracking", tracking_path, "--tf", "--database-filename", db_path])
             subprocess.check_output(["feature-based-tracking", tracking_path, "--gf", "--database-filename", db_path])
             subprocess.check_output(["classify-objects.py", "--cfg", tracking_path, "-d", db_path])  # Classify road users
         except subprocess.CalledProcessError as excp:

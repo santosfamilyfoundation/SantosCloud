@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 import tornado.web
+from baseHandler import BaseHandler
 
-class MakeReportHandler(tornado.web.RequestHandler):
+class MakeReportHandler(BaseHandler):
     """
     @api {post} /makeReport/ Make Report
     @apiName MakeReport
