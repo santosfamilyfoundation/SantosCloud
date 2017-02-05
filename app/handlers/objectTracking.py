@@ -98,7 +98,7 @@ class ObjectTrackingThread(threading.Thread):
         except subprocess.CalledProcessError as excp:
             StatusHelper.set_status(self.identifier, "object_tracking", -1)
 
-            return (500, excp.output, self.identifier, self.email)
+            return self.callback(500, excp.output, self.identifier, self.email)
 
 
         db_make_objtraj(db_path)  # Make our object_trajectories db table

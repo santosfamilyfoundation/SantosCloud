@@ -102,10 +102,9 @@ class CreateHighlightVideoThread(threading.Thread):
         self.email = email
 
     def run(self):
-        print("create_highlight_video")
         create_highlight_video(self.project_dir, self.video_path, self.near_misses)
 
         StatusHelper.set_status(self.identifier, "highlight_video", 2)
-        self.callback(200, "Highlight video complete.", self.email)
+        return self.callback(200, "Highlight video complete.", self.email)
 
 

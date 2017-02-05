@@ -111,7 +111,7 @@ class TestConfigFeatureThread(threading.Thread):
             subprocess.check_output(["display-trajectories.py", "-i", get_project_video_path(self.identifier), "-d", db_path, "-o", project_path + "/homography/homography.txt", "-t", "feature", "--save-images", "-f", str(self.frame_start), "--last-frame", str(self.frame_start + self.num_frames)])
         except subprocess.CalledProcessError as err_msg:
             StatusHelper.set_status(self.identifier, "configuration_test", -1)
-            return (500, err_msg.output, self.identifier)
+            return self.callback(500, err_msg.output, self.identifier)
 
         videos_folder = os.path.join(get_project_path(self.identifier), "feature_images")
         video_filename = "feature_video.mp4"
@@ -119,7 +119,7 @@ class TestConfigFeatureThread(threading.Thread):
         video.create_video_from_images(os.getcwd(), temp_image_prefix, videos_folder, video_filename, video.get_framerate(get_project_video_path(self.identifier)))
 
         StatusHelper.set_status(self.identifier, "configuration_test", 2)
-        self.callback(200, "Test config done", self.identifier)
+        return self.callback(200, "Test config done", self.identifier)
 
 
 class TestConfigObjectThread(threading.Thread):
@@ -157,13 +157,13 @@ class TestConfigObjectThread(threading.Thread):
             subprocess.check_output(["display-trajectories.py", "-i", get_project_video_path(self.identifier),"-d", obj_db_path, "-o", project_path + "/homography/homography.txt", "-t", "object", "--save-images", "-f", str(self.frame_start), "--last-frame", str(self.frame_start + self.num_frames)])
         except subprocess.CalledProcessError as err_msg:
             StatusHelper.set_status(self.identifier, "configuration_test", -1)
-            return (500, err_msg.output, self.identifier)
+            return self.callback(500, err_msg.output, self.identifier)
 
         videos_folder = os.path.join(get_project_path(self.identifier), "object_images")
         video_filename = "object_video.mp4"
         temp_image_prefix = 'image-'
         video.create_video_from_images(os.getcwd(), temp_image_prefix, videos_folder, video_filename, video.get_framerate(get_project_video_path(self.identifier)))
 
-        self.callback(200, "Test config done", self.identifier)
+        return self.callback(200, "Test config done", self.identifier)
 
 

@@ -50,11 +50,11 @@ class SafetyAnalysisHandler(tornado.web.RequestHandler):
 
     @staticmethod
     def handler(identifier, email, callback, prediction_method=None):
-        StatusHelper.set_status(self.identifier, "safety_analysis", 1)
+        StatusHelper.set_status(identifier, "safety_analysis", 1)
 
         project_path = get_project_path(identifier)
         if not os.path.exists(project_path):
-            StatusHelper.set_status(self.identifier, "safety_analysis", -1)
+            StatusHelper.set_status(identifier, "safety_analysis", -1)
             return (500, 'Project directory does not exist. Check your identifier?')
 
         SafetyAnalysisThread(identifier, email, callback, prediction_method=prediction_method).start()
@@ -90,13 +90,13 @@ class SafetyAnalysisThread(threading.Thread):
         try:
             print "Running safety analysis. Please wait as this may take a while."
 
-            subprocess.check_output(["safety-analysis.py", "--cfg", config_path, "--prediction-method", prediction_method])
-        except subprocess.CalledProgramError as err_msg:
+            subprocess.check_output(["safety-analysis.py", "--cfg", config_path, "--prediction-method", self.prediction_method])
+        except subprocess.CalledProcessError as err_msg:
             StatusHelper.set_status(self.identifier, "safety_analysis", -1)
-            return (500, err_msg.output, self.identifier, self.email)
+            return self.callback(500, err_msg.output, self.identifier, self.email)
 
         StatusHelper.set_status(self.identifier, "safety_analysis", 2)
-        return (200, "Success")
+        return self.callback(200, "Success", self.identifier, self.email)
 
 
 
