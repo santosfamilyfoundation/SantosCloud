@@ -27,7 +27,7 @@ class CreateHighlightVideoHandler(baseHandler.BaseHandler):
     @apiError error_message The error message to display.
     """
     def post(self):
-       	identifier = self.get_body_argument('identifier')
+        identifier = self.get_body_argument('identifier')
         ttc_threshold = float(self.get_body_argument('ttc_threshold', default=1.5))
         vehicle_only = bool(self.get_body_argument('vehicle_only', default=True))
 
