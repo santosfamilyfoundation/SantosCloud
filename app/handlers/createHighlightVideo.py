@@ -45,39 +45,39 @@ class CreateHighlightVideoHandler(baseHandler.BaseHandler):
         StatusHelper.set_status(self.identifier, "highlight_video", 1)
         project_dir = get_project_path(identifier)
         if not os.path.exists(project_dir):
-            StatusHelper.set_status(self.identifier, "highlight_video", -1)
+            StatusHelper.set_status(identifier, "highlight_video", -1)
             return (500, 'Project directory does not exist. Check your identifier?')
 
         db = os.path.join(project_dir, 'run', 'results.sqlite')
         #TO-DO: Check to see if tables like "interactions" exist
         if not os.path.exists(db):
-            StatusHelper.set_status(self.identifier, "highlight_video", -1)
+            StatusHelper.set_status(identifier, "highlight_video", -1)
             return (500, 'Database file does not exist. Trajectory analysis needs to be called first ')
 
         video_path = get_project_video_path(identifier)
         if not os.path.exists(video_path):
-            StatusHelper.set_status(self.identifier, "highlight_video", -1)
+            StatusHelper.set_status(identifier, "highlight_video", -1)
             return (500, 'Source video file does not exist.  Was the video uploaded?')
 
         try:
             alterInteractionsWithRoadUserType(db)
         except Exception as error_message:
-            StatusHelper.set_status(self.identifier, "highlight_video", -1)
-            return (500, "Alter Interactions Table with Road User Type failed\n" + error_message)
+            StatusHelper.set_status(identifier, "highlight_video", -1)
+            return (500, "Alter Interactions Table with Road User Type failed\n" + str(error_message))
 
         ttc_threshold_frames = int(ttc_threshold * float(get_framerate(video_path)))
 
         try:
             near_misses = getNearMissFrames(db, ttc_threshold_frames, vehicle_only)
         except Exception as error_message:
-            StatusHelper.set_status(self.identifier, "highlight_video", -1)
-            return (500, error_message)
+            StatusHelper.set_status(identifier, "highlight_video", -1)
+            return (500, str(error_message))
 
         try:
-            CreateHighlightVideoThread(project_dir, video_path, near_misses, email, CreateHighlightVideoHandler.callback).start()
+            CreateHighlightVideoThread(identifier, project_dir, video_path, near_misses, email, CreateHighlightVideoHandler.callback).start()
         except Exception as error_message:
-            StatusHelper.set_status(self.identifier, "highlight_video", -1)
-            return (500, error_message)
+            StatusHelper.set_status(identifier, "highlight_video", -1)
+            return (500, str(error_message))
 
         return (200, "Success")
 
@@ -93,8 +93,9 @@ class CreateHighlightVideoHandler(baseHandler.BaseHandler):
 
 
 class CreateHighlightVideoThread(threading.Thread):
-    def __init__(self, project_dir, video_path, near_misses, email, callback):
+    def __init__(self, identifier, project_dir, video_path, near_misses, email, callback):
         threading.Thread.__init__(self)
+        self.identifier = identifier
         self.project_dir = project_dir
         self.video_path = video_path
         self.near_misses = near_misses

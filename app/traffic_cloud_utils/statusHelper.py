@@ -20,11 +20,11 @@ class Status(object):
     @classmethod
     def create_status_dict(cls):
         return {
-            cls.StatusType.UPLOAD_HOMOGRAPHY: 0,
-            cls.StatusType.CONFIGURATION_TEST: 0,
-            cls.StatusType.OBJECT_TRACKING: 0,
-            cls.StatusType.SAFETY_ANALYSIS: 0,
-            cls.StatusType.HIGHLIGHT_VIDEO: 0,
+            Status.StatusType.UPLOAD_HOMOGRAPHY: 0,
+            Status.StatusType.CONFIGURATION_TEST: 0,
+            Status.StatusType.OBJECT_TRACKING: 0,
+            Status.StatusType.SAFETY_ANALYSIS: 0,
+            Status.StatusType.HIGHLIGHT_VIDEO: 0,
         }
 
 class StatusHelper(object):

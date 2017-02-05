@@ -71,7 +71,6 @@ class TestConfigHandler(tornado.web.RequestHandler):
 
         return (200, "Success")
 
-
     @staticmethod
     def test_feature_callback(status_code, response_message, identifier):
         print(status_code, response_message)
@@ -164,6 +163,7 @@ class TestConfigObjectThread(threading.Thread):
         temp_image_prefix = 'image-'
         video.create_video_from_images(os.getcwd(), temp_image_prefix, videos_folder, video_filename, video.get_framerate(get_project_video_path(self.identifier)))
 
+        StatusHelper.set_status(self.identifier, "configuration_test", 2)
         return self.callback(200, "Test config done", self.identifier)
 
 
