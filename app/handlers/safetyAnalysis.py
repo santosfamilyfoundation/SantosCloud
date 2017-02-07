@@ -1,17 +1,17 @@
  #!/usr/bin/env python
 import os
 import subprocess
-
+import threading
 import tornado.web
 
-import threading
+from baseHandler import BaseHandler
 
 from traffic_cloud_utils.app_config import get_project_path, get_project_video_path, update_config_without_sections, get_config_without_sections
 from traffic_cloud_utils.emailHelper import EmailHelper
 from traffic_cloud_utils.statusHelper import StatusHelper
 
 
-class SafetyAnalysisHandler(tornado.web.RequestHandler):
+class SafetyAnalysisHandler(BaseHandler):
     """
     @api {post} /safetyAnalysis/ Safety Analysis
     @apiName SafetyAnalysis
@@ -35,7 +35,8 @@ class SafetyAnalysisHandler(tornado.web.RequestHandler):
 
             self.finish("Safety Analysis")
         else:
-            raise tornado.web.HTTPError(reason=reason, status_code=status_code)
+            self.error_message = reason
+            raise tornado.web.HTTPError(status_code=status_code)
 
     @staticmethod
     def callback(status_code, response_message, identifier, email):

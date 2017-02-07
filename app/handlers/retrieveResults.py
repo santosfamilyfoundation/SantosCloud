@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 import tornado.web
+from baseHandler import BaseHandler
 
-class RetrieveResultsHandler(tornado.web.RequestHandler):
+class RetrieveResultsHandler(BaseHandler):
     """
     @api {get} /retrieveResults/ Retrieve Results
     @apiName RetrieveResults
