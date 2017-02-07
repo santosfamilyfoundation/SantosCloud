@@ -9,6 +9,7 @@ from traffic_cloud_utils.video import create_highlight_video, get_framerate
 from storage import alterInteractionsWithRoadUserType, getNearMissFrames
 from traffic_cloud_utils.app_config import get_project_path, get_project_video_path
 from traffic_cloud_utils.statusHelper import StatusHelper
+from traffic_cloud_utils.emailHelper import EmailHelper
 import baseHandler
 
 # TODO: remove once pip's error request handler is written
@@ -30,7 +31,7 @@ class CreateHighlightVideoHandler(baseHandler.BaseHandler):
     """
     def post(self):
         identifier = self.get_body_argument('identifier')
-        email = self.get_body_argument('email')
+        email = self.get_body_argument('email', default=None)
         ttc_threshold = float(self.get_body_argument('ttc_threshold', default=1.5))
         vehicle_only = bool(self.get_body_argument('vehicle_only', default=True))
 
@@ -42,7 +43,8 @@ class CreateHighlightVideoHandler(baseHandler.BaseHandler):
 
     @staticmethod
     def handler(identifier, email, ttc_threshold, vehicle_only):
-        StatusHelper.set_status(self.identifier, "highlight_video", 1)
+        StatusHelper.set_status(identifier, "highlight_video", 1)
+
         project_dir = get_project_path(identifier)
         if not os.path.exists(project_dir):
             StatusHelper.set_status(identifier, "highlight_video", -1)
