@@ -23,6 +23,7 @@ from handlers.uploadHomography import UploadHomographyHandler
 # Configure routes
 from handlers.config import ConfigHandler
 from handlers.testConfig import TestConfigHandler
+from handlers.defaultConfig import DefaultConfigHandler
 
 # Analysis routes
 from handlers.analysis import AnalysisHandler
@@ -52,6 +53,7 @@ class Application(tornado.web.Application):
             (r"/uploadHomography", UploadHomographyHandler),
             (r"/config", ConfigHandler),
             (r"/testConfig", TestConfigHandler),
+            (r"/defaultConfig", DefaultConfigHandler),
             (r"/analysis", AnalysisHandler),
             (r"/objectTracking", ObjectTrackingHandler),
             (r"/safetyAnalysis", SafetyAnalysisHandler),
