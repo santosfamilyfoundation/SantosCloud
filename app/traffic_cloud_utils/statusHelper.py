@@ -52,8 +52,7 @@ class StatusHelper(object):
         config_path = get_project_config_path(identifier)
         (success, value) = get_config_section(config_path, "status")
         if success:
-            diction = {Status.Type(k):Status.Flag(int(v)) for (k,v) in value.iteritems()}
-            return diction
+            return {Status.Type(k):Status.Flag(int(v)) for (k,v) in value.iteritems()}
         else:
             return None
 
