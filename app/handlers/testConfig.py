@@ -59,6 +59,8 @@ class TestConfigHandler(BaseHandler):
 
         frame_start = int(self.get_body_argument("frame_start", default = 0))
         num_frames = int(self.get_body_argument("num_frames", default = 120))
+        if num_frames > 200:
+            num_frames = 200
 
         status_code, reason = TestConfigHandler.handler(identifier, frame_start, num_frames, test_flag)
 
