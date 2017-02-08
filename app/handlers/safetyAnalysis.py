@@ -59,7 +59,7 @@ class SafetyAnalysisHandler(BaseHandler):
             return (500, 'Project directory does not exist. Check your identifier?')
         
         if StatusHelper.get_status(identifier)[Status.Type.OBJECT_TRACKING] == Status.Flag.COMPLETE: 
-         SafetyAnalysisThread(identifier, email, callback, prediction_method=prediction_method).start()
+            SafetyAnalysisThread(identifier, email, callback, prediction_method=prediction_method).start()
         else:
             return (400, "Object tracking did not complete successfully.")
 
