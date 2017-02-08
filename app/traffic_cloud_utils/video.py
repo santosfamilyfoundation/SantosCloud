@@ -84,12 +84,15 @@ def delete_files(folder, prefix="", extensions=[], excluded_files=[]):
         for file in os.listdir(folder):
             if file.startswith(prefix):
                 s = file.split('.')
-                if len(s) == 2:
+                has_extension = len(s) == 2
+                extension_excluded = False
+                if has_extension:
                     e = s[1]
-                    # Then check extension is correct
-                    if len(extensions) == 0 or e in extensions:
-                        if not file in excluded_files:
-                            os.remove(os.path.join(folder, file))
+                    if e in extensions:
+                        extension_excluded = True
+                if not extension_excluded:
+                    if not file in excluded_files:
+                        os.remove(os.path.join(folder, file))
 
 def get_list_of_files(folder, prefix, extension):
     count = 0
