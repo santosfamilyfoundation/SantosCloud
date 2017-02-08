@@ -38,7 +38,7 @@ class CreateHighlightVideoHandler(BaseHandler):
         if StatusHelper.get_status(identifier)[Status.Type.SAFETY_ANALYSIS] == Status.Flag.COMPLETE:
             status_code, reason = CreateHighlightVideoHandler.handler(identifier, email, ttc_threshold, vehicle_only)
         else:
-            return (400, "Safety analysis did not complete successfully.")
+            return (400, "Safety analysis did not complete successfully, try re-running.")
         if status_code == 200:
             self.finish("Create Highlight Video")
         else:

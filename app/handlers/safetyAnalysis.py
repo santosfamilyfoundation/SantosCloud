@@ -61,7 +61,7 @@ class SafetyAnalysisHandler(BaseHandler):
         if StatusHelper.get_status(identifier)[Status.Type.OBJECT_TRACKING] == Status.Flag.COMPLETE: 
             SafetyAnalysisThread(identifier, email, callback, prediction_method=prediction_method).start()
         else:
-            return (400, "Object tracking did not complete successfully.")
+            return (400, "Object tracking did not complete successfully, try re-running.")
 
         return (200, "Success")
 

@@ -69,7 +69,7 @@ class ObjectTrackingHandler(BaseHandler):
         if StatusHelper.get_status(identifier)[Status.Type.UPLOAD_HOMOGRAPHY] == Status.Flag.COMPLETE:
             ObjectTrackingThread(identifier, email, callback).start()
         else:
-            return (400, "Uploading homography did not complete successfully.")
+            return (400, "Uploading homography did not complete successfully, try re-running.")
 
         return (200, "Success")
 

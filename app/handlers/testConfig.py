@@ -62,7 +62,7 @@ class TestConfigHandler(BaseHandler):
             if StatusHelper.get_status(identifier)[Status.Type.UPLOAD_HOMOGRAPHY] == Status.Flag.COMPLETE:
                 StatusHelper.set_status(identifier, status_type, Status.Flag.IN_PROGRESS)
             else:
-                return (400, "Uploading homography did not complete successfully.")
+                return (400, "Uploading homography did not complete successfully, try re-running.")
             TestConfigFeatureThread(identifier, frame_start, num_frames, TestConfigHandler.test_feature_callback).start()
         elif test_flag == "object":
             print "running object"
@@ -74,7 +74,7 @@ class TestConfigHandler(BaseHandler):
             else:
                 print "Feature tracking not run"
                 StatusHelper.set_status(identifier, status_type, Status.Flag.FAILURE)
-                return (400, "Testing of feature tracking did not complete successfully.")
+                return (400, "Testing of feature tracking did not complete successfully, try re-running.")
         else:
             print "Incorrect flag passed: " + test_flag
             StatusHelper.set_status(identifier, status_type, Status.Flag.FAILURE)
