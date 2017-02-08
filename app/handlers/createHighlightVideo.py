@@ -34,9 +34,13 @@ class CreateHighlightVideoHandler(BaseHandler):
     def prepare(self):
         identifier = self.get_body_argument("identifier")
         if StatusHelper.get_status(identifier)[Status.Type.HIGHLIGHT_VIDEO] == Status.Flag.IN_PROGRESS:
-            self.finish("Currently creating a highlight video. Please wait.")
+            status_code = 423
+            self.error_message = "Currently creating a highlight video. Please wait."
+            raise tornado.web.HTTPError(status_code = status_code)
         if StatusHelper.get_status(identifier)[Status.Type.SAFETY_ANALYSIS] != Status.Flag.COMPLETE:
-            self.finish("Safety analysis did not complete successfully, try re-running it.")
+            status_code = 412
+            self.error_message = "Safety analysis did not complete successfully, try re-running it."
+            raise tornado.web.HTTPError(status_code = status_code)
         StatusHelper.set_status(identifier, Status.Type.HIGHLIGHT_VIDEO, Status.Flag.IN_PROGRESS)
 
 

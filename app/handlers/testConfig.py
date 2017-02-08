@@ -34,18 +34,18 @@ class TestConfigHandler(BaseHandler):
     def prepare(self):
         identifier = self.get_body_argument("identifier")
         test_flag = self.get_body_argument("test_flag")
-        print test_flag
         if test_flag == "feature":
             status_type = Status.Type.FEATURE_TEST
             if StatusHelper.get_status(identifier)[Status.Type.UPLOAD_HOMOGRAPHY] != Status.Flag.COMPLETE:
                 self.error_message = "Uploading homography did not complete successfully, try re-running it."
-                raise tornado.web.HTTPError(status_code = 412)
+                status_code = 412
+                raise tornado.web.HTTPError(status_code = status_code)
         elif test_flag == "object":
             status_type = Status.Type.OBJECT_TEST
             if StatusHelper.get_status(identifier)[Status.Type.FEATURE_TEST] != Status.Flag.COMPLETE:
                 self.error_message = "Feature testing did not complete successfully, try re-running it."
-                raise tornado.web.HTTPError(status_code = 412)
-        print status_type
+                status_code = 412
+                raise tornado.web.HTTPError(status_code = status_code)
         if StatusHelper.get_status(identifier)[Status.Type.FEATURE_TEST] == Status.Flag.IN_PROGRESS or StatusHelper.get_status(identifier)[Status.Type.OBJECT_TEST] == Status.Flag.IN_PROGRESS:
             status_code = 423
             self.error_message = "Currently running a test. Please wait."

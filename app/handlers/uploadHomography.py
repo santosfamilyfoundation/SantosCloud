@@ -33,7 +33,9 @@ class UploadHomographyHandler(BaseHandler):
     def prepare(self):
         identifier = self.get_body_argument("identifier")
         if StatusHelper.get_status(identifier)[Status.Type.UPLOAD_HOMOGRAPHY] == Status.Flag.IN_PROGRESS:
-            self.finish("Currently uploading homography. Please wait.")
+            status_code = 423
+            self.error_message = "Currently uploading homography. Please wait."
+            raise tornado.web.HTTPError(status_code = status_code)
         StatusHelper.set_status(identifier, Status.Type.UPLOAD_HOMOGRAPHY, Status.Flag.IN_PROGRESS)
 
 

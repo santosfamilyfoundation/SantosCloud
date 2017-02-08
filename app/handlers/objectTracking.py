@@ -35,9 +35,13 @@ class ObjectTrackingHandler(BaseHandler):
     def prepare(self):
         identifier = self.get_body_argument("identifier")
         if StatusHelper.get_status(identifier)[Status.Type.OBJECT_TRACKING] == Status.Flag.IN_PROGRESS:
-            self.finish("Currently analyzing your video. Please wait.")
+            status_code = 423
+            self.error_message = "Currently analyzing your video. Please wait."
+            raise tornado.web.HTTPError(status_code = status_code)
         if StatusHelper.get_status(identifier)[Status.Type.UPLOAD_HOMOGRAPHY] == Status.Flag.COMPLETE:
-            self.finish("Uploading homography did not complete successfully, try re-running.")
+            status_code = 412
+            self.error_message = "Uploading homography did not complete successfully, try re-running it."
+            raise tornado.web.HTTPError(status_code = status_code)
         StatusHelper.set_status(identifier, Status.Type.OBJECT_TRACKING, Status.Flag.IN_PROGRESS)
 
 
