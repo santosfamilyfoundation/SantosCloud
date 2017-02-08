@@ -167,8 +167,6 @@ def create_video_snippet(project_path, video_path, videos_folder, file_prefix, v
     subprocess.call(["display-trajectories.py", "-i", video_path,"-d", db_path, "-o", os.path.join(project_path, "homography", "homography.txt"), "-t", "object", "--save-images", "-f", str(start_frame), "--last-frame", str(end_frame), "--output-directory", images_folder])
 
     # Get the frames, and create a short video out of them
-    print(images_folder)
-    print(start_frame)
     renumber_frames(images_folder, start_frame, temp_image_prefix, "png")
     convert_frames_to_video(get_framerate(video_path), images_folder, videos_folder, temp_image_prefix, file_prefix + str(video_number) + ".mpg", pts_multiplier)
 
