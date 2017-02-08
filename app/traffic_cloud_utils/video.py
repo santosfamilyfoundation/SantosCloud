@@ -80,18 +80,28 @@ def move_files_to_folder(from_folder, to_folder, prefix, extensions):
                     os.rename(os.path.join(from_folder, file), os.path.join(to_folder, file))
 
 def delete_files(folder, prefix="", extensions=[], excluded_files=[]):
+    print("HI")
+    print(folder)
+    print(prefix)
+    print(extensions)
+    print(excluded_files)
     if os.path.exists(folder):
         for file in os.listdir(folder):
+            print("Looking at file: "+file)
             if file.startswith(prefix):
+                print("Has prefix")
                 s = file.split('.')
                 has_extension = len(s) == 2
-                extension_excluded = False
+                extension_included = True
+                print (has_extension, extension_excluded)
                 if has_extension:
                     e = s[1]
-                    if e in extensions:
-                        extension_excluded = True
-                if not extension_excluded:
+                    if len(extensions) > 0 and e not in extensions:
+                        extension_included = False
+                        print("Extension excluded")
+                if extension_included:
                     if not file in excluded_files:
+                        print("File deleted: "+file)
                         os.remove(os.path.join(folder, file))
 
 def get_list_of_files(folder, prefix, extension):
@@ -163,6 +173,8 @@ def create_video_snippet(project_path, video_path, videos_folder, file_prefix, v
     subprocess.call(["display-trajectories.py", "-i", video_path,"-d", db_path, "-o", os.path.join(project_path, "homography", "homography.txt"), "-t", "object", "--save-images", "-f", str(start_frame), "--last-frame", str(end_frame), "--output-directory", images_folder])
 
     # Get the frames, and create a short video out of them
+    print(images_folder)
+    print(start_frame)
     renumber_frames(images_folder, start_frame, temp_image_prefix, "png")
     convert_frames_to_video(get_framerate(video_path), images_folder, videos_folder, temp_image_prefix, file_prefix + str(video_number) + ".mpg", pts_multiplier)
 
@@ -213,7 +225,7 @@ def renumber_frames(folder, start_frame, prefix, extension):
                     except:
                         print("Couldn't parse to int: "+file+" from prefix: "+prefix)
                     if num < 0:
-                        raise Error()
+                        raise Exception()
                     new_file = prefix+str(num)+'.'+extension
                     os.rename(os.path.join(folder, file), os.path.join(temp_folder, new_file))
 
