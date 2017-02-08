@@ -10,7 +10,7 @@ from baseHandler import BaseHandler
 from traffic_cloud_utils.app_config import get_project_path, get_project_video_path, update_config_without_sections, get_config_without_sections
 from traffic_cloud_utils.emailHelper import EmailHelper
 from traffic_cloud_utils.app_config import update_config_without_sections
-from traffic_cloud_utils.statusHelper import StatusHelper
+from traffic_cloud_utils.statusHelper import StatusHelper, Status
 from traffic_cloud_utils import video
 
 class TestConfigHandler(BaseHandler):
@@ -47,28 +47,37 @@ class TestConfigHandler(BaseHandler):
 
     @staticmethod
     def handler(identifier, frame_start, num_frames, test_flag):
-        StatusHelper.set_status(identifier, "configuration_test", 1)
+        if test_flag == "feature":
+            status_type = Status.Type.FEATURE_TEST
+        elif test_flag == "object":
+            status_type = Status.Type.OBJECT_TEST
 
         project_path = get_project_path(identifier)
         if not os.path.exists(project_path):
-            StatusHelper.set_status(identifier, "configuration_test", -1)
+            StatusHelper.set_status(identifier, status_type, Status.Flag.FAILURE)
             return (400, 'Project directory does not exist. Check your identifier?')
 
         if test_flag == "feature":
             print "running feature"
+            if StatusHelper.get_status(identifier)[Status.Type.UPLOAD_HOMOGRAPHY] == Status.Flag.COMPLETE:
+                StatusHelper.set_status(identifier, status_type, Status.Flag.IN_PROGRESS)
+            else:
+                return (400, "Uploading homography did not complete successfully.")
             TestConfigFeatureThread(identifier, frame_start, num_frames, TestConfigHandler.test_feature_callback).start()
         elif test_flag == "object":
             print "running object"
             feat_db_path = os.path.join(project_path, ".temp", "test", "test_feature", "test1.sqlite")
-            if os.path.exists(feat_db_path):
+            if os.path.exists(feat_db_path) and StatusHelper.get_status(identifier)[Status.Type.FEATURE_TEST] == Status.Flag.COMPLETE:
+                StatusHelper.set_status(identifier, status_type, Status.Flag.IN_PROGRESS)
+
                 TestConfigObjectThread(identifier, frame_start, num_frames, TestConfigHandler.test_feature_callback).start()
             else:
                 print "Feature tracking not run"
-                StatusHelper.set_status(identifier, "configuration_test", -1)
-                return (400, "Feature tracking must be run before object tracking.")
+                StatusHelper.set_status(identifier, status_type, Status.Flag.FAILURE)
+                return (400, "Testing of feature tracking did not complete successfully.")
         else:
             print "Incorrect flag passed: " + test_flag
-            StatusHelper.set_status(identifier, "configuration_test", -1)
+            StatusHelper.set_status(identifier, status_type, Status.Flag.FAILURE)
             return (400, "Incorrect flag passed: " + test_flag)
 
         return (200, "Success")
@@ -111,7 +120,7 @@ class TestConfigFeatureThread(threading.Thread):
             subprocess.check_output(["feature-based-tracking", tracking_path, "--tf", "--database-filename", db_path])
             subprocess.check_output(["display-trajectories.py", "-i", get_project_video_path(self.identifier), "-d", db_path, "-o", project_path + "/homography/homography.txt", "-t", "feature", "--save-images", "-f", str(self.frame_start), "--last-frame", str(self.frame_start + self.num_frames)])
         except subprocess.CalledProcessError as err_msg:
-            StatusHelper.set_status(self.identifier, "configuration_test", -1)
+            StatusHelper.set_status(self.identifier, Status.Type.FEATURE_TEST, Status.Flag.FAILURE)
             return self.callback(500, err_msg.output, self.identifier)
 
         videos_folder = os.path.join(get_project_path(self.identifier), "feature_images")
@@ -119,7 +128,7 @@ class TestConfigFeatureThread(threading.Thread):
         temp_image_prefix = 'image-'
         video.create_video_from_images(os.getcwd(), temp_image_prefix, videos_folder, video_filename, video.get_framerate(get_project_video_path(self.identifier)))
 
-        StatusHelper.set_status(self.identifier, "configuration_test", 2)
+        StatusHelper.set_status(self.identifier, Status.Type.FEATURE_TEST, Status.Flag.COMPLETE)
         return self.callback(200, "Test config done", self.identifier)
 
 
@@ -132,7 +141,6 @@ class TestConfigObjectThread(threading.Thread):
         self.callback = callback
 
     def run(self):
-        StatusHelper.set_status(self.identifier, "configuration_test", 1)
 
         project_path = get_project_path(self.identifier)
         tracking_path = os.path.join(project_path, "tracking.cfg")
@@ -157,7 +165,7 @@ class TestConfigObjectThread(threading.Thread):
             subprocess.check_output(["classify-objects.py", "--cfg", tracking_path, "-d", obj_db_path])  # Classify road users
             subprocess.check_output(["display-trajectories.py", "-i", get_project_video_path(self.identifier),"-d", obj_db_path, "-o", project_path + "/homography/homography.txt", "-t", "object", "--save-images", "-f", str(self.frame_start), "--last-frame", str(self.frame_start + self.num_frames)])
         except subprocess.CalledProcessError as err_msg:
-            StatusHelper.set_status(self.identifier, "configuration_test", -1)
+            StatusHelper.set_status(self.identifier, Status.Type.OBJECT_TEST, Status.Flag.FAILURE)
             return self.callback(500, err_msg.output, self.identifier)
 
         videos_folder = os.path.join(get_project_path(self.identifier), "object_images")
@@ -165,7 +173,7 @@ class TestConfigObjectThread(threading.Thread):
         temp_image_prefix = 'image-'
         video.create_video_from_images(os.getcwd(), temp_image_prefix, videos_folder, video_filename, video.get_framerate(get_project_video_path(self.identifier)))
 
-        StatusHelper.set_status(self.identifier, "configuration_test", 2)
+        StatusHelper.set_status(self.identifier, Status.Type.OBJECT_TEST, Status.Flag.COMPLETE)
         return self.callback(200, "Test config done", self.identifier)
 
 

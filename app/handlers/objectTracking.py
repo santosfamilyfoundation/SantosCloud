@@ -12,7 +12,7 @@ from baseHandler import BaseHandler
 from traffic_cloud_utils.plotting.make_object_trajectories import main as db_make_objtraj
 from traffic_cloud_utils.app_config import get_project_path, get_project_video_path, update_config_without_sections, get_config_without_sections
 from traffic_cloud_utils.emailHelper import EmailHelper
-from traffic_cloud_utils.statusHelper import StatusHelper
+from traffic_cloud_utils.statusHelper import StatusHelper, Status
 from traffic_cloud_utils import video
 
 
@@ -39,8 +39,8 @@ class ObjectTrackingHandler(BaseHandler):
         status_code, reason = ObjectTrackingHandler.handler(identifier, email, ObjectTrackingHandler.callback)
 
         if status_code == 200:
-
             self.finish("Object Tracking")
+
         else:
             self.error_message = reason
             raise tornado.web.HTTPError(status_code=status_code)
@@ -61,11 +61,15 @@ class ObjectTrackingHandler(BaseHandler):
         """
         Runs TrafficIntelligence trackers and support scripts.
         """
+        StatusHelper.set_status(self.identifier, Status.Type.OBJECT_TRACKING, Status.Flag.IN_PROGRESS)
         project_path = get_project_path(identifier)
         if not os.path.exists(project_path):
-           return (500, 'Project directory does not exist. Check your identifier?')
-
-        ObjectTrackingThread(identifier, email, callback).start()
+            StatusHelper.set_status(self.identifier, Status.Type.OBJECT_TRACKING, Status.Flag.FAILURE)
+            return (500, 'Project directory does not exist. Check your identifier?')
+        if StatusHelper.get_status(identifier)[Status.Type.UPLOAD_HOMOGRAPHY] == Status.Flag.COMPLETE:
+            ObjectTrackingThread(identifier, email, callback).start()
+        else:
+            return (400, "Uploading homography did not complete successfully.")
 
         return (200, "Success")
 
@@ -77,7 +81,7 @@ class ObjectTrackingThread(threading.Thread):
         self.email = email
 
     def run(self):
-        StatusHelper.set_status(self.identifier, "object_tracking", 1)
+        
         project_path = get_project_path(self.identifier)
         tracking_path = os.path.join(project_path, "tracking.cfg")
 
@@ -99,13 +103,12 @@ class ObjectTrackingThread(threading.Thread):
             subprocess.check_output(["feature-based-tracking", tracking_path, "--gf", "--database-filename", db_path])
             subprocess.check_output(["classify-objects.py", "--cfg", tracking_path, "-d", db_path])  # Classify road users
         except subprocess.CalledProcessError as excp:
-            StatusHelper.set_status(self.identifier, "object_tracking", -1)
-
+            StatusHelper.set_status(self.identifier, Status.Type.OBJECT_TRACKING, Status.Flag.FAILURE)
             return self.callback(500, excp.output, self.identifier, self.email)
 
 
         db_make_objtraj(db_path)  # Make our object_trajectories db table
-        StatusHelper.set_status(self.identifier, "object_tracking", 2)
+        StatusHelper.set_status(self.identifier, Status.Type.OBJECT_TRACKING, Status.Flag.COMPLETE)
         return self.callback(200, "Success", self.identifier, self.email)
 
         # video.create_tracking_video(project_path, get_project_video_path(identifier))

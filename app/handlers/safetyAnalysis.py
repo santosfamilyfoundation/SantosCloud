@@ -8,7 +8,7 @@ from baseHandler import BaseHandler
 
 from traffic_cloud_utils.app_config import get_project_path, get_project_video_path, update_config_without_sections, get_config_without_sections
 from traffic_cloud_utils.emailHelper import EmailHelper
-from traffic_cloud_utils.statusHelper import StatusHelper
+from traffic_cloud_utils.statusHelper import StatusHelper, Status
 
 
 class SafetyAnalysisHandler(BaseHandler):
@@ -51,14 +51,17 @@ class SafetyAnalysisHandler(BaseHandler):
 
     @staticmethod
     def handler(identifier, email, callback, prediction_method=None):
-        StatusHelper.set_status(identifier, "safety_analysis", 1)
+        StatusHelper.set_status(identifier, Status.Type.SAFETY_ANALYSIS, Status.Flag.IN_PROGRESS)
 
         project_path = get_project_path(identifier)
         if not os.path.exists(project_path):
-            StatusHelper.set_status(identifier, "safety_analysis", -1)
+            StatusHelper.set_status(identifier, Status.Type.SAFETY_ANALYSIS, Status.Flag.FAILURE)
             return (500, 'Project directory does not exist. Check your identifier?')
-
-        SafetyAnalysisThread(identifier, email, callback, prediction_method=prediction_method).start()
+        
+        if StatusHelper.get_status(identifier)[Status.Type.OBJECT_TRACKING] == Status.Flag.COMPLETE: 
+         SafetyAnalysisThread(identifier, email, callback, prediction_method=prediction_method).start()
+        else:
+            return (400, "Object tracking did not complete successfully.")
 
         return (200, "Success")
 
@@ -72,8 +75,6 @@ class SafetyAnalysisThread(threading.Thread):
         self.prediction_method = prediction_method
 
     def run(self):
-        StatusHelper.set_status(self.identifier, "safety_analysis", 1)
-
         project_path = get_project_path(self.identifier)
         config_path = os.path.join(project_path, "tracking.cfg")
         db_path = os.path.join(project_path, "run", "results.sqlite")
@@ -93,10 +94,10 @@ class SafetyAnalysisThread(threading.Thread):
 
             subprocess.check_output(["safety-analysis.py", "--cfg", config_path, "--prediction-method", self.prediction_method])
         except subprocess.CalledProcessError as err_msg:
-            StatusHelper.set_status(self.identifier, "safety_analysis", -1)
+            StatusHelper.set_status(self.identifier, Status.Type.SAFETY_ANALYSIS, Status.Flag.FAILURE)
             return self.callback(500, err_msg.output, self.identifier, self.email)
 
-        StatusHelper.set_status(self.identifier, "safety_analysis", 2)
+        StatusHelper.set_status(self.identifier, Status.Type.SAFETY_ANALYSIS, Status.Flag.COMPLETE)
         return self.callback(200, "Success", self.identifier, self.email)
 
 
