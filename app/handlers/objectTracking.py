@@ -61,10 +61,10 @@ class ObjectTrackingHandler(BaseHandler):
         """
         Runs TrafficIntelligence trackers and support scripts.
         """
-        StatusHelper.set_status(self.identifier, Status.Type.OBJECT_TRACKING, Status.Flag.IN_PROGRESS)
+        StatusHelper.set_status(identifier, Status.Type.OBJECT_TRACKING, Status.Flag.IN_PROGRESS)
         project_path = get_project_path(identifier)
         if not os.path.exists(project_path):
-            StatusHelper.set_status(self.identifier, Status.Type.OBJECT_TRACKING, Status.Flag.FAILURE)
+            StatusHelper.set_status(identifier, Status.Type.OBJECT_TRACKING, Status.Flag.FAILURE)
             return (500, 'Project directory does not exist. Check your identifier?')
         if StatusHelper.get_status(identifier)[Status.Type.UPLOAD_HOMOGRAPHY] == Status.Flag.COMPLETE:
             ObjectTrackingThread(identifier, email, callback).start()

@@ -37,10 +37,10 @@ class UploadHomographyHandler(BaseHandler):
         self.files = {}
 
     def post(self):
-        StatusHelper.set_status(self.identifier, Status.Type.UPLOAD_HOMOGRAPHY, Status.Flag.IN_PROGRESS)
         self.files = self.request.files
         self.identifier = self.get_body_argument('identifier')
         self.up_ratio = float(self.get_body_argument('unit_pixel_ratio'))
+        StatusHelper.set_status(self.identifier, Status.Type.UPLOAD_HOMOGRAPHY, Status.Flag.IN_PROGRESS)
         self.write_homography_files()
         StatusHelper.set_status(self.identifier, Status.Type.UPLOAD_HOMOGRAPHY, Status.Flag.COMPLETE)
         self.finish("Upload Homography")

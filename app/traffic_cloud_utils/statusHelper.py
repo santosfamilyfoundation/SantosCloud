@@ -39,7 +39,7 @@ class StatusHelper(object):
         d = Status.create_status_dict()
         config_path = get_project_config_path(identifier)
         for (status_type, status) in d.iteritems():
-            update_config_with_sections(config_path, "status", status_type, str(status))
+            update_config_with_sections(config_path, "status", status_type.value, str(status.value))
 
     @staticmethod
     def set_status(identifier, status_type, val):
