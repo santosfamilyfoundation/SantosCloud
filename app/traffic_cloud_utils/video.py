@@ -157,8 +157,7 @@ def create_video_snippet(project_path, video_path, videos_folder, file_prefix, v
 
     # Delete old images, and recreate them in the right place
     delete_files(images_folder, temp_image_prefix, ["png"], excluded_files=[tracking_filename, highlight_filename])
-    subprocess.call(["display-trajectories.py", "-i", video_path,"-d", db_path, "-o", os.path.join(project_path, "homography", "homography.txt"), "-t", "object", "--save-images", "-f", str(start_frame), "--last-frame", str(end_frame)])
-    move_files_to_folder(os.getcwd(), images_folder, temp_image_prefix, ["png"])
+    subprocess.call(["display-trajectories.py", "-i", video_path,"-d", db_path, "-o", os.path.join(project_path, "homography", "homography.txt"), "-t", "object", "--save-images", "-f", str(start_frame), "--last-frame", str(end_frame), "--output-directory", images_folder])
 
     # Get the frames, and create a short video out of them
     renumber_frames(images_folder, start_frame, temp_image_prefix, "png")
