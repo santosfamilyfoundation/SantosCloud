@@ -34,20 +34,24 @@ class TestConfigHandler(BaseHandler):
     def prepare(self):
         identifier = self.get_body_argument("identifier")
         test_flag = self.get_body_argument("test_flag")
+        print test_flag
         if test_flag == "feature":
-            if StatusHelper.get_status(identifier)[Status.Type.UPLOAD_HOMOGRAPHY] != Status.Flag.COMPLETE:
-                self.finish("Uploading homography did not complete successfully, try re-running it.")
             status_type = Status.Type.FEATURE_TEST
+            if StatusHelper.get_status(identifier)[Status.Type.UPLOAD_HOMOGRAPHY] != Status.Flag.COMPLETE:
+                self.error_message = "Uploading homography did not complete successfully, try re-running it."
+                raise tornado.web.HTTPError(status_code = 412)
         elif test_flag == "object":
-            if StatusHelper.get_status(identifier)[Status.Type.FEATURE_TEST] != Status.Flag.COMPLETE:
-                self.finish("Feature testing did not complete successfully, try re-running it.")
-
             status_type = Status.Type.OBJECT_TEST
-        
+            if StatusHelper.get_status(identifier)[Status.Type.FEATURE_TEST] != Status.Flag.COMPLETE:
+                self.error_message = "Feature testing did not complete successfully, try re-running it."
+                raise tornado.web.HTTPError(status_code = 412)
+        print status_type
         if StatusHelper.get_status(identifier)[Status.Type.FEATURE_TEST] == Status.Flag.IN_PROGRESS or StatusHelper.get_status(identifier)[Status.Type.OBJECT_TEST] == Status.Flag.IN_PROGRESS:
-            self.finish("Currently running a test. Please wait.")
+            status_code = 423
+            self.error_message = "Currently running a test. Please wait."
+            raise tornado.web.HTTPError(status_code = status_code)
         
-        StatusHelper.set_status(identifier, Status.Type.status_type, Status.Flag.IN_PROGRESS)
+        StatusHelper.set_status(identifier, status_type, Status.Flag.IN_PROGRESS)
 
     def post(self):
         identifier = self.get_body_argument("identifier")
