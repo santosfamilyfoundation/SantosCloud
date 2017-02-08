@@ -122,7 +122,7 @@ class TestConfigFeatureThread(threading.Thread):
         video.create_video_from_images(images_folder, temp_image_prefix, videos_folder, video_filename, video.get_framerate(get_project_video_path(self.identifier)))
 
         video.delete_files(images_folder)
-        os.remove(images_folder)
+        os.rmdir(images_folder)
 
         StatusHelper.set_status(self.identifier, "configuration_test", 2)
         return self.callback(200, "Test config done", self.identifier)
@@ -173,7 +173,7 @@ class TestConfigObjectThread(threading.Thread):
         video.create_video_from_images(images_folder, temp_image_prefix, videos_folder, video_filename, video.get_framerate(get_project_video_path(self.identifier)))
 
         video.delete_files(images_folder)
-        os.remove(images_folder)
+        os.rmdir(images_folder)
 
         StatusHelper.set_status(self.identifier, "configuration_test", 2)
         return self.callback(200, "Test config done", self.identifier)
