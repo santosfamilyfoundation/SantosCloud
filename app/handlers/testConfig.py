@@ -78,9 +78,7 @@ class TestConfigHandler(BaseHandler):
 
         if test_flag == "feature":
             print "running feature"
-                TestConfigFeatureThread(identifier, frame_start, num_frames, TestConfigHandler.test_feature_callback).start()
-            else:
-                return (400, "Uploading homography did not complete successfully, try re-running it.")
+            TestConfigFeatureThread(identifier, frame_start, num_frames, TestConfigHandler.test_feature_callback).start()
         elif test_flag == "object":
             print "running object"
             feat_db_path = os.path.join(project_path, ".temp", "test", "test_feature", "test1.sqlite")
