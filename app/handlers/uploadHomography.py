@@ -34,6 +34,8 @@ class UploadHomographyHandler(BaseHandler):
         identifier = self.get_body_argument("identifier")
         if StatusHelper.get_status(identifier)[Status.Type.UPLOAD_HOMOGRAPHY] == Status.Flag.IN_PROGRESS:
             self.finish("Currently uploading homography. Please wait.")
+        StatusHelper.set_status(identifier, Status.Type.UPLOAD_HOMOGRAPHY, Status.Flag.IN_PROGRESS)
+
 
     def initialize(self):
         # Make sure the BaseHandler is initialized
@@ -46,7 +48,6 @@ class UploadHomographyHandler(BaseHandler):
         self.files = self.request.files
         self.identifier = self.get_body_argument('identifier')
         self.up_ratio = float(self.get_body_argument('unit_pixel_ratio'))
-        StatusHelper.set_status(self.identifier, Status.Type.UPLOAD_HOMOGRAPHY, Status.Flag.IN_PROGRESS)
         self.write_homography_files()
         StatusHelper.set_status(self.identifier, Status.Type.UPLOAD_HOMOGRAPHY, Status.Flag.COMPLETE)
         self.finish("Upload Homography")

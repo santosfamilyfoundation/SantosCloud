@@ -35,16 +35,17 @@ class CreateHighlightVideoHandler(BaseHandler):
         identifier = self.get_body_argument("identifier")
         if StatusHelper.get_status(identifier)[Status.Type.HIGHLIGHT_VIDEO] == Status.Flag.IN_PROGRESS:
             self.finish("Currently creating a highlight video. Please wait.")
+        if StatusHelper.get_status(identifier)[Status.Type.SAFETY_ANALYSIS] != Status.Flag.COMPLETE:
+            self.finish("Safety analysis did not complete successfully, try re-running it.")
+        StatusHelper.set_status(identifier, Status.Type.HIGHLIGHT_VIDEO, Status.Flag.IN_PROGRESS)
+
 
     def post(self):
         identifier = self.get_body_argument('identifier')
         email = self.get_body_argument('email', default=None)
         ttc_threshold = float(self.get_body_argument('ttc_threshold', default=1.5))
         vehicle_only = bool(self.get_body_argument('vehicle_only', default=True))
-        if StatusHelper.get_status(identifier)[Status.Type.SAFETY_ANALYSIS] == Status.Flag.COMPLETE:
-            status_code, reason = CreateHighlightVideoHandler.handler(identifier, email, ttc_threshold, vehicle_only)
-        else:
-            return (400, "Safety analysis did not complete successfully, try re-running.")
+        status_code, reason = CreateHighlightVideoHandler.handler(identifier, email, ttc_threshold, vehicle_only)
         if status_code == 200:
             self.finish("Create Highlight Video")
         else:
@@ -53,7 +54,6 @@ class CreateHighlightVideoHandler(BaseHandler):
 
     @staticmethod
     def handler(identifier, email, ttc_threshold, vehicle_only):
-        StatusHelper.set_status(identifier, Status.Type.HIGHLIGHT_VIDEO, Status.Flag.IN_PROGRESS)
 
         project_dir = get_project_path(identifier)
         if not os.path.exists(project_dir):

@@ -36,6 +36,10 @@ class ObjectTrackingHandler(BaseHandler):
         identifier = self.get_body_argument("identifier")
         if StatusHelper.get_status(identifier)[Status.Type.OBJECT_TRACKING] == Status.Flag.IN_PROGRESS:
             self.finish("Currently analyzing your video. Please wait.")
+        if StatusHelper.get_status(identifier)[Status.Type.UPLOAD_HOMOGRAPHY] == Status.Flag.COMPLETE:
+            self.finish("Uploading homography did not complete successfully, try re-running.")
+        StatusHelper.set_status(identifier, Status.Type.OBJECT_TRACKING, Status.Flag.IN_PROGRESS)
+
 
     def post(self):
         # TODO: Implement rerun flag to prevent unnecessary computation
@@ -66,15 +70,12 @@ class ObjectTrackingHandler(BaseHandler):
         """
         Runs TrafficIntelligence trackers and support scripts.
         """
-        StatusHelper.set_status(identifier, Status.Type.OBJECT_TRACKING, Status.Flag.IN_PROGRESS)
         project_path = get_project_path(identifier)
         if not os.path.exists(project_path):
             StatusHelper.set_status(identifier, Status.Type.OBJECT_TRACKING, Status.Flag.FAILURE)
             return (500, 'Project directory does not exist. Check your identifier?')
-        if StatusHelper.get_status(identifier)[Status.Type.UPLOAD_HOMOGRAPHY] == Status.Flag.COMPLETE:
-            ObjectTrackingThread(identifier, email, callback).start()
-        else:
-            return (400, "Uploading homography did not complete successfully, try re-running.")
+        
+        ObjectTrackingThread(identifier, email, callback).start()
 
         return (200, "Success")
 

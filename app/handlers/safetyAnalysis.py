@@ -31,6 +31,9 @@ class SafetyAnalysisHandler(BaseHandler):
         identifier = self.get_body_argument("identifier")
         if StatusHelper.get_status(identifier)[Status.Type.SAFETY_ANALYSIS] == Status.Flag.IN_PROGRESS:
             self.finish("Currently analyzing database from your video. Please wait.")
+        if StatusHelper.get_status(identifier)[Status.Type.OBJECT_TRACKING] != Status.Flag.COMPLETE:
+            self.finish("Object tracking did not complete successfully, try re-running it.")
+        StatusHelper.set_status(identifier, Status.Type.SAFETY_ANALYSIS, Status.Flag.IN_PROGRESS)
 
     def post(self):
         identifier = self.get_body_argument("identifier")
@@ -57,18 +60,13 @@ class SafetyAnalysisHandler(BaseHandler):
 
     @staticmethod
     def handler(identifier, email, callback, prediction_method=None):
-        StatusHelper.set_status(identifier, Status.Type.SAFETY_ANALYSIS, Status.Flag.IN_PROGRESS)
-
         project_path = get_project_path(identifier)
         if not os.path.exists(project_path):
             StatusHelper.set_status(identifier, Status.Type.SAFETY_ANALYSIS, Status.Flag.FAILURE)
             return (500, 'Project directory does not exist. Check your identifier?')
         
-        if StatusHelper.get_status(identifier)[Status.Type.OBJECT_TRACKING] == Status.Flag.COMPLETE: 
-            SafetyAnalysisThread(identifier, email, callback, prediction_method=prediction_method).start()
-        else:
-            return (400, "Object tracking did not complete successfully, try re-running.")
-
+        SafetyAnalysisThread(identifier, email, callback, prediction_method=prediction_method).start()
+        
         return (200, "Success")
 
 
