@@ -63,7 +63,7 @@ def create_highlight_video(project_path, video_path, list_of_near_misses):
         create_video_from_image(videos_folder, slide_name+'.png', slide_name+'.mpg', 5)
 
     combine_videos(videos_folder, temp_video_prefix, highlight_filename)
-    delete_files(videos_folder, temp_video_prefix, ["mpg", "mp4"], excluded_files=[tracking_filename, highlight_filename])
+    delete_files(videos_folder, temp_video_prefix, ["mpg", "mp4", "png"], excluded_files=[tracking_filename, highlight_filename])
 
 ## Helpers -- Internal use
 
