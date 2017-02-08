@@ -30,6 +30,12 @@ class CreateHighlightVideoHandler(BaseHandler):
 
     @apiError error_message The error message to display.
     """
+
+    def prepare(self):
+        identifier = self.get_body_argument("identifier")
+        if StatusHelper.get_status(identifier)[Status.Type.HIGHLIGHT_VIDEO] == Status.Flag.IN_PROGRESS:
+            self.finish("Currently creating a highlight video. Please wait.")
+
     def post(self):
         identifier = self.get_body_argument('identifier')
         email = self.get_body_argument('email', default=None)

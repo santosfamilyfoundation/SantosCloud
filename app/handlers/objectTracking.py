@@ -32,6 +32,11 @@ class ObjectTrackingHandler(BaseHandler):
     @apiError error_message The error message to display.
     """
 
+    def prepare(self):
+        identifier = self.get_body_argument("identifier")
+        if StatusHelper.get_status(identifier)[Status.Type.OBJECT_TRACKING] == Status.Flag.IN_PROGRESS:
+            self.finish("Currently analyzing your video. Please wait.")
+
     def post(self):
         # TODO: Implement rerun flag to prevent unnecessary computation
         identifier = self.get_body_argument("identifier")

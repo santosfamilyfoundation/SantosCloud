@@ -29,6 +29,12 @@ class UploadHomographyHandler(BaseHandler):
 
     @apiError error_message The error message to display.
     """
+
+    def prepare(self):
+        identifier = self.get_body_argument("identifier")
+        if StatusHelper.get_status(identifier)[Status.Type.UPLOAD_HOMOGRAPHY] == Status.Flag.IN_PROGRESS:
+            self.finish("Currently uploading homography. Please wait.")
+
     def initialize(self):
         # Make sure the BaseHandler is initialized
         super(UploadHomographyHandler, self).initialize()

@@ -26,6 +26,12 @@ class SafetyAnalysisHandler(BaseHandler):
 
     @apiError error_message The error message to display. (Will return unique error message if object tracking has NOT been run on specified project)
     """
+
+    def prepare(self):
+        identifier = self.get_body_argument("identifier")
+        if StatusHelper.get_status(identifier)[Status.Type.SAFETY_ANALYSIS] == Status.Flag.IN_PROGRESS:
+            self.finish("Currently analyzing database from your video. Please wait.")
+
     def post(self):
         identifier = self.get_body_argument("identifier")
         email = self.get_body_argument("email", default = None)

@@ -30,6 +30,12 @@ class TestConfigHandler(BaseHandler):
 
     @apiError error_message The error message to display.
     """
+    
+    def prepare(self):
+        identifier = self.get_body_argument("identifier")
+        if StatusHelper.get_status(identifier)[Status.Type.FEATURE_TEST] == Status.Flag.IN_PROGRESS or StatusHelper.get_status(identifier)[Status.Type.OBJECT_TEST] == Status.Flag.IN_PROGRESS:
+            self.finish("Currently running a test. Please wait.")
+
     def post(self):
         identifier = self.get_body_argument("identifier")
         test_flag = self.get_body_argument("test_flag")
@@ -44,11 +50,6 @@ class TestConfigHandler(BaseHandler):
         else:
             self.error_message = reason
             raise tornado.web.HTTPError(status_code=status_code)
-
-    def prepare(self):
-        identifier = self.get_body_argument("identifier")
-        if StatusHelper.get_status(identifier)[Status.Type.UPLOAD_HOMOGRAPHY] == Status.Flag.IN_PROGRESS or StatusHelper.get_status(identifier)[Status.Type.UPLOAD_HOMOGRAPHY] == Status.Flag.IN_PROGRESS:
-            self.finish("Currently running a test. Please wait.")
 
     @staticmethod
     def handler(identifier, frame_start, num_frames, test_flag):
