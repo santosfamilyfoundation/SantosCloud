@@ -7,7 +7,7 @@ from baseHandler import BaseHandler
 
 class DefaultConfigHandler(BaseHandler):
     """
-    @api {post} /defaultConfig/ Default Configuration
+    @api {get} /defaultConfig/ Default Configuration
     @apiName Default Configuration
     @apiVersion 0.1.0
     @apiGroup Configuration
@@ -23,7 +23,7 @@ class DefaultConfigHandler(BaseHandler):
 
     @apiError error_message The error message to display.
     """
-    def post(self):
+    def get(self):
         self.finish(default_config_dict())
 
 

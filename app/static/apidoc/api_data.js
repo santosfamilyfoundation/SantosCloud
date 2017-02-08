@@ -262,7 +262,7 @@ define({ "api": [
     "groupTitle": "Configuration"
   },
   {
-    "type": "post",
+    "type": "get",
     "url": "/defaultConfig/",
     "title": "Default Configuration",
     "name": "Default_Configuration",
