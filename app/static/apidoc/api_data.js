@@ -275,49 +275,49 @@ define({ "api": [
           {
             "group": "Success 200",
             "type": "Integer",
-            "optional": true,
+            "optional": false,
             "field": "max_features_per_frame",
             "description": "<p>This is the maximum number of features to track per frame.</p>"
           },
           {
             "group": "Success 200",
             "type": "Integer",
-            "optional": true,
+            "optional": false,
             "field": "num_displacement_frames",
             "description": "<p>This parameter determines how long features will be tracked.</p>"
           },
           {
             "group": "Success 200",
             "type": "Number",
-            "optional": true,
+            "optional": false,
             "field": "min_feature_displacement",
             "description": "<p>This is the displacement needed to track a feature.</p>"
           },
           {
             "group": "Success 200",
             "type": "Integer",
-            "optional": true,
+            "optional": false,
             "field": "max_iterations_to_persist",
             "description": "<p>This is the maximum number of iterations that an unmoving feature should persist.</p>"
           },
           {
             "group": "Success 200",
             "type": "Integer",
-            "optional": true,
+            "optional": false,
             "field": "min_feature_frames",
             "description": "<p>This is the minimum number of frames that a feature must persist in order to be considered a feature.</p>"
           },
           {
             "group": "Success 200",
             "type": "Number",
-            "optional": true,
+            "optional": false,
             "field": "max_connection_distance",
             "description": "<p>This is the maximum distance that two features can be apart and still be considered part of the same object.</p>"
           },
           {
             "group": "Success 200",
             "type": "Number",
-            "optional": true,
+            "optional": false,
             "field": "max_segmentation_distance",
             "description": "<p>This is the maximum distance that two features that are moving relative to each other can be apart and still be considered part of the same object.</p>"
           }
