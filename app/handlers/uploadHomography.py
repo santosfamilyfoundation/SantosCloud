@@ -4,7 +4,7 @@ import tornado.web
 from tornado.escape import json_decode
 import os
 from traffic_cloud_utils.app_config import get_project_path
-from traffic_cloud_utils.statusHelper import StatusHelper
+from traffic_cloud_utils.statusHelper import StatusHelper, Status
 import numpy as np
 import cv2
 from ast import literal_eval
@@ -29,6 +29,16 @@ class UploadHomographyHandler(BaseHandler):
 
     @apiError error_message The error message to display.
     """
+
+    def prepare(self):
+        identifier = self.get_body_argument("identifier")
+        if StatusHelper.get_status(identifier)[Status.Type.UPLOAD_HOMOGRAPHY] == Status.Flag.IN_PROGRESS:
+            status_code = 423
+            self.error_message = "Currently uploading homography. Please wait."
+            raise tornado.web.HTTPError(status_code = status_code)
+        StatusHelper.set_status(identifier, Status.Type.UPLOAD_HOMOGRAPHY, Status.Flag.IN_PROGRESS)
+
+
     def initialize(self):
         # Make sure the BaseHandler is initialized
         super(UploadHomographyHandler, self).initialize()
@@ -40,9 +50,8 @@ class UploadHomographyHandler(BaseHandler):
         self.files = self.request.files
         self.identifier = self.get_body_argument('identifier')
         self.up_ratio = float(self.get_body_argument('unit_pixel_ratio'))
-        StatusHelper.set_status(self.identifier, "upload_homography", 1)
         self.write_homography_files()
-        StatusHelper.set_status(self.identifier, "upload_homography", 2)
+        StatusHelper.set_status(self.identifier, Status.Type.UPLOAD_HOMOGRAPHY, Status.Flag.COMPLETE)
         self.finish("Upload Homography")
 
     def write_homography_files(self):

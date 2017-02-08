@@ -10,7 +10,7 @@ from storage import alterInteractionsWithRoadUserType, getNearMissFrames
 from baseHandler import BaseHandler
 from traffic_cloud_utils.video import create_highlight_video, get_framerate
 from traffic_cloud_utils.app_config import get_project_path, get_project_video_path
-from traffic_cloud_utils.statusHelper import StatusHelper
+from traffic_cloud_utils.statusHelper import StatusHelper, Status
 from traffic_cloud_utils.emailHelper import EmailHelper
 
 # TODO: remove once pip's error request handler is written
@@ -30,12 +30,25 @@ class CreateHighlightVideoHandler(BaseHandler):
 
     @apiError error_message The error message to display.
     """
+
+    def prepare(self):
+        identifier = self.get_body_argument("identifier")
+        if StatusHelper.get_status(identifier)[Status.Type.HIGHLIGHT_VIDEO] == Status.Flag.IN_PROGRESS:
+            status_code = 423
+            self.error_message = "Currently creating a highlight video. Please wait."
+            raise tornado.web.HTTPError(status_code = status_code)
+        if StatusHelper.get_status(identifier)[Status.Type.SAFETY_ANALYSIS] != Status.Flag.COMPLETE:
+            status_code = 412
+            self.error_message = "Safety analysis did not complete successfully, try re-running it."
+            raise tornado.web.HTTPError(status_code = status_code)
+        StatusHelper.set_status(identifier, Status.Type.HIGHLIGHT_VIDEO, Status.Flag.IN_PROGRESS)
+
+
     def post(self):
         identifier = self.get_body_argument('identifier')
         email = self.get_body_argument('email', default=None)
         ttc_threshold = float(self.get_body_argument('ttc_threshold', default=1.5))
         vehicle_only = bool(self.get_body_argument('vehicle_only', default=True))
-
         status_code, reason = CreateHighlightVideoHandler.handler(identifier, email, ttc_threshold, vehicle_only)
         if status_code == 200:
             self.finish("Create Highlight Video")
@@ -45,28 +58,27 @@ class CreateHighlightVideoHandler(BaseHandler):
 
     @staticmethod
     def handler(identifier, email, ttc_threshold, vehicle_only):
-        StatusHelper.set_status(identifier, "highlight_video", 1)
 
         project_dir = get_project_path(identifier)
         if not os.path.exists(project_dir):
-            StatusHelper.set_status(identifier, "highlight_video", -1)
+            StatusHelper.set_status(identifier, Status.Type.HIGHLIGHT_VIDEO, Status.Flag.FAILURE)
             return (500, 'Project directory does not exist. Check your identifier?')
 
         db = os.path.join(project_dir, 'run', 'results.sqlite')
         #TO-DO: Check to see if tables like "interactions" exist
         if not os.path.exists(db):
-            StatusHelper.set_status(identifier, "highlight_video", -1)
+            StatusHelper.set_status(identifier, Status.Type.HIGHLIGHT_VIDEO, Status.Flag.FAILURE)
             return (500, 'Database file does not exist. Trajectory analysis needs to be called first ')
 
         video_path = get_project_video_path(identifier)
         if not os.path.exists(video_path):
-            StatusHelper.set_status(identifier, "highlight_video", -1)
+            StatusHelper.set_status(identifier, Status.Type.HIGHLIGHT_VIDEO, Status.Flag.FAILURE)
             return (500, 'Source video file does not exist.  Was the video uploaded?')
 
         try:
             alterInteractionsWithRoadUserType(db)
         except Exception as error_message:
-            StatusHelper.set_status(identifier, "highlight_video", -1)
+            StatusHelper.set_status(identifier, Status.Type.HIGHLIGHT_VIDEO, Status.Flag.FAILURE)
             return (500, "Alter Interactions Table with Road User Type failed\n" + str(error_message))
 
         ttc_threshold_frames = int(ttc_threshold * float(get_framerate(video_path)))
@@ -74,13 +86,13 @@ class CreateHighlightVideoHandler(BaseHandler):
         try:
             near_misses = getNearMissFrames(db, ttc_threshold_frames, vehicle_only)
         except Exception as error_message:
-            StatusHelper.set_status(identifier, "highlight_video", -1)
+            StatusHelper.set_status(identifier, Status.Type.HIGHLIGHT_VIDEO, Status.Flag.FAILURE)
             return (500, str(error_message))
 
         try:
             CreateHighlightVideoThread(identifier, project_dir, video_path, near_misses, email, CreateHighlightVideoHandler.callback).start()
         except Exception as error_message:
-            StatusHelper.set_status(identifier, "highlight_video", -1)
+            StatusHelper.set_status(identifier, Status.Type.HIGHLIGHT_VIDEO, Status.Flag.FAILURE)
             return (500, str(error_message))
 
         return (200, "Success")
@@ -109,7 +121,7 @@ class CreateHighlightVideoThread(threading.Thread):
     def run(self):
         create_highlight_video(self.project_dir, self.video_path, self.near_misses)
 
-        StatusHelper.set_status(self.identifier, "highlight_video", 2)
+        StatusHelper.set_status(self.identifier, Status.Type.HIGHLIGHT_VIDEO, Status.Flag.COMPLETE)
         return self.callback(200, "Highlight video complete.", self.email)
 
 
