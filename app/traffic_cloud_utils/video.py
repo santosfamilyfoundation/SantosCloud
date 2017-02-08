@@ -80,28 +80,22 @@ def move_files_to_folder(from_folder, to_folder, prefix, extensions):
                     os.rename(os.path.join(from_folder, file), os.path.join(to_folder, file))
 
 def delete_files(folder, prefix="", extensions=[], excluded_files=[]):
-    print("HI")
-    print(folder)
-    print(prefix)
-    print(extensions)
-    print(excluded_files)
     if os.path.exists(folder):
         for file in os.listdir(folder):
-            print("Looking at file: "+file)
             if file.startswith(prefix):
-                print("Has prefix")
                 s = file.split('.')
                 has_extension = len(s) == 2
                 extension_included = True
-                print (has_extension, extension_excluded)
+
+                # If it has an extension, don't delete it if it doesn't have an extension provided
                 if has_extension:
                     e = s[1]
                     if len(extensions) > 0 and e not in extensions:
                         extension_included = False
-                        print("Extension excluded")
+
+                # If it has an extension that should be deleted (or extensions don't exist), and not in excluded files, delete it
                 if extension_included:
                     if not file in excluded_files:
-                        print("File deleted: "+file)
                         os.remove(os.path.join(folder, file))
 
 def get_list_of_files(folder, prefix, extension):
