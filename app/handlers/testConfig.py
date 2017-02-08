@@ -45,12 +45,19 @@ class TestConfigHandler(BaseHandler):
             self.error_message = reason
             raise tornado.web.HTTPError(status_code=status_code)
 
+    def prepare(self):
+        identifier = self.get_body_argument("identifier")
+        if StatusHelper.get_status(identifier)[Status.Type.UPLOAD_HOMOGRAPHY] == Status.Flag.IN_PROGRESS or StatusHelper.get_status(identifier)[Status.Type.UPLOAD_HOMOGRAPHY] == Status.Flag.IN_PROGRESS:
+            self.finish("Currently running a test. Please wait.")
+
     @staticmethod
     def handler(identifier, frame_start, num_frames, test_flag):
         if test_flag == "feature":
             status_type = Status.Type.FEATURE_TEST
         elif test_flag == "object":
             status_type = Status.Type.OBJECT_TEST
+
+        StatusHelper.set_status(identifier, status_type, Status.Flag.IN_PROGRESS)
 
         project_path = get_project_path(identifier)
         if not os.path.exists(project_path):
@@ -60,16 +67,13 @@ class TestConfigHandler(BaseHandler):
         if test_flag == "feature":
             print "running feature"
             if StatusHelper.get_status(identifier)[Status.Type.UPLOAD_HOMOGRAPHY] == Status.Flag.COMPLETE:
-                StatusHelper.set_status(identifier, status_type, Status.Flag.IN_PROGRESS)
+                TestConfigFeatureThread(identifier, frame_start, num_frames, TestConfigHandler.test_feature_callback).start()
             else:
                 return (400, "Uploading homography did not complete successfully, try re-running.")
-            TestConfigFeatureThread(identifier, frame_start, num_frames, TestConfigHandler.test_feature_callback).start()
         elif test_flag == "object":
             print "running object"
             feat_db_path = os.path.join(project_path, ".temp", "test", "test_feature", "test1.sqlite")
             if os.path.exists(feat_db_path) and StatusHelper.get_status(identifier)[Status.Type.FEATURE_TEST] == Status.Flag.COMPLETE:
-                StatusHelper.set_status(identifier, status_type, Status.Flag.IN_PROGRESS)
-
                 TestConfigObjectThread(identifier, frame_start, num_frames, TestConfigHandler.test_feature_callback).start()
             else:
                 print "Feature tracking not run"
