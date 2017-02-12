@@ -61,7 +61,7 @@ class StatusHelper(object):
         config_path = get_project_config_path(identifier)
         (success, value) = get_config_section(config_path, "status")
         if success:
-            return {Status.Type(k).value:Status.Flag(int(v)).value for (k,v) in value.iteritems()}
+            return value
         else:
             return None
 
