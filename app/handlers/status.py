@@ -25,7 +25,7 @@ class StatusHandler(BaseHandler):
     """
     def post(self):
         identifier = self.get_body_argument('identifier')
-        status_dict = StatusHelper.get_status(identifier)
+        status_dict = StatusHelper.get_status_raw(identifier)
         if status_dict != None:
         	self.write(status_dict)
         else:
