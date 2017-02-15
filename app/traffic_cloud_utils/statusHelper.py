@@ -3,7 +3,7 @@ import os
 
 from enum import Enum
 
-from app_config import get_project_config_path, update_config_with_sections, get_config_section
+from app_config import get_project_config_path, update_config_with_sections, get_config_section, get_all_projects
 
 class Status(object):
         
@@ -64,6 +64,16 @@ class StatusHelper(object):
             return value
         else:
             return None
+
+    @staticmethod
+    def mark_all_failed():
+        identifiers = get_all_projects()
+        for identifier in identifiers:
+            status = StatusHelper.get_status(identifier)
+            for (k, v) in status.iteritems():
+                if v == Status.Flag.IN_PROGRESS:
+                    StatusHelper.set_status(identifier, k, Status.Flag.FAILURE)
+
 
 
 

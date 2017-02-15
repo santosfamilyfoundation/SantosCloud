@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import logging
+import atexit
 import tornado.auth
 import tornado.autoreload
 import tornado.escape
@@ -12,6 +13,8 @@ import matplotlib
 matplotlib.use('Agg')
 
 from tornado.options import define, options
+
+import cleanup
 
 # Import all of our custom routes
 
@@ -100,4 +103,6 @@ def main():
     ioloop.start()
 
 if __name__ == "__main__":
+    atexit.register(cleanup.cleanup_func)
     main()
+
