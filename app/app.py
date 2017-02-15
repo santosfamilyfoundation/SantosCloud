@@ -103,6 +103,13 @@ def main():
     ioloop.start()
 
 if __name__ == "__main__":
+    # If we're just starting the program, there shouldn't be anything already
+    # running, so we should clean up, just in case something went terribly
+    # wrong last time
+    cleanup.cleanup_func()
+
+    # Register for cleanup_func to be called after program exit
     atexit.register(cleanup.cleanup_func)
+
     main()
 
