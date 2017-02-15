@@ -75,15 +75,16 @@ class TestConfigHandler(BaseHandler):
                 status_code = 500
                 self.error_message = "Feature test not complete, try re-running it."
                 raise tornado.web.HTTPError(status_code = status_code)
+            self.file_name = os.path.join(project_path, 'feature_video', 'feature_video.mp4')
         elif self.test_flag == "object":
             if status[Status.Type.OBJECT_TEST] != Status.Flag.COMPLETE:
                 status_code = 500
                 self.error_message = "Object test not complete, try re-running it."
                 raise tornado.web.HTTPError(status_code = status_code)
+            self.file_name = os.path.join(project_path, 'feature_video', 'feature_video.mp4')
 
         identifier = self.get_body_argument('identifier')
         project_path = get_project_path(identifier)
-        self.file_name = os.path.join(project_path, 'feature_video', 'feature_video.mp4')
 
         self.set_header('Content-Type', 'application/octet-stream')
         self.set_header('Content-Description', 'File Transfer')
