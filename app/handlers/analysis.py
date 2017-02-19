@@ -55,7 +55,7 @@ class AnalysisHandler(BaseHandler):
     def handler(identifier, email):
         project_path = get_project_path(identifier)
         if not os.path.exists(project_path):
-            StatusHelper.set_status(self.identifier, Status.Type.OBJECT_TRACKING, Status.Flag.FAILURE)
+            StatusHelper.set_status(identifier, Status.Type.OBJECT_TRACKING, Status.Flag.FAILURE)
             return (500, 'Project directory does not exist. Check your identifier?')
 
         status_code, reason = ObjectTrackingHandler.handler(identifier, email, AnalysisHandler.object_tracking_callback)
@@ -64,7 +64,7 @@ class AnalysisHandler(BaseHandler):
     @staticmethod
     def object_tracking_callback(status_code, response_message, identifier, email):
         if status_code == 200:
-            StatusHelper.set_status(self.identifier, Status.Type.SAFETY_ANALYSIS, Status.Flag.IN_PROGRESS)
+            StatusHelper.set_status(identifier, Status.Type.SAFETY_ANALYSIS, Status.Flag.IN_PROGRESS)
             message = "Hello,\n\tWe have finished processing your video and identifying all objects.\nWe will perform safety analysis now.\nThank you for your patience,\nThe Santos Team"
             subject = "Your video has finished processing."
 
