@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import logging
+import atexit
 import tornado.auth
 import tornado.autoreload
 import tornado.escape
@@ -8,19 +9,24 @@ import tornado.ioloop
 import tornado.options
 import tornado.web
 import os
+import matplotlib
+matplotlib.use('Agg')
 
 from tornado.options import define, options
+
+import cleanup
 
 # Import all of our custom routes
 
 # Upload routes
 from handlers.upload import UploadHandler
 from handlers.uploadVideo import UploadVideoHandler
-from handlers.uploadHomography import UploadHomographyHandler
+from handlers.configHomography import ConfigHomographyHandler
 
 # Configure routes
 from handlers.config import ConfigHandler
 from handlers.testConfig import TestConfigHandler
+from handlers.defaultConfig import DefaultConfigHandler
 
 # Analysis routes
 from handlers.analysis import AnalysisHandler
@@ -34,7 +40,7 @@ from handlers.status import StatusHandler
 from handlers.createHighlightVideo import CreateHighlightVideoHandler
 from handlers.makeReport import MakeReportHandler
 from handlers.roadUserCounts import RoadUserCountsHandler
-from handlers.createSpeedCDF import CreateSpeedCDFHandler
+from handlers.createSpeedDistribution import CreateSpeedDistributionHandler
 from handlers.retrieveResults import RetrieveResultsHandler
 from handlers.createHighlightVideo import CreateHighlightVideoHandler
 
@@ -47,9 +53,10 @@ class Application(tornado.web.Application):
             (r"/", MainHandler),
             (r"/upload", UploadHandler),
             (r"/uploadVideo", UploadVideoHandler),
-            (r"/uploadHomography", UploadHomographyHandler),
+            (r"/configHomography", ConfigHomographyHandler),
             (r"/config", ConfigHandler),
             (r"/testConfig", TestConfigHandler),
+            (r"/defaultConfig", DefaultConfigHandler),
             (r"/analysis", AnalysisHandler),
             (r"/objectTracking", ObjectTrackingHandler),
             (r"/safetyAnalysis", SafetyAnalysisHandler),
@@ -57,7 +64,7 @@ class Application(tornado.web.Application):
             (r"/highlightVideo", CreateHighlightVideoHandler),
             (r"/makeReport", MakeReportHandler),
             (r"/roadUserCounts", RoadUserCountsHandler),
-            (r"/speedCDF", CreateSpeedCDFHandler),
+            (r"/speedDistribution", CreateSpeedDistributionHandler),
             (r"/retrieveResults", RetrieveResultsHandler)
 
         ]
@@ -96,4 +103,13 @@ def main():
     ioloop.start()
 
 if __name__ == "__main__":
+    # If we're just starting the program, there shouldn't be anything already
+    # running, so we should clean up, just in case something went terribly
+    # wrong last time
+    cleanup.cleanup_func()
+
+    # Register for cleanup_func to be called after program exit
+    atexit.register(cleanup.cleanup_func)
+
     main()
+

@@ -1,33 +1,36 @@
 
 import os
 
-from app_config import get_project_config_path, update_config_with_sections, get_config_section
+from enum import Enum
+
+from app_config import get_project_config_path, update_config_with_sections, get_config_section, get_all_projects
 
 class Status(object):
-    class StatusType:
-        UPLOAD_VIDEO = "upload_video"
-        UPLOAD_HOMOGRAPHY = "upload_homography"
-        CONFIGURATION_TEST = "configuration_test"
-        FEATURE_TRACKING = "feature_tracking"
-        OBJECT_TRACKING = "object_tracking"
-        SAFETY_ANALYSIS = "safety_analysis"
-        HIGHLIGHT_VIDEO = "highlight_video"
-
-    class Status:
+        
+    class Flag(Enum):
+        FAILURE = -1
         INCOMPLETE = 0
         IN_PROGRESS = 1
         COMPLETE = 2
 
-    @staticmethod
-    def create_status_dict():
+    class Type(Enum):
+        CONFIG_HOMOGRAPHY = "config_homography"
+        FEATURE_TEST = "feature_test"
+        OBJECT_TEST = "object_test"
+        OBJECT_TRACKING = "object_tracking"
+        SAFETY_ANALYSIS = "safety_analysis"
+        HIGHLIGHT_VIDEO = "highlight_video"
+
+
+    @classmethod
+    def create_status_dict(cls):
         return {
-            self.Type.UPLOAD_VIDEO: 0,
-            self.Type.UPLOAD_HOMOGRAPHY: 0,
-            self.Type.CONFIGURATION_TEST: 0,
-            self.Type.FEATURE_TRACKING: 0,
-            self.Type.OBJECT_TRACKING: 0,
-            self.Type.SAFETY_ANALYSIS: 0,
-            self.Type.HIGHLIGHT_VIDEO: 0,
+            Status.Type.CONFIG_HOMOGRAPHY: Status.Flag.INCOMPLETE,
+            Status.Type.FEATURE_TEST: Status.Flag.INCOMPLETE,
+            Status.Type.OBJECT_TEST: Status.Flag.INCOMPLETE,
+            Status.Type.OBJECT_TRACKING: Status.Flag.INCOMPLETE,
+            Status.Type.SAFETY_ANALYSIS: Status.Flag.INCOMPLETE,
+            Status.Type.HIGHLIGHT_VIDEO: Status.Flag.INCOMPLETE,
         }
 
 class StatusHelper(object):
@@ -36,20 +39,41 @@ class StatusHelper(object):
         d = Status.create_status_dict()
         config_path = get_project_config_path(identifier)
         for (status_type, status) in d.iteritems():
-            update_config_with_sections(config_path, "status", status_type, status)
+            update_config_with_sections(config_path, "status", status_type.value, str(status.value))
 
     @staticmethod
-    def set_status(identifier, status_type, status):
+    def set_status(identifier, status_type, val):
         config_path = get_project_config_path(identifier)
-        update_config_with_sections(config_path, "status", status_type, status)
+        status = str(val.value)
+        update_config_with_sections(config_path, "status", status_type.value, status)
 
     @staticmethod
     def get_status(identifier):
         config_path = get_project_config_path(identifier)
         (success, value) = get_config_section(config_path, "status")
         if success:
+            return {Status.Type(k):Status.Flag(int(v)) for (k,v) in value.iteritems()}
+        else:
+            return None
+
+    @staticmethod
+    def get_status_raw(identifier):
+        config_path = get_project_config_path(identifier)
+        (success, value) = get_config_section(config_path, "status")
+        if success:
             return value
         else:
             return None
+
+    @staticmethod
+    def mark_all_failed():
+        identifiers = get_all_projects()
+        for identifier in identifiers:
+            status = StatusHelper.get_status(identifier)
+            for (k, v) in status.iteritems():
+                if v == Status.Flag.IN_PROGRESS:
+                    StatusHelper.set_status(identifier, k, Status.Flag.FAILURE)
+
+
 
 

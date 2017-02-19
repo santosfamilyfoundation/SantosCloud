@@ -1,15 +1,20 @@
 # app_config.py
-from ConfigParser import SafeConfigParser
+from ConfigParser import SafeConfigParser, NoSectionError, NoOptionError
 import os
 
 class AppConfig(object):
     PROJECT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), "..", "..", "project_dir"))
 
-def get_base_project_dir(identifier):
+def get_base_project_dir():
     return AppConfig.PROJECT_DIR
 
 def get_project_path(identifier):
     return os.path.join(AppConfig.PROJECT_DIR, identifier)
+
+def get_all_projects():
+    if not os.path.exists(get_base_project_dir()):
+        return []
+    return os.listdir(get_base_project_dir())
 
 def get_project_config_path(identifier):
     return os.path.join(AppConfig.PROJECT_DIR, identifier, identifier + ".cfg")
@@ -43,7 +48,7 @@ def update_config_with_sections(config_path, section, option, value):
     if section not in cfp.sections():  # If the given section does not exist,
         cfp.add_section(section)        # then create it.
     cfp.set(section, option, value)  # Set the option-value pair
-    with open(config_paths, "wb") as cfg_file:
+    with open(config_path, "wb") as cfg_file:
         cfp.write(cfg_file)  # Write changes
 
 
@@ -135,7 +140,7 @@ def update_config_without_sections(config_path, update_dict):
                 wf.write(line)
         for unused_key in unused_keys:
             wf.write("{} = {}\n".format(unused_key, update_dict[unused_key]))
-            
+
 
 def get_config_without_sections(config_path):
     """helper function to get params and their values of cfg files that look like run_tracking.cfg

@@ -18,20 +18,22 @@ import uuid
 
 from app_config import get_project_path, get_project_config_path, config_section_exists, update_config_without_sections
 from video import get_framerate
+from statusHelper import StatusHelper
 
 def create_project(identifier, video_dict):
     config_dict = {}
-    _update_config_dict_with_defaults(config_dict)
 
+    _update_config_dict_with_defaults(config_dict)
     _translate_config_dict(config_dict)
     _create_project_dir(identifier, config_dict, video_dict)
+    StatusHelper.initalize_project(identifier) # This must be called after the config path has been created
 
 def update_homography(identifier, homography_path, unitpixelratio):
     pass
 
 def update_project_config(identifier, config_dict):
     _update_config_dict_with_defaults(config_dict)
-    _translate_config_dict(config_dict) 
+    _translate_config_dict(config_dict)
 
     project_path = get_project_path(identifier)
     tracking_path = os.path.join(project_path, "tracking.cfg")
@@ -47,6 +49,7 @@ def default_config_dict():
         'max_connection_distance': 1.0,
         'max_segmentation_distance': 0.7,
     }
+
 def _translate_config_dict(config_dict):
     translate_dict = \
     {   'max_features_per_frame': "max-nfeatures",
@@ -61,7 +64,7 @@ def _translate_config_dict(config_dict):
         if key in translate_dict:
             config_dict[translate_dict[key]] = val
             del config_dict[key]
-        
+
 def _update_config_dict_with_defaults(config_dict):
     default_dict = default_config_dict()
 
@@ -90,7 +93,6 @@ def _create_project_dir(identifier, config_dict, video_dict):
         with open(os.path.join(project_path,video_dict['filename']), 'wb') as v:
             v.write(video_dict['body'])
 
-        # TODO: unitpixelratio
         _write_to_project_config(identifier, video_dict['filename'])
 
         default_files_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "default")
@@ -113,8 +115,8 @@ def _create_project_dir(identifier, config_dict, video_dict):
         update_config_without_sections(tracking_path,update_dict)
     else:
         print("Project exists. No new project created.")
-                
-def _write_to_project_config(identifier, video_filename, unitpixelratio='0.05'):
+
+def _write_to_project_config(identifier, video_filename):
     ts = time.time()
     vid_ts = datetime.datetime.now()
     #This line needs to be updated to no longer need the ui class. Load video and pull time.
@@ -129,9 +131,6 @@ def _write_to_project_config(identifier, video_filename, unitpixelratio='0.05'):
     config_parser.set("video", "source", video_filename)
     config_parser.set("video", "framerate", get_framerate(os.path.join(get_project_path(identifier), video_filename)))
     config_parser.set("video", "start", video_timestamp)
-    if unitpixelratio:
-        config_parser.add_section("homography")
-        config_parser.set("homography", "unitpixelratio", unitpixelratio)
 
     with open(get_project_config_path(identifier), 'wb') as configfile:
         config_parser.write(configfile)

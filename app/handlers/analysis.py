@@ -7,10 +7,12 @@ import tornado.web
 
 from traffic_cloud_utils.app_config import get_project_path, get_project_video_path, update_config_without_sections, get_config_without_sections
 from traffic_cloud_utils.emailHelper import EmailHelper
+from traffic_cloud_utils.statusHelper import StatusHelper, Status
 from objectTracking import ObjectTrackingHandler
 from safetyAnalysis import SafetyAnalysisHandler
+from baseHandler import BaseHandler
 
-class AnalysisHandler(tornado.web.RequestHandler):
+class AnalysisHandler(BaseHandler):
     """
     @api {post} /analysis/ Analysis
     @apiName Analysis
@@ -25,19 +27,58 @@ class AnalysisHandler(tornado.web.RequestHandler):
 
     @apiError error_message The error message to display.
     """
+    def prepare(self):
+        self.identifier = self.get_body_argument("identifier")
+        status_dict = StatusHelper.get_status(self.identifier)
+        if status_dict[Status.Type.OBJECT_TRACKING] == Status.Flag.IN_PROGRESS or status_dict[Status.Type.SAFETY_ANALYSIS] == Status.Flag.IN_PROGRESS:
+            status_code = 423
+            self.error_message = "Currently analyzing your video. Please wait."
+            raise tornado.web.HTTPError(status_code = status_code)
+        if status_dict[Status.Type.CONFIG_HOMOGRAPHY] != Status.Flag.COMPLETE:
+            status_code = 412
+            self.error_message = "Uploading homography did not complete successfully, try re-running it."
+            raise tornaod.web.HTTPError(status_code = status_code)
+        StatusHelper.set_status(self.identifier, Status.Type.OBJECT_TRACKING, Status.Flag.IN_PROGRESS)
+        StatusHelper.set_status(self.identifier, Status.Type.SAFETY_ANALYSIS, Status.Flag.IN_PROGRESS)
+
     def post(self):
-        identifier = self.get_body_argument("identifier")
-
-        status_code, reason = ObjectTrackingHandler.handler(identifier)
-        if status_code == 200:
-            status_code, reason = SafetyAnalysisHandler.handler(identifier)
+        email = self.get_body_argument("email", default = None)
+        status_code, reason = AnalysisHandler.handler(self.identifier, email)
 
         if status_code == 200:
-            message = "Hello,\n\tWe have finished processing your video and identifying any dangerous interactions.\nThank you for your patience,\nThe Santos Team"
-            subject = "Your video has finished processing."
-
-            EmailHelper.send_email(self.get_body_argument("email"), subject, message)
             self.finish("Analysis")
         else:
-            raise tornado.web.HTTPError(reason=reason, status_code=status_code)
-        
+            self.error_message = reason
+            raise tornado.web.HTTPError(status_code=status_code)
+
+    @staticmethod
+    def handler(identifier, email):
+        project_path = get_project_path(identifier)
+        if not os.path.exists(project_path):
+           return (500, 'Project directory does not exist. Check your identifier?')
+
+        status_code, reason = ObjectTrackingHandler.handler(identifier, email, AnalysisHandler.object_tracking_callback)
+        return (status_code, reason)
+
+    @staticmethod
+    def object_tracking_callback(status_code, response_message, identifier, email):
+        if status_code == 200:
+            message = "Hello,\n\tWe have finished processing your video and identifying all objects.\nWe will perform safety analysis now.\nThank you for your patience,\nThe Santos Team"
+            subject = "Your video has finished processing."
+
+            EmailHelper.send_email(email, subject, message)
+
+            status_code, reason = SafetyAnalysisHandler.handler(identifier, email, AnalysisHandler.safety_analysis_callback)
+
+        print (status_code, response_message)
+
+    @staticmethod
+    def safety_analysis_callback(status_code, response_message, identifier, email):
+        if status_code == 200:
+            subject = "Your video has finished processing."
+            message = "Hello,\n\tWe have finished looking through your data and identifying any dangerous interactions.\nThank you for your patience,\nThe Santos Team"
+
+            EmailHelper.send_email(email, subject, message)
+
+        print(status_code, response_message)
+
