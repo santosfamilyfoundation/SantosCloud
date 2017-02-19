@@ -52,7 +52,20 @@ class TestConfigHandler(BaseHandler):
             self.error_message = "Currently running a test. Please wait."
             raise tornado.web.HTTPError(status_code = status_code)
 
-        StatusHelper.set_status(self.identifier, status_type, Status.Flag.IN_PROGRESS)
+        request_type = self.request.method
+        if request_type == 'POST':
+            StatusHelper.set_status(self.identifier, status_type, Status.Flag.IN_PROGRESS)
+        elif request_type == 'GET':
+            if self.test_flag == "feature":
+                if status_dict[Status.Type.FEATURE_TEST] != Status.Flag.COMPLETE:
+                    status_code = 500
+                    self.error_message = "Feature test not complete, try re-running it."
+                    raise tornado.web.HTTPError(status_code = status_code)
+            elif self.test_flag == "object":
+                if status_dict[Status.Type.OBJECT_TEST] != Status.Flag.COMPLETE:
+                    status_code = 500
+                    self.error_message = "Object test not complete, try re-running it."
+                    raise tornado.web.HTTPError(status_code = status_code)
 
     def post(self):
         frame_start = int(self.get_body_argument("frame_start", default = 0))
@@ -70,20 +83,11 @@ class TestConfigHandler(BaseHandler):
 
     def get(self):
         status = StatusHelper.get_status(self.identifier)
+        project_path = get_project_path(self.identifier)
         if self.test_flag == "feature":
-            if status[Status.Type.FEATURE_TEST] != Status.Flag.COMPLETE:
-                status_code = 500
-                self.error_message = "Feature test not complete, try re-running it."
-                raise tornado.web.HTTPError(status_code = status_code)
+            self.file_name = os.path.join(project_path, 'feature_video', 'feature_video.mp4')
         elif self.test_flag == "object":
-            if status[Status.Type.OBJECT_TEST] != Status.Flag.COMPLETE:
-                status_code = 500
-                self.error_message = "Object test not complete, try re-running it."
-                raise tornado.web.HTTPError(status_code = status_code)
-
-        identifier = self.get_body_argument('identifier')
-        project_path = get_project_path(identifier)
-        self.file_name = os.path.join(project_path, 'feature_video', 'feature_video.mp4')
+            self.file_name = os.path.join(project_path, 'object_video', 'object_video.mp4')
 
         self.set_header('Content-Type', 'application/octet-stream')
         self.set_header('Content-Description', 'File Transfer')
@@ -168,6 +172,8 @@ class TestConfigFeatureThread(threading.Thread):
         videos_folder = os.path.join(get_project_path(self.identifier), "feature_video")
         video_filename = "feature_video.mp4"
         temp_image_prefix = 'image-'
+        if os.path.exists(os.path.join(videos_folder, video_filename)):
+            os.remove(os.path.join(videos_folder, video_filename))
         video.create_video_from_images(images_folder, temp_image_prefix, videos_folder, video_filename, video.get_framerate(get_project_video_path(self.identifier)))
 
         video.delete_files(images_folder)

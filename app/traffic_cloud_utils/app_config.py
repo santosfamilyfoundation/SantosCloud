@@ -5,11 +5,16 @@ import os
 class AppConfig(object):
     PROJECT_DIR = os.path.realpath(os.path.join(os.path.dirname(__file__), "..", "..", "project_dir"))
 
-def get_base_project_dir(identifier):
+def get_base_project_dir():
     return AppConfig.PROJECT_DIR
 
 def get_project_path(identifier):
     return os.path.join(AppConfig.PROJECT_DIR, identifier)
+
+def get_all_projects():
+    if not os.path.exists(get_base_project_dir()):
+        return []
+    return os.listdir(get_base_project_dir())
 
 def get_project_config_path(identifier):
     return os.path.join(AppConfig.PROJECT_DIR, identifier, identifier + ".cfg")
