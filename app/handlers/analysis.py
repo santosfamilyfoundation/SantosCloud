@@ -39,6 +39,7 @@ class AnalysisHandler(BaseHandler):
             self.error_message = "Uploading homography did not complete successfully, try re-running it."
             raise tornaod.web.HTTPError(status_code = status_code)
         StatusHelper.set_status(self.identifier, Status.Type.OBJECT_TRACKING, Status.Flag.IN_PROGRESS)
+        StatusHelper.set_status(self.identifier, Status.Type.SAFETY_ANALYSIS, Status.Flag.IN_PROGRESS)
 
     def post(self):
         email = self.get_body_argument("email", default = None)

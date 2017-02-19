@@ -100,7 +100,7 @@ class SafetyAnalysisThread(threading.Thread):
         try:
             print "Running safety analysis. Please wait as this may take a while."
 
-            subprocess.check_output(["safety-analysis.py", "--cfg", config_path, "--prediction-method", self.prediction_method], stderr=subprocess.STDOUT)
+            subprocess.check_output(["safety-analysis.py", "--cfg", config_path, "--prediction-method", self.prediction_method], stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
         except subprocess.CalledProcessError as err_msg:
             StatusHelper.set_status(self.identifier, Status.Type.SAFETY_ANALYSIS, Status.Flag.FAILURE)
             return self.callback(500, err_msg.output, self.identifier, self.email)
