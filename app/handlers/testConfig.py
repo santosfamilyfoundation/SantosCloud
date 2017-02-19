@@ -163,8 +163,8 @@ class TestConfigFeatureThread(threading.Thread):
             os.mkdir(images_folder)
 
         try:
-            subprocess.check_output(["feature-based-tracking", tracking_path, "--tf", "--database-filename", db_path], stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
-            subprocess.check_output(["display-trajectories.py", "-i", get_project_video_path(self.identifier), "-d", db_path, "-o", project_path + "/homography/homography.txt", "-t", "feature", "--save-images", "-f", str(self.frame_start), "--last-frame", str(self.frame_start + self.num_frames), "--output-directory", images_folder], stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
+            subprocess.check_call(["feature-based-tracking", tracking_path, "--tf", "--database-filename", db_path])
+            subprocess.check_call(["display-trajectories.py", "-i", get_project_video_path(self.identifier), "-d", db_path, "-o", project_path + "/homography/homography.txt", "-t", "feature", "--save-images", "-f", str(self.frame_start), "--last-frame", str(self.frame_start + self.num_frames), "--output-directory", images_folder])
         except subprocess.CalledProcessError as err_msg:
             StatusHelper.set_status(self.identifier, Status.Type.FEATURE_TEST, Status.Flag.FAILURE)
             return self.callback(500, err_msg.output, self.identifier)
@@ -214,9 +214,9 @@ class TestConfigObjectThread(threading.Thread):
             os.mkdir(images_folder)
 
         try:
-            subprocess.check_output(["feature-based-tracking",tracking_path,"--gf","--database-filename",obj_db_path], stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
-            subprocess.check_output(["classify-objects.py", "--cfg", tracking_path, "-d", obj_db_path], stderr=subprocess.STDOUT, shell=True, universal_newlines=True)  # Classify road users
-            subprocess.check_output(["display-trajectories.py", "-i", get_project_video_path(self.identifier),"-d", obj_db_path, "-o", project_path + "/homography/homography.txt", "-t", "object", "--save-images", "-f", str(self.frame_start), "--last-frame", str(self.frame_start + self.num_frames), "--output-directory", images_folder], stderr=subprocess.STDOUT, shell=True, universal_newlines=True)
+            subprocess.check_call(["feature-based-tracking",tracking_path,"--gf","--database-filename",obj_db_path])
+            subprocess.check_call(["classify-objects.py", "--cfg", tracking_path, "-d", obj_db_path])  # Classify road users
+            subprocess.check_call(["display-trajectories.py", "-i", get_project_video_path(self.identifier),"-d", obj_db_path, "-o", project_path + "/homography/homography.txt", "-t", "object", "--save-images", "-f", str(self.frame_start), "--last-frame", str(self.frame_start + self.num_frames), "--output-directory", images_folder])
         except subprocess.CalledProcessError as err_msg:
             StatusHelper.set_status(self.identifier, Status.Type.OBJECT_TEST, Status.Flag.FAILURE)
             return self.callback(500, err_msg.output, self.identifier)
