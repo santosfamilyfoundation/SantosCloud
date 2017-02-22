@@ -109,9 +109,9 @@ class ObjectTrackingThread(threading.Thread):
             os.remove(db_path)  # then remove it--it'll be recreated.
 
         try:
-            subprocess.check_output(["feature-based-tracking", tracking_path, "--tf", "--database-filename", db_path])
-            subprocess.check_output(["feature-based-tracking", tracking_path, "--gf", "--database-filename", db_path])
-            subprocess.check_output(["classify-objects.py", "--cfg", tracking_path, "-d", db_path])  # Classify road users
+            subprocess.check_call(["feature-based-tracking", tracking_path, "--tf", "--database-filename", db_path])
+            subprocess.check_call(["feature-based-tracking", tracking_path, "--gf", "--database-filename", db_path])
+            subprocess.check_call(["classify-objects.py", "--cfg", tracking_path, "-d", db_path])  # Classify road users
         except subprocess.CalledProcessError as excp:
             StatusHelper.set_status(self.identifier, Status.Type.OBJECT_TRACKING, Status.Flag.FAILURE)
             return self.callback(500, excp.output, self.identifier, self.email)
