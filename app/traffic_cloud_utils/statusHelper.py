@@ -6,7 +6,7 @@ from enum import Enum
 from app_config import get_project_config_path, update_config_with_sections, get_config_section, get_all_projects
 
 class Status(object):
-        
+
     class Flag(Enum):
         FAILURE = -1
         INCOMPLETE = 0
@@ -70,9 +70,12 @@ class StatusHelper(object):
         identifiers = get_all_projects()
         for identifier in identifiers:
             status = StatusHelper.get_status(identifier)
-            for (k, v) in status.iteritems():
-                if v == Status.Flag.IN_PROGRESS:
-                    StatusHelper.set_status(identifier, k, Status.Flag.FAILURE)
+            if status:
+                for (k, v) in status.iteritems():
+                    if v == Status.Flag.IN_PROGRESS:
+                        StatusHelper.set_status(identifier, k, Status.Flag.FAILURE)
+            else:
+                print "Error: Could not get CFG file, not clearing this project"
 
 
 

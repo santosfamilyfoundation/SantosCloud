@@ -44,8 +44,10 @@ from handlers.createSpeedDistribution import CreateSpeedDistributionHandler
 from handlers.retrieveResults import RetrieveResultsHandler
 from handlers.createHighlightVideo import CreateHighlightVideoHandler
 
-define("port", default=8888, help="run on the given port", type=int)
 
+define("port", default=8888, help="run on the given port", type=int)
+define("max_body_size", default=100*1024*1024, help="max size of content body", type=int)
+define("max_buffer_size", default=100*1024*1024, help="max size loaded into memory", type=int)
 
 class Application(tornado.web.Application):
     def __init__(self):
@@ -96,8 +98,12 @@ def main():
         os.mkdir(os.path.join(os.path.dirname(__file__),'..','.temp'))
     tornado.options.parse_command_line()
     app = Application()
-    app.listen(options.port, max_buffer_size = (int)(1024*1024*1024*1.25))
+    app.listen(options.port,\
+               max_body_size = options.max_body_size,\
+               max_buffer_size = options.max_buffer_size)
     print('Listening on port '+str(options.port))
+    print('Max Body Size {} MB'.format(options.max_body_size/(1024*1024)))
+    print('Max Buffer Size {} MB'.format(options.max_buffer_size/(1024*1024)))
     ioloop = tornado.ioloop.IOLoop().instance()
     tornado.autoreload.start(ioloop)
     ioloop.start()
