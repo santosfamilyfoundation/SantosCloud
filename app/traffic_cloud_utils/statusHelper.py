@@ -75,7 +75,7 @@ class StatusHelper(object):
                     if v == Status.Flag.IN_PROGRESS:
                         StatusHelper.set_status(identifier, k, Status.Flag.FAILURE)
             else:
-                print "Error: Could not get CFG file, not clearing this project"
+                print "Error: Could not mark project status failure flags for project {}".format(identifier)
 
 
 
