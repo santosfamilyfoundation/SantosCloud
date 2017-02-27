@@ -95,16 +95,14 @@ def main():
     if os.environ.get('SANTOSCLOUD_EMAIL') == '' or os.environ.get('SANTOSCLOUD_EMAIL_PASSWORD') == '':
         print("WARNING: Running without email capabilities. Users won't be emailed when their processing completes. To fix this, set the SANTOSCLOUD_EMAIL and SANTOSCLOUD_EMAIL_PASSWORD environment variables.")
 
-    if not os.path.exists(os.path.join(os.path.dirname(__file__),'..','.temp')):
-        os.mkdir(os.path.join(os.path.dirname(__file__),'..','.temp'))
     tornado.options.parse_command_line()
     app = Application()
     app.listen(options.port,\
                max_body_size = options.max_body_size,\
                max_buffer_size = options.max_buffer_size)
     print('Listening on port '+str(options.port))
-    print('Max Body Size {} MB'.format(options.max_body_size/(1024*1024)))
-    print('Max Buffer Size {} MB'.format(options.max_buffer_size/(1024*1024)))
+    print('Max Body Size {} MB'.format(options.max_body_size/(MB)))
+    print('Max Buffer Size {} MB'.format(options.max_buffer_size/(MB)))
     ioloop = tornado.ioloop.IOLoop().instance()
     tornado.autoreload.start(ioloop)
     ioloop.start()
