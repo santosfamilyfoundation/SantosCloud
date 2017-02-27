@@ -45,9 +45,10 @@ from handlers.retrieveResults import RetrieveResultsHandler
 from handlers.createHighlightVideo import CreateHighlightVideoHandler
 
 
+MB = 1024*1024
 define("port", default=8888, help="run on the given port", type=int)
-define("max_body_size", default=100*1024*1024, help="max size of content body", type=int)
-define("max_buffer_size", default=100*1024*1024, help="max size loaded into memory", type=int)
+define("max_body_size", default=100*MB, help="max size of content body", type=int)
+define("max_buffer_size", default=100*MB, help="max size loaded into memory", type=int)
 
 class Application(tornado.web.Application):
     def __init__(self):
