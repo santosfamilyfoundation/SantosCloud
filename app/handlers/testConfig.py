@@ -174,7 +174,7 @@ class TestConfigFeatureThread(threading.Thread):
         temp_image_prefix = 'image-'
         if os.path.exists(os.path.join(videos_folder, video_filename)):
             os.remove(os.path.join(videos_folder, video_filename))
-        video.create_video_from_images(images_folder, temp_image_prefix, videos_folder, video_filename, self.frame_start, video.get_framerate(get_project_video_path(self.identifier)))
+        video.create_video_from_images(images_folder, temp_image_prefix, videos_folder, video_filename, video.get_framerate(get_project_video_path(self.identifier)), self.frame_start)
 
         video.delete_files(images_folder)
         os.rmdir(images_folder)
