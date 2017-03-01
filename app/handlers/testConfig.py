@@ -52,7 +52,7 @@ class TestConfigHandler(BaseHandler):
         status_dict = StatusHelper.get_status(self.identifier)
         if self.test_flag == "feature":
             status_type = Status.Type.FEATURE_TEST
-            if status_dict[Status.Type.CONFIG_HOMOGRAPHY] != Status.Flag.COMPLETE:
+            if status_dict[Status.Type.HOMOGRAPHY] != Status.Flag.COMPLETE:
                 self.error_message = "Uploading homography did not complete successfully, try re-running it."
                 status_code = 412
                 raise tornado.web.HTTPError(status_code = status_code)

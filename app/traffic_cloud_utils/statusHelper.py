@@ -14,7 +14,7 @@ class Status(object):
         COMPLETE = 2
 
     class Type(Enum):
-        CONFIG_HOMOGRAPHY = "config_homography"
+        HOMOGRAPHY = "homography"
         FEATURE_TEST = "feature_test"
         OBJECT_TEST = "object_test"
         OBJECT_TRACKING = "object_tracking"
