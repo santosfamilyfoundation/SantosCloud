@@ -19,8 +19,8 @@ class ConfigHomographyHandler(BaseHandler):
 
     @apiParam {String} identifier The identifier of the project for which to configure the homography.
     @apiParam {Integer} unit_pixel_ratio The unit_pixel_ratio of the images (ie. 0.05 meters per pixel).
-    @apiParam {JSON} aerial_pts A JSON array containing the coordinates of point clicks on the aerial image as arrays in the form [x_coord, y_coord]
-    @apiParam {JSON} camera_pts A JSON array containing the coordinates of point clicks on the camera image as arrays in the form [x_coord, y_coord]
+    @apiParam {JSON} aerial_pts A JSON array containing the coordinates of point clicks on the aerial image as arrays in the form [x_coord, y_coord], where x_coord and y_coord are floats
+    @apiParam {JSON} camera_pts A JSON array containing the coordinates of point clicks on the camera image as arrays in the form [x_coord, y_coord], where x_coord and y_coord are floats
 
     @apiSuccess status_code The API will return a status code of 200 upon success.
 
@@ -46,14 +46,12 @@ class ConfigHomographyHandler(BaseHandler):
         self.finish()
 
     def get(self):
-        self.set_header('Content-Type', 'application/octet-stream')
-        self.set_header('Content-Description', 'File Transfer')
-        self.set_header('Content-Disposition', 'attachment; filename=homography.txt')
-        self.write_file_stream(\
-            os.path.join(\
+        h_path = os.path.join(\
                         get_project_path(self.identifier),\
                         'homography',\
-                        'homography.txt'))
+                        'homography.txt')
+        self.write({'homography': np.ndarray.tolist(np.loadtxt(h_path))})
+
         StatusHelper.set_status(\
                                 self.identifier,\
                                 Status.Type.CONFIG_HOMOGRAPHY,\
@@ -68,7 +66,7 @@ class ConfigHomographyHandler(BaseHandler):
         if  ((aerial_pts is not None) and (camera_pts is not None)) and\
             (isinstance(aerial_pts, list) and isinstance(camera_pts, list)) and\
             (len(aerial_pts) == len(camera_pts)) and\
-            (check_points(aerial_pts) and check_points(camera_pts)):
+            (self.check_points(aerial_pts) and self.check_points(camera_pts)):
 
             try:
                 homography, mask = cv2.findHomography(\
@@ -78,7 +76,7 @@ class ConfigHomographyHandler(BaseHandler):
                     os.path.join(project_dir,'homography','homography.txt'),\
                     homography)
             except:
-                self.error_message("Could not find the homography, check your points and try again")
+                self.error_messag = "Could not find the homography, check your points and try again"
                 StatusHelper.set_status(\
                                         self.identifier,\
                                         Status.Type.CONFIG_HOMOGRAPHY,\
@@ -86,18 +84,19 @@ class ConfigHomographyHandler(BaseHandler):
                 raise tornado.web.HTTPError(status_code = 500)
 
         else:
-            self.error_message("Could not interpret the points given. Try again with different points")
+            self.error_message = "Could not interpret the points given. Try again with different points"
             StatusHelper.set_status(\
                                     self.identifier,\
                                     Status.Type.CONFIG_HOMOGRAPHY,\
                                     Status.Flag.FAILURE)
             raise tornado.web.HTTPError(status_code = 500)
 
+
     def check_points(self, points):
         for i in points:
             if not (isinstance(i, list) and len(i)==2):
-                return false
+                return False
             for j in i:
-                if not isinstance(j, int):
-                    return false
-        return true
+                if not isinstance(j, float):
+                    return False
+        return True
