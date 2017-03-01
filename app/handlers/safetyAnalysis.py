@@ -41,7 +41,7 @@ class SafetyAnalysisHandler(BaseHandler):
         StatusHelper.set_status(self.identifier, Status.Type.SAFETY_ANALYSIS, Status.Flag.IN_PROGRESS)
 
     def post(self):
-        email = self.get_body_argument("email", default = None)
+        email = self.find_argument("email", default = None)
         status_code, reason = SafetyAnalysisHandler.handler(self.identifier, email, SafetyAnalysisHandler.callback)
 
         if status_code == 200:

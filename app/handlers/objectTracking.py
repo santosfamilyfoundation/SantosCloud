@@ -48,7 +48,7 @@ class ObjectTrackingHandler(BaseHandler):
 
     def post(self):
         # TODO: Implement rerun flag to prevent unnecessary computation
-        email = self.get_body_argument("email", default = None)
+        email = self.find_argument("email", default = None)
         status_code, reason = ObjectTrackingHandler.handler(self.identifier, email, ObjectTrackingHandler.callback)
 
         if status_code == 200:

@@ -40,7 +40,7 @@ class ConfigHomographyHandler(BaseHandler):
         StatusHelper.set_status(self.identifier, Status.Type.CONFIG_HOMOGRAPHY, Status.Flag.IN_PROGRESS)
 
     def post(self):
-        self.up_ratio = float(self.get_body_argument('unit_pixel_ratio'))
+        self.up_ratio = float(self.find_argument('unit_pixel_ratio'))
         self.write_homography_files()
         StatusHelper.set_status(self.identifier, Status.Type.CONFIG_HOMOGRAPHY, Status.Flag.COMPLETE)
         self.finish()
@@ -60,8 +60,8 @@ class ConfigHomographyHandler(BaseHandler):
 
     def write_homography_files(self):
         project_dir = get_project_path(self.identifier)
-        aerial_pts = literal_eval(self.get_body_argument('aerial_pts'))
-        camera_pts = literal_eval(self.get_body_argument('camera_pts'))
+        aerial_pts = literal_eval(self.find_argument('aerial_pts'))
+        camera_pts = literal_eval(self.find_argument('camera_pts'))
 
         if  ((aerial_pts is not None) and (camera_pts is not None)) and\
             (isinstance(aerial_pts, list) and isinstance(camera_pts, list)) and\

@@ -42,7 +42,7 @@ class AnalysisHandler(BaseHandler):
         StatusHelper.set_status(self.identifier, Status.Type.SAFETY_ANALYSIS, Status.Flag.IN_PROGRESS)
 
     def post(self):
-        email = self.get_body_argument("email", default = None)
+        email = self.find_argument("email", default = None)
         status_code, reason = AnalysisHandler.handler(self.identifier, email)
 
         if status_code == 200:
