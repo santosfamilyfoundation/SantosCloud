@@ -1,10 +1,13 @@
 import tornado.web
 import json
 import traceback
+import os
 
 class BaseHandler(tornado.web.RequestHandler):
     def initialize(self):
         self.error_message = None
+        self.MB = 1024*1024
+        self.GB = 1024*self.MB
 
     def find_argument(self, arg_name):
         method_type = self.request.method.lower()
@@ -18,7 +21,7 @@ class BaseHandler(tornado.web.RequestHandler):
             # We don't currently support other method types
             self.error_message = 'Only GET and POST are supported methods for this API'
             raise tornado.web.HTTPError(status_code=405)
-        
+
     def write_error(self, status_code, **kwargs):
         self.set_header('Content-Type', 'application/json')
 
@@ -40,6 +43,9 @@ class BaseHandler(tornado.web.RequestHandler):
             'error': error_dict }))
 
     def write_file_stream(self, file_name, chunk_size = 2048):
+        if not os.path.exists(file_name):
+            self.error_message = "That file does not exist on the server"
+            raise tornado.web.HTTPError(status_code=500)
         with open(file_name, 'rb') as f:
             try:
                 while True:

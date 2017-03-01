@@ -25,12 +25,10 @@ class UploadVideoHandler(BaseHandler):
 
     @apiError error_message The error message to display.
     """
-    MB = 1024*1024
-    GB = 1024*MB
     def prepare(self):
         if self.request.method.lower() == "post":
             # Set this request's max_body_size to 20 GB
-            self.request.connection.set_max_body_size(20*GB)
+            self.request.connection.set_max_body_size(20*self.GB)
         try:
             total = int(self.request.headers.get("Content-Length","0"))
         except KeyError:
