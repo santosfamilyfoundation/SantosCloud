@@ -66,7 +66,8 @@ class ConfigHomographyHandler(BaseHandler):
         if  ((aerial_pts is not None) and (camera_pts is not None)) and\
             (isinstance(aerial_pts, list) and isinstance(camera_pts, list)) and\
             (len(aerial_pts) == len(camera_pts)) and\
-            (self.check_points(aerial_pts) and self.check_points(camera_pts)):
+            (self.check_points(aerial_pts) and self.check_points(camera_pts)) and\
+            (len(aerial_pts) >= 4):
 
             try:
                 homography, mask = cv2.findHomography(\
