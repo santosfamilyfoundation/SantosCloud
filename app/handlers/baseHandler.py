@@ -9,14 +9,14 @@ class BaseHandler(tornado.web.RequestHandler):
         self.MB = 1024*1024
         self.GB = 1024*self.MB
 
-    def find_argument(self, arg_name):
+    def find_argument(self, arg_name, default=None):
         method_type = self.request.method.lower()
         if method_type == 'post':
             # Try to get the identifier from the body
-            return self.get_body_argument(arg_name, default=None)
+            return self.get_body_argument(arg_name, default=default)
         elif method_type == 'get':
             # Try to get the identifier from the header instead
-            return self.get_argument(arg_name, default=None)
+            return self.get_argument(arg_name, default=default)
         else:
             # We don't currently support other method types
             self.error_message = 'Only GET and POST are supported methods for this API'
