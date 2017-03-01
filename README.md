@@ -20,7 +20,7 @@ There are two options:
 
 #### Vagrant Installation
 
-For installation of the complete environment that you will need to run SantosCloud, see the instructions in the [README of the SantosInstallation repository](https://github.com/santosfamilyfoundation/SantosInstallation). Once you do this, 
+For installation of the complete environment that you will need to run SantosCloud, see the instructions in the [README of the SantosInstallation repository](https://github.com/santosfamilyfoundation/SantosInstallation).
 
 #### Local Installation
 
