@@ -86,12 +86,12 @@ class TestConfigHandler(BaseHandler):
         project_path = get_project_path(self.identifier)
         if self.test_flag == "feature":
             self.file_name = os.path.join(project_path, 'feature_video', 'feature_video.mp4')
+            self.set_header('Content-Disposition', 'attachment; filename=feature_video.mp4')
         elif self.test_flag == "object":
             self.file_name = os.path.join(project_path, 'object_video', 'object_video.mp4')
-
+            self.set_header('Content-Disposition', 'attachment; filename=object_video.mp4')
         self.set_header('Content-Type', 'application/octet-stream')
         self.set_header('Content-Description', 'File Transfer')
-        self.set_header('Content-Disposition', 'attachment; filename=' + self.file_name)
         self.write_file_stream(self.file_name)
         self.finish()
 

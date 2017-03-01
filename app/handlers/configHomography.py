@@ -28,7 +28,17 @@ class ConfigHomographyHandler(BaseHandler):
     """
 
     def prepare(self):
-        self.identifier = self.get_body_argument("identifier")
+        method_type = self.request.method.lower()
+        if method_type == 'post':
+            # Try to get the identifier from the body
+            self.identifier = self.get_body_argument("identifier")
+        elif method_type == 'get':
+            # Try to get the identifier from the header instead
+            self.identifier = self.get_argument("identifier")
+
+        #TODO: Make sure that the project actually exists, ie. project_exists(id)
+
+        #Handle the status correctly
         if StatusHelper.get_status(self.identifier)[Status.Type.CONFIG_HOMOGRAPHY] == Status.Flag.IN_PROGRESS:
             status_code = 423
             self.error_message = "Currently uploading homography. Please wait."
@@ -39,15 +49,42 @@ class ConfigHomographyHandler(BaseHandler):
         self.up_ratio = float(self.get_body_argument('unit_pixel_ratio'))
         self.write_homography_files()
         StatusHelper.set_status(self.identifier, Status.Type.CONFIG_HOMOGRAPHY, Status.Flag.COMPLETE)
-        self.finish("Upload Homography")
+        self.finish()
+
+    def get(self):
+        self.set_header('Content-Type', 'application/octet-stream')
+        self.set_header('Content-Description', 'File Transfer')
+        self.set_header('Content-Disposition', 'attachment; filename=homography.txt')
+        self.write_file_stream(\
+            os.path.join(\
+                        get_project_path(self.identifier),\
+                        'homography',\
+                        'homography.txt'))
+        StatusHelper.set_status(\
+                                self.identifier,\
+                                Status.Type.CONFIG_HOMOGRAPHY,\
+                                Status.Flag.COMPLETE)
+        self.finish()
 
     def write_homography_files(self):
         project_dir = get_project_path(self.identifier)
-        #TODO: Put literal_eval here and use try/catch
-        aerial_pts = self.get_body_argument('aerial_pts')
-        camera_pts = self.get_body_argument('camera_pts')
+        aerial_pts = literal_eval(self.get_body_argument('aerial_pts'))
+        camera_pts = literal_eval(self.get_body_argument('camera_pts'))
 
-        homography, mask = cv2.findHomography(\
-                            np.array(literal_eval(camera_pts)),\
-                            self.up_ratio*np.array(literal_eval(aerial_pts)))
-        np.savetxt(os.path.join(project_dir,'homography','homography.txt'),homography)
+        if (aerial_pts is not None) and (camera_pts is not None):
+            homography, mask = cv2.findHomography(\
+                            np.array(camera_pts),\
+                            self.up_ratio*np.array(aerial_pts))
+
+            np.savetxt(\
+                os.path.join(project_dir,'homography','homography.txt'),\
+                homography)
+
+        else:
+            self.error_message("Error: Could not interpret the points given. Try again with different points")
+            StatusHelper.set_status(\
+                                    self.identifier,\
+                                    Status.Type.CONFIG_HOMOGRAPHY,\
+                                    Status.Flag.FAILURE)
+            raise tornado.web.HTTPError(status_code = 500)
+
