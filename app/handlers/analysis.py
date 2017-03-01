@@ -28,7 +28,7 @@ class AnalysisHandler(BaseHandler):
     @apiError error_message The error message to display.
     """
     def prepare(self):
-        self.identifier = self.get_body_argument("identifier")
+        self.identifier = self.find_argument('identifier')
         status_dict = StatusHelper.get_status(self.identifier)
         if status_dict[Status.Type.OBJECT_TRACKING] == Status.Flag.IN_PROGRESS or status_dict[Status.Type.SAFETY_ANALYSIS] == Status.Flag.IN_PROGRESS:
             status_code = 423
@@ -42,7 +42,7 @@ class AnalysisHandler(BaseHandler):
         StatusHelper.set_status(self.identifier, Status.Type.SAFETY_ANALYSIS, Status.Flag.IN_PROGRESS)
 
     def post(self):
-        email = self.get_body_argument("email", default = None)
+        email = self.find_argument("email")
         status_code, reason = AnalysisHandler.handler(self.identifier, email)
 
         if status_code == 200:

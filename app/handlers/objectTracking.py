@@ -33,13 +33,13 @@ class ObjectTrackingHandler(BaseHandler):
     """
 
     def prepare(self):
-        self.identifier = self.get_body_argument("identifier")
+        self.identifier = self.find_argument('identifier')
         status_dict = StatusHelper.get_status(self.identifier)
         if status_dict[Status.Type.OBJECT_TRACKING] == Status.Flag.IN_PROGRESS:
             status_code = 423
             self.error_message = "Currently analyzing your video. Please wait."
             raise tornado.web.HTTPError(status_code = status_code)
-        if status_dict[Status.Type.CONFIG_HOMOGRAPHY] != Status.Flag.COMPLETE:
+        if status_dict[Status.Type.HOMOGRAPHY] != Status.Flag.COMPLETE:
             status_code = 412
             self.error_message = "Uploading homography did not complete successfully, try re-running it."
             raise tornado.web.HTTPError(status_code = status_code)
@@ -48,7 +48,7 @@ class ObjectTrackingHandler(BaseHandler):
 
     def post(self):
         # TODO: Implement rerun flag to prevent unnecessary computation
-        email = self.get_body_argument("email", default = None)
+        email = self.find_argument("email", default = None)
         status_code, reason = ObjectTrackingHandler.handler(self.identifier, email, ObjectTrackingHandler.callback)
 
         if status_code == 200:

@@ -21,14 +21,14 @@ class UploadVideoHandler(BaseHandler):
     @apiDescription This route will upload a video to a project (and create a new project if an old one is not specified)
 
     @apiParam {File} video The video file to analyze. This can have any file extension.
-    @apiSuccess {String} project_identifier The project identifier. This will be used to reference the project in all other requests.
+    @apiSuccess {String} identifier The project identifier. This will be used to reference the project in all other requests.
 
     @apiError error_message The error message to display.
     """
     def prepare(self):
         if self.request.method.lower() == "post":
-            # Set this request's max_body_size to 20 GB (1024*1024*1024)
-            self.request.connection.set_max_body_size(20*1024*1024*1024)
+            # Set this request's max_body_size to 20 GB
+            self.request.connection.set_max_body_size(20*self.GB)
         try:
             total = int(self.request.headers.get("Content-Length","0"))
         except KeyError:
