@@ -229,7 +229,7 @@ def renumber_frames(folder, start_frame, prefix, extension):
                     number = rest.split('.')[0]
                     num = None
                     try:
-                        num = int(number) - start_frame
+                        num = int(number) - int(start_frame)
                     except Exception as e:
                         print("Couldn't parse to int: "+file+" from prefix: "+prefix)
                         print("Value of number was: " + number+" of type: "+type(number))
