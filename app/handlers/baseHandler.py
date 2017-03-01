@@ -6,6 +6,19 @@ class BaseHandler(tornado.web.RequestHandler):
     def initialize(self):
         self.error_message = None
 
+    def find_argument(self, arg_name):
+        method_type = self.request.method.lower()
+        if method_type == 'post':
+            # Try to get the identifier from the body
+            return self.get_body_argument(arg_name)
+        elif method_type == 'get':
+            # Try to get the identifier from the header instead
+            return self.get_argument(arg_name)
+        else:
+            # We don't currently support other method types
+            self.error_message = 'Only GET and POST are supported methods for this API'
+            raise tornado.web.HTTPError(status_code=405)
+        
     def write_error(self, status_code, **kwargs):
         self.set_header('Content-Type', 'application/json')
 

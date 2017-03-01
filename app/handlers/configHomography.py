@@ -28,13 +28,7 @@ class ConfigHomographyHandler(BaseHandler):
     """
 
     def prepare(self):
-        method_type = self.request.method.lower()
-        if method_type == 'post':
-            # Try to get the identifier from the body
-            self.identifier = self.get_body_argument("identifier")
-        elif method_type == 'get':
-            # Try to get the identifier from the header instead
-            self.identifier = self.get_argument("identifier")
+        self.identifier = self.find_argument('identifier')
 
         #TODO: Make sure that the project actually exists, ie. project_exists(id)
 
