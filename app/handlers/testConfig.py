@@ -32,8 +32,8 @@ class TestConfigHandler(BaseHandler):
     """
 
     def prepare(self):
-        self.identifier = self.get_body_argument("identifier")
-        self.test_flag = self.get_body_argument("test_flag")
+        self.identifier = self.find_argument('identifier')
+        self.test_flag = self.find_argument('test_flag')
         status_dict = StatusHelper.get_status(self.identifier)
         if self.test_flag == "feature":
             status_type = Status.Type.FEATURE_TEST
@@ -52,10 +52,10 @@ class TestConfigHandler(BaseHandler):
             self.error_message = "Currently running a test. Please wait."
             raise tornado.web.HTTPError(status_code = status_code)
 
-        request_type = self.request.method
-        if request_type == 'POST':
+        request_type = self.request.method.lower()
+        if request_type == 'post':
             StatusHelper.set_status(self.identifier, status_type, Status.Flag.IN_PROGRESS)
-        elif request_type == 'GET':
+        elif request_type == 'get':
             if self.test_flag == "feature":
                 if status_dict[Status.Type.FEATURE_TEST] != Status.Flag.COMPLETE:
                     status_code = 500
