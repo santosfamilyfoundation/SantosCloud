@@ -65,20 +65,39 @@ class ConfigHomographyHandler(BaseHandler):
         aerial_pts = literal_eval(self.get_body_argument('aerial_pts'))
         camera_pts = literal_eval(self.get_body_argument('camera_pts'))
 
-        if (aerial_pts is not None) and (camera_pts is not None):
-            homography, mask = cv2.findHomography(\
+        if  ((aerial_pts is not None) and (camera_pts is not None)) and\
+            (isinstance(aerial_pts, list) and isinstance(camera_pts, list)) and\
+            (len(aerial_pts) == len(camera_pts)) and\
+            (check_points(aerial_pts) and check_points(camera_pts)):
+
+            try:
+                homography, mask = cv2.findHomography(\
                             np.array(camera_pts),\
                             self.up_ratio*np.array(aerial_pts))
-
-            np.savetxt(\
-                os.path.join(project_dir,'homography','homography.txt'),\
-                homography)
+                np.savetxt(\
+                    os.path.join(project_dir,'homography','homography.txt'),\
+                    homography)
+            except:
+                self.error_message("Could not find the homography, check your points and try again")
+                StatusHelper.set_status(\
+                                        self.identifier,\
+                                        Status.Type.CONFIG_HOMOGRAPHY,\
+                                        Status.Flag.FAILURE)
+                raise tornado.web.HTTPError(status_code = 500)
 
         else:
-            self.error_message("Error: Could not interpret the points given. Try again with different points")
+            self.error_message("Could not interpret the points given. Try again with different points")
             StatusHelper.set_status(\
                                     self.identifier,\
                                     Status.Type.CONFIG_HOMOGRAPHY,\
                                     Status.Flag.FAILURE)
             raise tornado.web.HTTPError(status_code = 500)
 
+    def check_points(self, points):
+        for i in points:
+            if not (isinstance(i, list) and len(i)==2):
+                return false
+            for j in i:
+                if not isinstance(j, int):
+                    return false
+        return true
