@@ -239,7 +239,7 @@ class TestConfigObjectThread(threading.Thread):
         videos_folder = os.path.join(get_project_path(self.identifier), "object_video")
         video_filename = "object_video.mp4"
         temp_image_prefix = 'image-'
-        video.create_video_from_images(images_folder, temp_image_prefix, videos_folder, video_filename, video.get_framerate(get_project_video_path(self.identifier)))
+        video.create_video_from_images(images_folder, temp_image_prefix, videos_folder, video_filename, video.get_framerate(get_project_video_path(self.identifier)), self.frame_start)
 
         video.delete_files(images_folder)
         os.rmdir(images_folder)
