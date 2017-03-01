@@ -2,7 +2,7 @@
 
 SantosCloud is an API that allows users to perform analysis on videos of traffic intersections in order to produce safety statistics to enable infrastructure change that could save lives. SantosCloud provides an API that enables users to upload their videos, analyze it, and retrieve a safety report outlining the details of the intersection.
 
-SantosCloud's analysis is performed by the excellend [TrafficIntelligence project](https://bitbucket.org/Nicolas/trafficintelligence/wiki/Home). Many thanks to Dr. Nicolas Saunier for his work on that project and collaboration with us on this project.
+SantosCloud's analysis is performed by the excellent [TrafficIntelligence project](https://bitbucket.org/Nicolas/trafficintelligence/wiki/Home). Many thanks to Dr. Nicolas Saunier for his work on that project and collaboration with us on this project.
 
 All of the instructions in this README apply to Ubuntu operating systems. This is the only currently supported OS for running SantosCloud.
 
