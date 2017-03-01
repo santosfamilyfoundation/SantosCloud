@@ -15,8 +15,8 @@ from traffic_cloud_utils import video
 
 class TestConfigHandler(BaseHandler):
     """
-    @api {post} /testConfig/ Test Configuration
-    @apiName TestConfig
+    @api {post} /testConfig/ Post Test Configuration
+    @apiName PostTestConfig
     @apiVersion 0.1.0
     @apiGroup Configuration
     @apiDescription Calling this route will test the video's configuration. This test consists of running object tracking on a small subset of the video, and producing a video showing the results of the tracking. (Due to the potentially long duration of testing, it is infeasible to return the results as a response to the HTTP request. In order to check the status of the testing and view results, see the Status group of messages.)
@@ -32,7 +32,7 @@ class TestConfigHandler(BaseHandler):
     """
 
     """
-    @api {get} /testConfig/ Test Configuration
+    @api {get} /testConfig/ Get Test Configuration
     @apiName GetTestConfig
     @apiVersion 0.1.0
     @apiGroup Configuration
