@@ -46,7 +46,7 @@ class CreateHighlightVideoHandler(BaseHandler):
 
 
     def post(self):
-        email = self.find_argument('email', default=None)
+        email = self.find_argument('email')
         ttc_threshold = float(self.find_argument('ttc_threshold', default=1.5))
         vehicle_only = bool(self.find_argument('vehicle_only', default=True))
         num_near_misses_to_use = int(self.find_argument('num_near_misses_to_use', default=10))
