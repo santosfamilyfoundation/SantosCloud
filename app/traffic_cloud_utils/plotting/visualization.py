@@ -5,6 +5,7 @@ import math
 import os
 
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 import random
@@ -22,6 +23,8 @@ import matplotlib.patches as mpatches
 
 # 2.23694 mph / (m/s) = (1 mi / 1609.34 m) * (3600 sec / 1 hr)
 MPS_MPH_CONVERSION = 2.23694
+userlist = ['unknown', 'car', 'pedestrian',
+	    'motorcycle', 'bicycle', 'bus', 'truck']
 
 """
 Test this file with: python visualization.py stmarc.sqlite 30 homography.txt
@@ -62,8 +65,6 @@ def road_user_traj(fig, filename, fps, homographyFile, roadImageFile):
     implot = ax.imshow(im)
 
     # colors = [(0,0,0), (0,0,1), (0,1,0), (1,0,1), (0,1,1), (1,1,0), (1,0,1)]
-    userlist = ['unknown', 'car', 'pedestrian',
-                'motorcycle', 'bicycle', 'bus', 'truck']
     colors = {'unknown': (0, 0, 0), 'car': (0, 0, 1), 'pedestrian': (0, 1, 0), 'motorcycle': (
         1, 0, 0), 'bicycle': (0, 1, 1), 'bus': (1, 1, 0), 'truck': (1, 0, 1)}
 
@@ -160,8 +161,6 @@ def road_user_vels(fig, filename, fps):
     xvels = []
     yvels = []
 
-    userlist = ['unknown', 'car', 'pedestrian',
-                'motorcycle', 'bicycle', 'bus', 'truck']
     roadusers = {'unknown': [], 'car': [], 'pedestrian': [],
                  'motorcycle': [], 'bicycle': [], 'bus': [], 'truck': []}
 
@@ -373,8 +372,6 @@ def road_user_counts(filename):
     queryStatement = 'SELECT * FROM objects ORDER BY object_id'
     cursor.execute(queryStatement)
 
-    userlist = ['unknown', 'car', 'pedestrian',
-                'motorcycle', 'bicycle', 'bus', 'truck']
     roadusers = {'unknown': [], 'car': [], 'pedestrian': [],
                  'motorcycle': [], 'bicycle': [], 'bus': [], 'truck': []}
 
@@ -414,6 +411,7 @@ def road_user_chart(filename):
 
     connection.commit()
     connection.close()
+
 
 def road_user_icon_counts(title, car, bike, pedestrian, save_path, textcolor='#000000', facecolor='#FFFFFF', iconpath=None):
     """
@@ -481,6 +479,62 @@ def road_user_icon_counts(title, car, bike, pedestrian, save_path, textcolor='#0
 
     fig.savefig(save_path, dpi=dpi, bbox_inches=0, pad_inches=0, facecolor=facecolor, format='jpg')
     plt.close()
+
+def object_times(filename, road_user_type):
+    conn = sqlite3.connect(filename)
+    c = conn.cursor()
+    res = c.execute("""
+        SELECT objects.object_id, AVG(frame)
+        FROM object_trajectories INNER JOIN objects
+            ON object_trajectories.object_id=objects.object_id
+        WHERE road_user_type = ?
+        GROUP BY object_trajectories.object_id
+        """, [road_user_type])
+
+    object_times = []
+    for r in res:
+        object_id, avg_frame = r
+        object_times.append(avg_frame)
+
+    return object_times
+
+def object_counts_over_time(filename, road_user_type, time_interval_frames, interval_duration, interval_unit, folder, ):
+    """
+    Arguments
+    ---------
+    filename: str, path to database
+    road_user_type: int, type of road user, according to traffic intelligence
+    time_interval_frames: int, number of frames per bin
+    interval_explanation: str, explanation on what bins represent
+    folder: str, folder to save
+    """
+    obj_times = object_times(filename, road_user_type)
+
+    # multiply time values by -1 so we can have beginning to end top down
+    topdown = -1
+
+    # calculate bin edges
+    nbins = int(np.ceil(float(max(obj_times)) / time_interval_frames))
+    bin_edges = [topdown*i*time_interval_frames for i in range(nbins+1)][::-1]
+
+    obj_times = topdown*np.array(obj_times)
+
+    fig, ax = plt.subplots(1,1)
+    binvals , bins, _1 = ax.hist(obj_times, bins=bin_edges, orientation='horizontal', align='left')
+
+    # xaxis customization
+    ax.set_xlabel('%s count' % userlist[road_user_type]) # i.e. pedestrian count
+    xa = ax.get_xaxis()
+    xa.set_major_locator(matplotlib.ticker.MaxNLocator(integer=True))
+
+    # yaxis customization
+    ax.set_ylabel('%s elapsed' % interval_explanation) # i.e. hours elapsed
+    time_labels = [i for i in range(len(bins))][1:] # length of binvals, starting with 1
+    ax.set_yticks(bins[:-1])
+    ax.set_yticklabels(time_labels[::topdown])
+
+    fig.savefig(os.path.join(folder, '%s_counts_over_time.jpg' % userlist[road_user_type]),
+                bbox_inches=0, pad_inches=0, format='jpg')
 
 if __name__ == '__main__':
     import argparse
