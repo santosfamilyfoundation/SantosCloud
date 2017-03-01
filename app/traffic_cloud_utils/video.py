@@ -145,7 +145,7 @@ def get_resolution(videopath):
 
 #### Video Creation
 
-def create_video_from_images(images_dir, prefix, frame1 = 0, video_dir, video_filename, framerate, extension="png"):
+def create_video_from_images(images_dir, prefix, video_dir, video_filename, framerate, frame1=0, extension="png"):
     '''
     Creates a video for images that are of the form prefix+number+.extension
     '''
