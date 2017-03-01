@@ -2,9 +2,10 @@
 
 import tornado.web
 
+from baseHandler import BaseHandler
 from traffic_cloud_utils.pm import default_config_dict, update_project_config
 
-class ConfigHandler(tornado.web.RequestHandler):
+class ConfigHandler(BaseHandler):
     """
     @api {post} /config/ Configure Project
     @apiName Configure Project
