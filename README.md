@@ -1,7 +1,7 @@
 # TrafficCloud
 Our API wrapper around TrafficIntelligence. It's video analysis, *in the cloud*.
 
-### Setup
+## Setup
 
 To use the project, you must add the SantosCloud folder to your PYTHONPATH environment variable. On Ubuntu, this means adding the following line to your `.bashrc`:
 
@@ -13,15 +13,7 @@ export PYTHONPATH="${PYTHONPATH}:/home/$USER/Documents/SantosCloud"
 
 A simple way to do this is by using `vim ~/.bashrc` or `nano ~/.bashrc` and then running `source ~/.bashrc` or restarting your terminal.
 
-You must also set environment variables for the secret key, email, and the password for the email. Run the following commands to set these environment variables:
-
-```
-export SANTOSCLOUD_SECRET_KEY="ExampleSecretKey"
-export SANTOSCLOUD_EMAIL="santostrafficcloud@gmail.com"
-export SANTOSCLOUD_EMAIL_PASSWORD="ExamplePassword"
-```
-
-The email feature has only been tested with Gmail emails. If you install this locally, you can create a Gmail or use yours to send emails from when the analysis completes.
+You need also set environment variables for the secret key, and you can optionally set environment variables for the server to email users on long-running analysis tasks. 
 
 You can generate a secret key by running the following python commands:
 
@@ -30,15 +22,28 @@ import os
 os.urandom(24).encode('hex')
 ```
 
-### Running
+Run the following commands to set the secret key (this is required). Paste the secret key from the step above.
 
-Running `python main.py <project_name>` from the SantosCloud folder will run the analysis on the project. `<project_name>` can either be the folder name or the relative or absolute path to the folder from the SantosCloud folder (i.e. for a project with id of 'id', this can be `python main.py id`, `python main.py project_dir/id/` or `python main.py /home/username/SantosCloud/project_dir/id/`). This assumes that the project folder exists in `SantosCloud/project_dir/` and contains all of the necessary config and video files.
+```
+export SANTOSCLOUD_SECRET_KEY="ExampleSecretKey"
+```
 
-To run the server, either 1) run `python app/app.py` from the SantosCloud folder, or 2) `cd` into the `app/` folder and run `python app.py`. These will start the server and tell you what port it is running on.
+Run the following commands to set the variables the server needs for email capabilities (this is optional):
 
-### Generate API Documentation
+```
+export SANTOSCLOUD_EMAIL="santostrafficcloud@gmail.com"
+export SANTOSCLOUD_EMAIL_PASSWORD="ExamplePassword"
+```
 
-#### Install `apidoc`
+The email feature has only been tested with Gmail emails. If you install this locally, you can create a Gmail or use yours to send emails from when the analysis completes.
+
+## Running
+
+To run the server, either 1) run `python app/app.py` from the SantosCloud folder, or 2) `cd` into the `app/` folder and run `python app.py`. This will start the server.
+
+## Generate API Documentation
+
+### Install `apidoc`
 
 To install `apidoc` in order to update the documentation, you must install npm. To install npm on Ubuntu/Debian systems, follow these steps:
 
@@ -48,7 +53,7 @@ To install `apidoc` in order to update the documentation, you must install npm. 
 4. If npm is out of date run `sudo npm install -g npm`
 5. Run `sudo npm install apidoc -g`.
 
-#### Regenerating the Documentation
+### Regenerating the Documentation
 
 To regenerate the API Documentation, please run the following command from the SantosCloud folder:
 
@@ -56,7 +61,7 @@ To regenerate the API Documentation, please run the following command from the S
 apidoc -f ".*\\.py$" apidoc -i app/handlers/ -o app/static/apidoc
 ```
 
-#### Viewing the Documentation
+### Viewing the Documentation
 
-Navigate to the IP (localhost:8888 for local installation) and the path `/static/apidoc/index.html`. (For example, `localhost:8888/static/apidoc/index.html`).
+Navigate to the IP of the server and the path `/static/apidoc/index.html`. (For example, `localhost:8888/static/apidoc/index.html`).
 
