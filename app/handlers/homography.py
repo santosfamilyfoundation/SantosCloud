@@ -9,10 +9,10 @@ import cv2
 from ast import literal_eval
 from baseHandler import BaseHandler
 
-class ConfigHomographyHandler(BaseHandler):
+class HomographyHandler(BaseHandler):
     """
-    @api {post} /configHomography/ Config Homography
-    @apiName ConfigHomography
+    @api {post} /homography/ Post Homography
+    @apiName PostHomography
     @apiVersion 0.2.0
     @apiGroup Configuration
     @apiDescription Use this route to upload homography data for a project.
@@ -28,7 +28,7 @@ class ConfigHomographyHandler(BaseHandler):
     """
     
     """
-    @api {get} /configHomography/ Config Homography
+    @api {get} /homography/ Get Homography
     @apiName GetHomography
     @apiVersion 0.1.0
     @apiGroup Configuration
@@ -46,16 +46,16 @@ class ConfigHomographyHandler(BaseHandler):
         #TODO: Make sure that the project actually exists, ie. project_exists(id)
 
         #Handle the status correctly
-        if StatusHelper.get_status(self.identifier)[Status.Type.CONFIG_HOMOGRAPHY] == Status.Flag.IN_PROGRESS:
+        if StatusHelper.get_status(self.identifier)[Status.Type.HOMOGRAPHY] == Status.Flag.IN_PROGRESS:
             status_code = 423
             self.error_message = "Currently uploading homography. Please wait."
             raise tornado.web.HTTPError(status_code = status_code)
-        StatusHelper.set_status(self.identifier, Status.Type.CONFIG_HOMOGRAPHY, Status.Flag.IN_PROGRESS)
+        StatusHelper.set_status(self.identifier, Status.Type.HOMOGRAPHY, Status.Flag.IN_PROGRESS)
 
     def post(self):
         self.up_ratio = float(self.find_argument('unit_pixel_ratio'))
         self.write_homography_files()
-        StatusHelper.set_status(self.identifier, Status.Type.CONFIG_HOMOGRAPHY, Status.Flag.COMPLETE)
+        StatusHelper.set_status(self.identifier, Status.Type.HOMOGRAPHY, Status.Flag.COMPLETE)
         self.finish()
 
     def get(self):
@@ -67,7 +67,7 @@ class ConfigHomographyHandler(BaseHandler):
 
         StatusHelper.set_status(\
                                 self.identifier,\
-                                Status.Type.CONFIG_HOMOGRAPHY,\
+                                Status.Type.HOMOGRAPHY,\
                                 Status.Flag.COMPLETE)
         self.finish()
 
@@ -93,7 +93,7 @@ class ConfigHomographyHandler(BaseHandler):
                 self.error_messag = "Could not find the homography, check your points and try again"
                 StatusHelper.set_status(\
                                         self.identifier,\
-                                        Status.Type.CONFIG_HOMOGRAPHY,\
+                                        Status.Type.HOMOGRAPHY,\
                                         Status.Flag.FAILURE)
                 raise tornado.web.HTTPError(status_code = 500)
 
@@ -101,7 +101,7 @@ class ConfigHomographyHandler(BaseHandler):
             self.error_message = "Could not interpret the points given. Try again with different points"
             StatusHelper.set_status(\
                                     self.identifier,\
-                                    Status.Type.CONFIG_HOMOGRAPHY,\
+                                    Status.Type.HOMOGRAPHY,\
                                     Status.Flag.FAILURE)
             raise tornado.web.HTTPError(status_code = 500)
 
