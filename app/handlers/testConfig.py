@@ -31,6 +31,21 @@ class TestConfigHandler(BaseHandler):
     @apiError error_message The error message to display.
     """
 
+    """
+    @api {get} /testConfig/ Test Configuration
+    @apiName TestConfig
+    @apiVersion 0.1.0
+    @apiGroup Configuration
+    @apiDescription Calling this route will return the video created by testing the video's configuration.
+
+    @apiHeader {String} test_flag Flag to determine whether feature tracking or object tracking will be tested.
+    @apiHeader {String} identifier The identifier of the project to test configuration of.
+
+    @apiSuccess file The API will return the generated test video as a video file.
+
+    @apiError error_message The error message to display.
+    """
+
     def prepare(self):
         self.identifier = self.find_argument('identifier')
         self.test_flag = self.find_argument('test_flag')

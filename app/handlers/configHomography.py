@@ -26,6 +26,19 @@ class ConfigHomographyHandler(BaseHandler):
 
     @apiError error_message The error message to display.
     """
+    
+    """
+    @api {get} /configHomography/ Config Homography
+    @apiName ConfigHomography
+    @apiVersion 0.1.0
+    @apiGroup Configuration
+    @apiDescription Use this route to get the homography calculated during configuration.
+    @apiHeader {String} identifier The identifier of the project for which to configure the homography.
+    
+    @apiSuccess {Integer[][]} The API will return a status code of 200 upon success.
+
+    @apiError error_message The error message to display.
+    """
 
     def prepare(self):
         self.identifier = self.find_argument('identifier')
