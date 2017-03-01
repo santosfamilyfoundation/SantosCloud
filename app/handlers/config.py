@@ -33,7 +33,7 @@ class ConfigHandler(tornado.web.RequestHandler):
         config_dict = {}
 
         for key in config_keys:
-            arg = self.find_argument(key, default=None)
+            arg = self.find_argument(key)
             if arg != None:
                 config_dict[key] = arg
 
