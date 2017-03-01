@@ -232,7 +232,7 @@ def renumber_frames(folder, start_frame, prefix, extension):
                         num = int(number) - int(start_frame)
                     except Exception as e:
                         print("Couldn't parse to int: "+file+" from prefix: "+prefix)
-                        print("Value of number was: " + number+" of type: "+type(number))
+                        print("Value of number was: " + number+" of type: "+str(type(number)))
                         print("Exception was:" + str(e))
                     if num is not None and num >= 0:
                         new_file = prefix+str(num)+'.'+extension
