@@ -230,9 +230,10 @@ def renumber_frames(folder, start_frame, prefix, extension):
                     num = None
                     try:
                         num = int(number) - start_frame
-                    except:
+                    except Exception as e:
                         print("Couldn't parse to int: "+file+" from prefix: "+prefix)
-                        print("Value of number was: " + number)
+                        print("Value of number was: " + number+" of type: "+type(number))
+                        print("Exception was:" + str(e))
                     if num is not None and num >= 0:
                         new_file = prefix+str(num)+'.'+extension
                         os.rename(os.path.join(folder, file), os.path.join(temp_folder, new_file))
