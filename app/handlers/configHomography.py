@@ -33,7 +33,7 @@ class ConfigHomographyHandler(BaseHandler):
     @apiVersion 0.1.0
     @apiGroup Configuration
     @apiDescription Use this route to get the homography calculated during configuration.
-    @apiHeader {String} identifier The identifier of the project for which to configure the homography.
+    @apiParam {String} identifier The identifier of the project for which to configure the homography.
     
     @apiSuccess {Integer[][]} The API will return a status code of 200 upon success.
 

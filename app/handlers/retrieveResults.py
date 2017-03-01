@@ -16,7 +16,7 @@ class RetrieveResultsHandler(BaseHandler):
     @apiGroup Results
     @apiDescription This route will retrieve any metadata associated with the project. This includes test video files and safety analysis results.
 
-    @apiHeader {String} identifier The identifier of the project to retrieve results from.
+    @apiParam {String} identifier The identifier of the project to retrieve results from.
 
     @apiSuccess files The API will return all metadata since last retrieval as a compressed archive.
 

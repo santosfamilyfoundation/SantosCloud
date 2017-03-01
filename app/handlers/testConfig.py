@@ -33,13 +33,13 @@ class TestConfigHandler(BaseHandler):
 
     """
     @api {get} /testConfig/ Test Configuration
-    @apiName TestConfig
+    @apiName GetTestConfig
     @apiVersion 0.1.0
     @apiGroup Configuration
     @apiDescription Calling this route will return the video created by testing the video's configuration.
 
-    @apiHeader {String} test_flag Flag to determine whether feature tracking or object tracking will be tested.
-    @apiHeader {String} identifier The identifier of the project to test configuration of.
+    @apiParam {String} test_flag Flag to determine whether feature tracking or object tracking will be tested.
+    @apiParam {String} identifier The identifier of the project to test configuration of.
 
     @apiSuccess file The API will return the generated test video as a video file.
 
