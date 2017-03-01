@@ -29,7 +29,7 @@ class ConfigHomographyHandler(BaseHandler):
     
     """
     @api {get} /configHomography/ Config Homography
-    @apiName ConfigHomography
+    @apiName GetHomography
     @apiVersion 0.1.0
     @apiGroup Configuration
     @apiDescription Use this route to get the homography calculated during configuration.
