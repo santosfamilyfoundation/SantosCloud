@@ -145,13 +145,13 @@ def get_resolution(videopath):
 
 #### Video Creation
 
-def create_video_from_images(images_dir, prefix, video_dir, video_filename, framerate, extension="png"):
+def create_video_from_images(images_dir, prefix, frame1 = 0, video_dir, video_filename, framerate, extension="png"):
     '''
     Creates a video for images that are of the form prefix+number+.extension
     '''
     if not os.path.exists(video_dir):
         os.mkdir(video_dir)
-    renumber_frames(images_dir, 0, prefix, extension)
+    renumber_frames(images_dir, frame1, prefix, extension)
     convert_frames_to_video(framerate, images_dir, video_dir, prefix, video_filename, 1.0)
 
 def create_video_snippet(project_path, video_path, videos_folder, file_prefix, video_number, start_frame, end_frame, pts_multiplier=1.0, interacting_objects=None):
