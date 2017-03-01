@@ -1,5 +1,16 @@
-# TrafficCloud
-Our API wrapper around TrafficIntelligence. It's video analysis, *in the cloud*.
+# SantosCloud
+
+SantosCloud is an API that allows users to perform analysis on videos of traffic intersections in order to produce safety statistics to enable infrastructure change that could save lives. SantosCloud provides an API that enables users to upload their videos, analyze it, and retrieve a safety report outlining the details of the intersection.
+
+SantosCloud's analysis is performed by the excellend [TrafficIntelligence project](https://bitbucket.org/Nicolas/trafficintelligence/wiki/Home). Many thanks to Dr. Nicolas Saunier for his work on that project and collaboration with us on this project.
+
+All of the instructions in this README apply to Ubuntu operating systems. This is the only currently supported OS for running SantosCloud.
+
+## Table of Contents
+
+- [Setup](#setup)
+- [Running](#running)
+- [API Documentation](#api-documentation)
 
 ## Setup
 
@@ -41,7 +52,7 @@ The email feature has only been tested with Gmail emails. If you install this lo
 
 To run the server, either 1) run `python app/app.py` from the SantosCloud folder, or 2) `cd` into the `app/` folder and run `python app.py`. This will start the server.
 
-## Generate API Documentation
+## API Documentation
 
 ### Install `apidoc`
 
