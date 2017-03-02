@@ -25,7 +25,7 @@ class Status(object):
     @classmethod
     def create_status_dict(cls):
         return {
-            Status.Type.CONFIG_HOMOGRAPHY: Status.Flag.INCOMPLETE,
+            Status.Type.HOMOGRAPHY: Status.Flag.INCOMPLETE,
             Status.Type.FEATURE_TEST: Status.Flag.INCOMPLETE,
             Status.Type.OBJECT_TEST: Status.Flag.INCOMPLETE,
             Status.Type.OBJECT_TRACKING: Status.Flag.INCOMPLETE,
@@ -52,7 +52,13 @@ class StatusHelper(object):
         config_path = get_project_config_path(identifier)
         (success, value) = get_config_section(config_path, "status")
         if success:
-            return {Status.Type(k):Status.Flag(int(v)) for (k,v) in value.iteritems()}
+            d = {}
+            for (k,v) in value.iteritems():
+                try:
+                    d[Status.Type(k)] = Status.Flag(int(v))
+                except Exception as e:
+                    print('Failed to parse status: '+k+' with error: '+str(e))
+            return d
         else:
             return None
 
