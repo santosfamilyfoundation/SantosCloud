@@ -6,8 +6,11 @@ userlist = ['unknown', 'car', 'pedestrian',
             'motorcycle', 'bicycle', 'bus', 'truck']
 
 
+
+
 ## Clean step
 def clean(db):
+    raw_input('Press enter to begin cleaning')
     while True:
         c = execute_command(db)
         if not c:
@@ -135,4 +138,15 @@ def delete_object(db, object_id):
         
     # Commit once everything has been deleted
     conn.commit()
+if __name__=="__main__":
+    import sys, os
+    from traffic_cloud_utils.app_config import get_project_path
+    if len(sys.argv) < 2:
+        print('Please enter a project identifier')
+    project = sys.argv[1]
+    project_identifier = project.strip('/').split('/')[-1]
+    db_path = os.path.join(get_project_path(identifier), 'run', 'results.sqlite')
+    if not os.path.exists(db_path):
+        print('Run object tracking first')
+    clean(db_path)
 
