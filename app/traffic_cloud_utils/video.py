@@ -187,6 +187,7 @@ def create_video_snippet(project_path, video_path, videos_folder, file_prefix, v
 
 def create_video_from_image(folder, image_filename, video_filename, duration):
     subprocess.call(["ffmpeg",
+        "-y",
         "-loop", "1",
         "-i", os.path.join(folder, image_filename),
         "-c:v", "libx264",
@@ -201,6 +202,7 @@ def combine_videos(videos_folder, temp_video_prefix, filename):
     # Using Popen seems to be necessary in order to pipe the output of one into the other
     p1 = subprocess.Popen(['cat']+get_list_of_files(videos_folder, temp_video_prefix, "mpg"), stdout=subprocess.PIPE)
     p2 = subprocess.Popen(['ffmpeg',
+        '-y',
         '-f', 'mpeg',
         '-i', '-',
         '-qscale', '0',
@@ -246,6 +248,7 @@ def renumber_frames(folder, start_frame, prefix, extension):
 
 def convert_frames_to_video(framerate, images_folder, videos_folder, images_prefix, filename, pts_multiplier):
     subprocess.call(["ffmpeg",
+        "-y",
         "-framerate", framerate,
         "-i", os.path.join(images_folder, images_prefix+"%d.png"),
         "-filter:v", "setpts={:0.1f}*PTS".format(pts_multiplier),
