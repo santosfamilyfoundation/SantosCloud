@@ -2,6 +2,8 @@
 
 # To clean the database
 
+*Note: the server must be running for the Project Creation and Object Tracking steps!*
+
 ## Project Creation
 
 ### Using GUI
@@ -26,6 +28,8 @@ $ python
 ```
 
 Use an email to be notified when object tracking is done, or use None, and just watch when the server has finished.
+
+*You may stop the server now*.
 
 ## Create tracking video
 
