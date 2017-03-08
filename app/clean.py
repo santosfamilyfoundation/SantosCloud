@@ -4,6 +4,7 @@ import sqlite3
 user_abbr_map = {'c': 1, 'p': 2, 'b': 4}
 userlist = ['unknown', 'car', 'pedestrian',
             'motorcycle', 'bicycle', 'bus', 'truck']
+merged = {}
 
 
 
@@ -140,8 +141,12 @@ def delete_object(db, object_id):
     conn.commit()
 
 def merge_objects(db, objects_to_merge):
-    
+
     obj1, obj2 = objects_to_merge
+
+    if obj1 in merged.keys():
+        obj1 = merged[obj1]
+    merged[obj2] = obj1
 
     conn = sqlite3.connect(db)
     cur = conn.cursor()
@@ -149,14 +154,14 @@ def merge_objects(db, objects_to_merge):
     #
     # Delete obj2 from objects
     #
-    queryStatement = 'DELETE FROM objects WHERE object_id = ?' 
+    queryStatement = 'DELETE FROM objects WHERE object_id = ?'
     print queryStatement
     cur.execute(queryStatement, (obj2,))
 
     #
     # Rename obj2 to obj1 in object_features
     #
-    queryStatement = 'UPDATE objects_features SET object_id = ? WHERE object_id = ?' 
+    queryStatement = 'UPDATE objects_features SET object_id = ? WHERE object_id = ?'
     cur.execute(queryStatement, (obj1, obj2,))
 
     # No need to deal with positions / velocities, as the trajectories associated with obj2 have been reassociated with obj1
