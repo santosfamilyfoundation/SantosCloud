@@ -138,6 +138,32 @@ def delete_object(db, object_id):
         
     # Commit once everything has been deleted
     conn.commit()
+
+def merge_objects(db, objects_to_merge):
+    
+    obj1, obj2 = objects_to_merge
+
+    conn = sqlite3.connect(db)
+    cur = conn.cursor()
+
+    #
+    # Delete obj2 from objects
+    #
+    queryStatement = 'DELETE FROM objects WHERE object_id = ?' 
+    print queryStatement
+    cur.execute(queryStatement, (obj2,))
+
+    #
+    # Rename obj2 to obj1 in object_features
+    #
+    queryStatement = 'UPDATE objects_features SET object_id = ? WHERE object_id = ?' 
+    cur.execute(queryStatement, (obj1, obj2,))
+
+    # No need to deal with positions / velocities, as the trajectories associated with obj2 have been reassociated with obj1
+
+    # Commit once everything has been deleted
+    conn.commit()
+
 if __name__=="__main__":
     import sys, os
     from traffic_cloud_utils.app_config import get_project_path
