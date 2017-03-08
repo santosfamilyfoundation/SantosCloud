@@ -2,7 +2,7 @@
 
 # To clean the database
 
-*Note: the server must be running for the Project Creation and Object Tracking steps!*
+*Note: the server must be running for the Project Creation and Object Tracking steps! Start the server now by running `python app/app.py` from the SantosCloud folder on the server.*
 
 ## Project Creation
 
