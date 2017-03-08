@@ -149,5 +149,6 @@ if __name__=="__main__":
     db_path = os.path.join(get_project_path(project_identifier), 'run', 'results.sqlite')
     if not os.path.exists(db_path):
         print('Run object tracking first')
+    print('Using db: '+str(db_path))
     clean(db_path)
 
