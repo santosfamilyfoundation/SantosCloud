@@ -38,7 +38,7 @@ On the server, cd into SantosCloud/app/traffic_cloud_utils. Run:
 ```
 $ python
 > from video import create_tracking_video
-> from app_config import get_project_path
+> from app_config import get_project_path, get_project_video_path
 > identifier = '*your_identifier_here'
 > project_path = get_project_path(identifier)
 > video_path = get_project_video_path(identifier)
