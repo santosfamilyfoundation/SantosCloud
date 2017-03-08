@@ -47,6 +47,7 @@ create_tracking_video(project_path, video_path)
 To install, run:
 
 ```
+vagrant plugin install vagrant-scp
 ```
 
 ### Get the file using scp
