@@ -68,11 +68,12 @@ def execute_command(db):
                 print("Aborting, couldn't change object: "+arg)
                 return True
         print("Changing objects: "+str(objs_to_change)+" to type: "+str(t))
-        change_user_types(db, objs_to_change, t)
+        for obj in objs_to_change:
+            change_user_type(db, obj, t)
 
     return True
 
-def change_user_types(db, object_id, type_as_abbr):
+def change_user_type(db, object_id, type_as_abbr):
     """
     object_id: int, i.e. 14
     type_as_abbr: str, i.e. c, p, b for car, ped, or bike
