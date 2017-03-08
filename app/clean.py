@@ -145,7 +145,7 @@ if __name__=="__main__":
         print('Please enter a project identifier')
     project = sys.argv[1]
     project_identifier = project.strip('/').split('/')[-1]
-    db_path = os.path.join(get_project_path(identifier), 'run', 'results.sqlite')
+    db_path = os.path.join(get_project_path(project_identifier), 'run', 'results.sqlite')
     if not os.path.exists(db_path):
         print('Run object tracking first')
     clean(db_path)
