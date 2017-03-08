@@ -81,8 +81,7 @@ def change_user_type(db, object_id, type_as_abbr):
     
     object_id = int(object_id)
     type_as_abbr = type_as_abbr.lower()
-    
-    conn = sqlite3.connect('results.sqlite')
+    conn = sqlite3.connect(db)
     cur = conn.cursor()
 
     queryStatement = 'UPDATE objects SET road_user_type = ? WHERE object_id = ?'
