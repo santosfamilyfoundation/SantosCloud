@@ -85,4 +85,6 @@ To merge two objects (i.e. if a pedestrian is tracked as a different object afte
 
 If an object is classified incorrectly, enter `C*object_id*,*object_type*`. For example, to change objects 14 and 16 to a car, run `C14,16,C`.
 
+### Dealing with accidental cleanup inputs
 
+Sometimes, you might type the incorrect cleanup commands, and the change to the database already happened. Use `q` to quit from your clean.py script session. From `~/SantosCloud/app`, you'll find a file called `inputs_to_log.txt`, which were all the input commands you typed in your last session. Edit this file so that the commands that you committed by accident are no longer there.  Now, go to `project_dir/*your_identifier_here*/run/` folder and run `cp results.sqlite.before.clean results.sqlite` in order to reset the database to the state before cleaning.  Finally, apply all the input commands in `inputs_to_log.txt` by running `python clean.py *your_identifier_here* inputs_to_log.txt`.  This should apply all your changes. 
