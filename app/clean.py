@@ -11,7 +11,6 @@ merged = {}
 
 inputs_to_log = []
 
-
 ## Clean step
 def clean(db, input_log_filename=None):
     # Read inputs from a file
@@ -54,7 +53,6 @@ def execute_command(db, i=''):
                 obj = int(arg)
                 print('Delete object: '+str(obj))
                 delete_object(db, obj)
-                inputs_to_log.append(i+"\n")
             except:
                 print("Couldn't delete object: "+arg)
 
@@ -64,7 +62,6 @@ def execute_command(db, i=''):
             try:
                 obj = int(arg)
                 objs_to_merge.append(obj)
-                inputs_to_log.append(i+"\n")
             except:
                 print('Aborting, failed on object: '+arg)
                 return True
@@ -89,8 +86,8 @@ def execute_command(db, i=''):
         print("Changing objects: "+str(objs_to_change)+" to type: "+str(t))
         for obj in objs_to_change:
             change_user_type(db, obj, t)
-        inputs_to_log.append(i+"\n")
 
+    inputs_to_log.append(i+"\n")
     return True
 
 def change_user_type(db, object_id, type_as_abbr):
@@ -158,6 +155,7 @@ def delete_object(db, object_id):
 
     # Commit once everything has been deleted
     conn.commit()
+    conn.close()
 
 def merge_objects(db, objects_to_merge):
 
@@ -187,6 +185,7 @@ def merge_objects(db, objects_to_merge):
 
     # Commit once everything has been deleted
     conn.commit()
+    conn.close()
 
 def main():
     if len(sys.argv) < 2:
