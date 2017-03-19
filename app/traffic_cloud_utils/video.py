@@ -115,12 +115,12 @@ def get_list_of_files(folder, prefix, extension):
 #### Video Metadata
 
 def get_number_of_frames(videopath):
-    """ fast cmdline way to get # of frames taken from 
+    """ fast cmdline way to get # of frames taken from
     http://stackoverflow.com/questions/2017843/fetch-frame-count-with-ffmpeg#comment-72336543
     """
     if os.path.exists(videopath):
         cmd = "ffmpeg -i %s -vcodec copy -acodec copy -f null /dev/null 2>&1 | grep -Eo 'frame= *[0-9]+ *' | grep -Eo '[0-9]+' | tail -1" % videopath
-        num = subprocess.check_output(cmd, shell=True) 
+        num = subprocess.check_output(cmd, shell=True)
         return num
 
 def get_framerate(videopath):
@@ -215,7 +215,7 @@ def combine_videos(videos_folder, temp_video_prefix, filename):
 
 ### Images Helpers
 
-def renumber_frames(folder, start_frame, prefix, extension, n_frames_step):
+def renumber_frames(folder, start_frame, prefix, extension, n_frames_step=1):
     temp_folder = os.path.join(folder, "temp")
     # Make the temp folder if it doesn't exists
     if not os.path.exists(temp_folder):
