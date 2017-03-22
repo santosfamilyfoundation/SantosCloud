@@ -11,7 +11,7 @@ from traffic_cloud_utils.app_config import get_project_path, get_project_video_p
 from traffic_cloud_utils.emailHelper import EmailHelper
 from traffic_cloud_utils.app_config import update_config_without_sections
 from traffic_cloud_utils.statusHelper import StatusHelper, Status
-from traffic_cloud_utils import video
+from traffic_cloud_utils.video import create_trajectory_video
 
 class TestConfigHandler(BaseHandler):
     """
@@ -161,6 +161,7 @@ class TestConfigFeatureThread(threading.Thread):
     def run(self):
         project_path = get_project_path(self.identifier)
         tracking_path = os.path.join(project_path, "tracking.cfg")
+        homography_path = os.path.join(project_path, "homography", "homography.txt")
         db_path = os.path.join(project_path, ".temp", "test", "test_feature", "test1.sqlite")
         if os.path.exists(db_path):
             os.remove(db_path)
@@ -169,13 +170,8 @@ class TestConfigFeatureThread(threading.Thread):
             'frame1': self.frame_start,
             'nframes': self.num_frames,
             'video-filename': get_project_video_path(self.identifier),
-            'homography-filename': os.path.join(project_path, "homography", "homography.txt") }
+            'homography-filename': homography_path }
         update_config_without_sections(tracking_path, testing_dict)
-
-        images_folder = os.path.join(get_project_path(self.identifier), "feature_images")
-        video.delete_files(images_folder)
-        if not os.path.exists(images_folder):
-            os.mkdir(images_folder)
 
         fbt_call = ["feature-based-tracking", tracking_path, "--tf", "--database-filename", db_path]
         mask_filename = os.path.join(get_project_path(self.identifier), "mask.jpg")
@@ -183,20 +179,18 @@ class TestConfigFeatureThread(threading.Thread):
             fbt_call.extend(["--mask-filename", mask_filename])
         try:
             subprocess.check_call(fbt_call)
-            subprocess.check_call(["display-trajectories.py", "-i", get_project_video_path(self.identifier), "-d", db_path, "-o", project_path + "/homography/homography.txt", "-t", "feature", "--save-images", "-f", str(self.frame_start), "--last-frame", str(self.frame_start + self.num_frames), "--output-directory", images_folder])
         except subprocess.CalledProcessError as err_msg:
             StatusHelper.set_status(self.identifier, Status.Type.FEATURE_TEST, Status.Flag.FAILURE)
             return self.callback(500, err_msg.output, self.identifier)
 
         videos_folder = os.path.join(get_project_path(self.identifier), "feature_video")
-        video_filename = "feature_video.mp4"
-        temp_image_prefix = 'image-'
-        if os.path.exists(os.path.join(videos_folder, video_filename)):
-            os.remove(os.path.join(videos_folder, video_filename))
-        video.create_video_from_images(images_folder, temp_image_prefix, videos_folder, video_filename, video.get_framerate(get_project_video_path(self.identifier)), self.frame_start)
-
-        video.delete_files(images_folder)
-        os.rmdir(images_folder)
+        print('hi')
+        if not os.path.exists(videos_folder):
+            os.makedirs(videos_folder)
+            print('make dir')
+        output_path = os.path.join(videos_folder, "feature_video.mp4")
+        last_frame = self.frame_start + self.num_frames
+        create_trajectory_video(get_project_video_path(self.identifier), db_path, homography_path, output_path, first_frame=self.frame_start, last_frame=last_frame, video_type='feature')
 
         StatusHelper.set_status(self.identifier, Status.Type.FEATURE_TEST, Status.Flag.COMPLETE)
         return self.callback(200, "Test config done", self.identifier)
@@ -211,9 +205,9 @@ class TestConfigObjectThread(threading.Thread):
         self.callback = callback
 
     def run(self):
-
         project_path = get_project_path(self.identifier)
         tracking_path = os.path.join(project_path, "tracking.cfg")
+        homography_path = os.path.join(project_path, "homography", "homography.txt")
         obj_db_path = os.path.join(project_path,".temp", "test", "test_object", "test1.sqlite")
         feat_db_path = os.path.join(project_path, ".temp", "test", "test_feature", "test1.sqlite")
         if os.path.exists(obj_db_path):
@@ -224,29 +218,22 @@ class TestConfigObjectThread(threading.Thread):
             'frame1': self.frame_start,
             'nframes': self.num_frames,
             'video-filename': get_project_video_path(self.identifier),
-            'homography-filename': os.path.join(project_path, "homography", "homography.txt") }
+            'homography-filename': homography_path }
         update_config_without_sections(tracking_path, testing_dict)
-
-        images_folder = os.path.join(get_project_path(self.identifier), "object_images")
-        video.delete_files(images_folder)
-        if not os.path.exists(images_folder):
-            os.mkdir(images_folder)
 
         try:
             subprocess.check_call(["feature-based-tracking",tracking_path,"--gf","--database-filename",obj_db_path])
             subprocess.check_call(["classify-objects.py", "--cfg", tracking_path, "-d", obj_db_path])  # Classify road users
-            subprocess.check_call(["display-trajectories.py", "-i", get_project_video_path(self.identifier),"-d", obj_db_path, "-o", project_path + "/homography/homography.txt", "-t", "object", "--save-images", "-f", str(self.frame_start), "--last-frame", str(self.frame_start + self.num_frames), "--output-directory", images_folder])
         except subprocess.CalledProcessError as err_msg:
             StatusHelper.set_status(self.identifier, Status.Type.OBJECT_TEST, Status.Flag.FAILURE)
             return self.callback(500, err_msg.output, self.identifier)
 
         videos_folder = os.path.join(get_project_path(self.identifier), "object_video")
-        video_filename = "object_video.mp4"
-        temp_image_prefix = 'image-'
-        video.create_video_from_images(images_folder, temp_image_prefix, videos_folder, video_filename, video.get_framerate(get_project_video_path(self.identifier)), self.frame_start)
-
-        video.delete_files(images_folder)
-        os.rmdir(images_folder)
+        if not os.path.exists(videos_folder):
+            os.makedirs(videos_folder)
+        output_path = os.path.join(videos_folder, "object_video.mp4")
+        last_frame = self.frame_start + self.num_frames
+        create_trajectory_video(get_project_video_path(self.identifier), obj_db_path, homography_path, output_path, first_frame=self.frame_start, last_frame=last_frame, video_type='feature')
 
         StatusHelper.set_status(self.identifier, Status.Type.OBJECT_TEST, Status.Flag.COMPLETE)
         return self.callback(200, "Test config done", self.identifier)

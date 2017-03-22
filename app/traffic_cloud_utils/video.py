@@ -260,7 +260,7 @@ def get_framerate(videopath):
         "-show_entries", "stream=avg_frame_rate",
         "-of", "default=noprint_wrappers=1:nokey=1",
         videopath]))
-    return str(int(list_o.strip().split('/')[0])/float(list_o.strip().split('/')[1]))
+    return float(list_o.strip().split('/')[0])/float(list_o.strip().split('/')[1])
 
 def get_resolution(videopath):
     """
