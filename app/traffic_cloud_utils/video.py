@@ -11,28 +11,35 @@ from moving import userTypeNames
 from storage import loadTrajectoriesFromSqlite
 from cvutils import cvPlot, cvColors, cvGreen, imageBox
 
-tracking_filename = "tracking.mp4"
-highlight_filename = "highlight.mp4"
+tracking_filename = "tracking"
+highlight_filename = "highlight"
+
+def clean_video_folder(video_folder):
+    delete_files(video_folder, excluded_files=[tracking_filename+'.mp4', highlight_filename+'.mp4'])
 
 def create_tracking_video(project_path, video_path):
     db_filename = os.path.join(project_path, 'run', 'results.sqlite')
     homography_path = os.path.join(project_path, 'homography', 'homography.txt')
-    output_path = os.path.join(project_path, 'final_videos', tracking_filename)
+    videos_folder = os.path.join(project_path, 'final_videos')
+    output_path = os.path.join(videos_folder, tracking_filename+'.avi')
 
     if not os.path.exists(videos_folder):
         os.makedirs(videos_folder)
 
     create_trajectory_video(video_path, db_filename, homography_path, output_path)
+    convert_to_mp4(output_path)
+    clean_video_folder(videos_folder)
 
 def create_highlight_video(project_path, video_path, list_of_near_misses):
     videos_folder = os.path.join(project_path, "final_videos")
+    output_path = os.path.join(videos_folder, highlight_filename+'.avi')
     temp_video_prefix = "temp_highlight_video-"
 
     # Make the videos folder if it doesn't exists
     if not os.path.exists(videos_folder):
         os.makedirs(videos_folder)
 
-    delete_files(videos_folder, excluded_files=[tracking_filename])
+    clean_video_folder(videos_folder)
 
     # Slow down by 3x for highlight video
     output_framerate = get_framerate(video_path) / 3.0
@@ -49,7 +56,7 @@ def create_highlight_video(project_path, video_path, list_of_near_misses):
         create_trajectory_video(video_path, db_filename, homography_path, output_path, first_frame=max(0, start_frame-30), last_frame=min(upper_frame_limit, end_frame+30), objects_to_label=[object_id1, object_id2], framerate=output_framerate)
 
         # Get resolution of video
-        snippet_path = os.path.join(videos_folder, temp_video_prefix + str(snippet_number) + ".mpg")
+        snippet_path = os.path.join(videos_folder, temp_video_prefix + str(snippet_number) + ".avi")
         width, height = get_resolution(snippet_path)
 
         # create title slide image
@@ -59,21 +66,17 @@ def create_highlight_video(project_path, video_path, list_of_near_misses):
         create_title_slide(width, height, slide_path, object_id1, object_id2)
 
         # create title slide video
-        create_video_from_image(videos_folder, slide_name+'.png', slide_name+'.mp4', output_framerate, 5)
+        create_video_from_image(videos_folder, slide_name+'.png', slide_name+'.avi', output_framerate, 5)
 
-    files = get_list_of_files(videos_folder, temp_video_prefix, 'mp4')
-    combine_videos(files, highlight_filename)
-    delete_files(videos_folder, temp_video_prefix, ["mpg", "mp4", "png"], excluded_files=[tracking_filename, highlight_filename])
+    files = get_list_of_files(videos_folder, temp_video_prefix, 'avi')
+    combine_videos(files, output_path)
+    convert_to_mp4(output_path)
+    clean_video_folder(videos_folder)
 
 ## Helpers -- Internal use
 
 def get_video_writer(output_path, framerate, width, height):
-    video_extension = output_path.split('.')[-1]
-    if video_extension == 'mp4':
-        codec = 'DIV3'
-    else:
-        codec = 'DIVX'
-
+    codec = 'DIVX'
     fourcc = cv2.cv.CV_FOURCC(*codec)
     writer = cv2.VideoWriter(output_path, fourcc, framerate, (width, height), True)
 
@@ -208,6 +211,22 @@ def create_video_from_image(folder, image_filename, video_filename, framerate, d
     cap.release()
     out.release()
     cv2.destroyAllWindows()
+
+def convert_to_mp4(video_path):
+    new_video_filename = os.path.basename(video_path).split('.')[:-1]+'.mp4'
+    print(new_video_filename)
+    new_video_path = os.path.join(os.path.dirname(video_path),new_video_filename)
+    cmd = ["ffmpeg",
+        "-y"
+        "-i", video_path,
+        "-c:v", "libx264",
+        "-crf", "23",
+        "-preset", "veryfast",
+        "-c:a", "aac",
+        "-b:a", "128k",
+        "-vf", "scale=-2:720,format=yuv420p",
+        new_video_path]
+    subprocess.call(cmd)
 
 ## File helpers
 
