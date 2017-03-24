@@ -70,7 +70,7 @@ def create_highlight_video(project_path, video_path, list_of_near_misses):
 def get_video_writer(output_path, framerate, width, height):
     video_extension = output_path.split('.')[-1]
     if video_extension == 'mp4':
-        codec = 'MP4V'
+        codec = 'DIV3'
     else:
         codec = 'DIVX'
 
@@ -254,13 +254,8 @@ def get_number_of_frames(videopath):
         return num
 
 def get_framerate(videopath):
-    list_o = str(subprocess.check_output(["ffprobe",
-        "-v", "error",
-        "-select_streams", "v:0",
-        "-show_entries", "stream=avg_frame_rate",
-        "-of", "default=noprint_wrappers=1:nokey=1",
-        videopath]))
-    return float(list_o.strip().split('/')[0])/float(list_o.strip().split('/')[1])
+    capture = cv2.VideoCapture(videopath)
+    return float(capture.get(cv2.cv.CV_CAP_PROP_FPS))
 
 def get_resolution(videopath):
     """
