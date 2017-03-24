@@ -11,17 +11,21 @@ from moving import userTypeNames
 from storage import loadTrajectoriesFromSqlite
 from cvutils import cvPlot, cvColors, cvGreen, imageBox
 
-tracking_filename = "tracking"
-highlight_filename = "highlight"
+tracking_filename = "tracking.mp4"
+highlight_filename = "highlight.mp4"
 
 def clean_video_folder(video_folder):
-    delete_files(video_folder, excluded_files=[tracking_filename+'.mp4', highlight_filename+'.mp4'])
+    delete_files(video_folder, excluded_files=[tracking_filename, highlight_filename])
+
+def convert_path_extension(path, extension):
+    new_video_filename = ''.join(os.path.basename(path).split('.')[:-1])+'.'+extension
+    return os.path.join(os.path.dirname(path),new_video_filename)
 
 def create_tracking_video(project_path, video_path):
     db_filename = os.path.join(project_path, 'run', 'results.sqlite')
     homography_path = os.path.join(project_path, 'homography', 'homography.txt')
     videos_folder = os.path.join(project_path, 'final_videos')
-    output_path = os.path.join(videos_folder, tracking_filename+'.avi')
+    output_path = convert_path_extension(os.path.join(videos_folder, tracking_filename), 'avi')
 
     if not os.path.exists(videos_folder):
         os.makedirs(videos_folder)
@@ -31,8 +35,10 @@ def create_tracking_video(project_path, video_path):
     clean_video_folder(videos_folder)
 
 def create_highlight_video(project_path, video_path, list_of_near_misses):
+    db_filename = os.path.join(project_path, 'run', 'results.sqlite')
+    homography_path = os.path.join(project_path, 'homography', 'homography.txt')
     videos_folder = os.path.join(project_path, "final_videos")
-    output_path = os.path.join(videos_folder, highlight_filename+'.avi')
+    output_path = convert_path_extension(os.path.join(videos_folder, highlight_filename), 'avi')
     temp_video_prefix = "temp_highlight_video-"
 
     # Make the videos folder if it doesn't exists
@@ -42,7 +48,8 @@ def create_highlight_video(project_path, video_path, list_of_near_misses):
     clean_video_folder(videos_folder)
 
     # Slow down by 3x for highlight video
-    output_framerate = get_framerate(video_path) / 3.0
+    slowdown = 3.0
+    current_framerate = get_framerate(video_path)
     upper_frame_limit = get_number_of_frames(video_path)
 
     for i, near_miss in enumerate(list_of_near_misses):
@@ -50,28 +57,36 @@ def create_highlight_video(project_path, video_path, list_of_near_misses):
 
         # Create a short video snippet of the near miss interaction
         snippet_number = 2*i + 1
-        print [object_id1, object_id2]
+        print([object_id1, object_id2])
 
         # Create a short tracking video
-        create_trajectory_video(video_path, db_filename, homography_path, output_path, first_frame=max(0, start_frame-30), last_frame=min(upper_frame_limit, end_frame+30), objects_to_label=[object_id1, object_id2], framerate=output_framerate)
-
-        # Get resolution of video
-        snippet_path = os.path.join(videos_folder, temp_video_prefix + str(snippet_number) + ".avi")
+        snippet_path = os.path.join(videos_folder, temp_video_prefix + str(snippet_number) + '.avi')
+        create_trajectory_video(video_path, db_filename, homography_path, snippet_path, first_frame=max(0, start_frame-30), last_frame=min(upper_frame_limit, end_frame+30), objects_to_label=[object_id1, object_id2])
         width, height = get_resolution(snippet_path)
 
         # create title slide image
-        slide_number = 2*i
-        slide_name = temp_video_prefix + str(slide_number)
-        slide_path = os.path.join(videos_folder, slide_name+'.png')
+        slide_name = temp_video_prefix + str(2*i)
+        slide_path = os.path.join(videos_folder, slide_name + '.png')
         create_title_slide(width, height, slide_path, object_id1, object_id2)
 
-        # create title slide video
-        create_video_from_image(videos_folder, slide_name+'.png', slide_name+'.avi', output_framerate, 5)
+        # create title slide video with 5 second duration
+        num_frames = int(current_framerate * 5.0 / slowdown)
+        create_video_from_image(videos_folder, slide_name+'.png', slide_name+'.avi', current_framerate, num_frames)
 
     files = get_list_of_files(videos_folder, temp_video_prefix, 'avi')
     combine_videos(files, output_path)
-    convert_to_mp4(output_path)
+    convert_to_mp4(output_path, slowdown=slowdown)
     clean_video_folder(videos_folder)
+
+def create_test_config_video(project_path, video_path, output_path, db_path, first_frame, last_frame, video_type):
+    videos_folder = os.path.dirname(output_path)
+    homography_path = os.path.join(project_path, 'homography', 'homography.txt')
+
+    if not os.path.exists(videos_folder):
+        os.makedirs(videos_folder)
+
+    create_trajectory_video(video_path, db_path, homography_path, output_path, first_frame=first_frame, last_frame=last_frame, video_type=video_type)
+    convert_to_mp4(output_path)
 
 ## Helpers -- Internal use
 
@@ -82,7 +97,7 @@ def get_video_writer(output_path, framerate, width, height):
 
     return writer
 
-def create_trajectory_video(video_path, db_filename, homography_path, output_path, first_frame=0, last_frame=None, video_type='object', objects_to_label=None, bounding_boxes=False, framerate=None):
+def create_trajectory_video(video_path, db_filename, homography_path, output_path, first_frame=0, last_frame=None, video_type='object', objects_to_label=None, bounding_boxes=False):
     '''
     Creates a video of tracked trajectories.
 
@@ -102,8 +117,7 @@ def create_trajectory_video(video_path, db_filename, homography_path, output_pat
     capture.set(cv2.cv.CV_CAP_PROP_POS_FRAMES, first_frame)
     frame_num = first_frame
 
-    if framerate is None:
-        framerate = get_framerate(video_path)
+    framerate = get_framerate(video_path)
 
     print('Loading objects, please wait...')
     objects = loadTrajectoriesFromSqlite(db_filename, video_type, withFeatures=bounding_boxes)
@@ -131,7 +145,7 @@ def create_trajectory_video(video_path, db_filename, homography_path, output_pat
             for obj in objects:
                 if obj.existsAtInstant(frame_num):
                     # Only draw for objects that should be labeled, if passed in
-                    if objects_to_label is not None and obj not in objects_to_label:
+                    if objects_to_label is not None and obj.getNum() not in objects_to_label:
                         continue
 
                     if obj.getLastInstant() == frame_num:
@@ -168,64 +182,63 @@ def create_trajectory_video(video_path, db_filename, homography_path, output_pat
 
 def combine_videos(videos_list, output_path):
     video_index = 0
+    if len(videos_list) == 0:
+        return
+
     capture = cv2.VideoCapture(videos_list[video_index])
     width = int(capture.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH))
     height = int(capture.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT))
+    framerate = float(capture.get(cv2.cv.CV_CAP_PROP_FPS))
 
-    output_path = os.path.join(videos_folder, filename)
     out = get_video_writer(output_path, framerate, width, height)
 
     ret = True
     while ret:
-        ret, frame = cap.read()
-        if ret:
-            print "end of video " + str(video_index) + " .. next one now"
+        ret, frame = capture.read()
+        if not ret:
+            print("End of video: " + str(videos_list[video_index]))
             video_index += 1
             if video_index >= len(videos_list):
                 break
-            cap = cv2.VideoCapture(videos_list[video_index])
-            ret, frame = cap.read()
+            capture = cv2.VideoCapture(videos_list[video_index])
+            ret, frame = capture.read()
 
-        out.write(frame)
+        if ret:
+            out.write(frame)
 
-    cap.release()
+    capture.release()
     out.release()
     cv2.destroyAllWindows()
 
-def create_video_from_image(folder, image_filename, video_filename, framerate, duration):
+def create_video_from_image(folder, image_filename, video_filename, framerate, num_frames):
     print('Creating video from image')
     input_path = os.path.join(folder, image_filename)
     output_path = os.path.join(folder, video_filename)
 
-    video_index = 0
-    capture = cv2.VideoCapture(videos_list[video_index])
-    width = int(capture.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH))
-    height = int(capture.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT))
-
     image = cv2.imread(input_path)
+    height, width, _ = image.shape
     out = get_video_writer(output_path, framerate, width, height)
 
-    for i in range(framerate * duration):
+    for i in range(num_frames):
         out.write(image)
 
-    cap.release()
     out.release()
     cv2.destroyAllWindows()
 
-def convert_to_mp4(video_path):
-    new_video_filename = os.path.basename(video_path).split('.')[:-1]+'.mp4'
-    print(new_video_filename)
-    new_video_path = os.path.join(os.path.dirname(video_path),new_video_filename)
+def convert_to_mp4(video_path, slowdown=None):
+    new_video_path = convert_path_extension(video_path, 'mp4')
     cmd = ["ffmpeg",
-        "-y"
+        "-y",
         "-i", video_path,
         "-c:v", "libx264",
         "-crf", "23",
         "-preset", "veryfast",
         "-c:a", "aac",
         "-b:a", "128k",
-        "-vf", "scale=-2:720,format=yuv420p",
-        new_video_path]
+        "-vf", "scale=-2:720,format=yuv420p"]
+    if slowdown is not None:
+        cmd.extend(["-filter:v", "setpts={:0.1f}*PTS".format(slowdown)])
+    cmd.append(new_video_path)
     subprocess.call(cmd)
 
 ## File helpers

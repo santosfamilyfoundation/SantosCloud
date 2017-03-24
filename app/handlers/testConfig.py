@@ -11,7 +11,7 @@ from traffic_cloud_utils.app_config import get_project_path, get_project_video_p
 from traffic_cloud_utils.emailHelper import EmailHelper
 from traffic_cloud_utils.app_config import update_config_without_sections
 from traffic_cloud_utils.statusHelper import StatusHelper, Status
-from traffic_cloud_utils.video import create_trajectory_video
+from traffic_cloud_utils.video import create_test_config_video
 
 class TestConfigHandler(BaseHandler):
     """
@@ -183,14 +183,10 @@ class TestConfigFeatureThread(threading.Thread):
             StatusHelper.set_status(self.identifier, Status.Type.FEATURE_TEST, Status.Flag.FAILURE)
             return self.callback(500, err_msg.output, self.identifier)
 
-        videos_folder = os.path.join(get_project_path(self.identifier), "feature_video")
-        print('hi')
-        if not os.path.exists(videos_folder):
-            os.makedirs(videos_folder)
-            print('make dir')
-        output_path = os.path.join(videos_folder, "feature_video.mp4")
-        last_frame = self.frame_start + self.num_frames
-        create_trajectory_video(get_project_video_path(self.identifier), db_path, homography_path, output_path, first_frame=self.frame_start, last_frame=last_frame, video_type='feature')
+        project_path = get_project_path(self.identifier)
+        video_path = get_project_video_path(self.identifier)
+        output_path = os.path.join(project_path, 'feature_video', 'feature_video.avi')
+        create_test_config_video(project_path, video_path, output_path, db_path, self.frame_start, self.frame_start + self.num_frames, 'feature')
 
         StatusHelper.set_status(self.identifier, Status.Type.FEATURE_TEST, Status.Flag.COMPLETE)
         return self.callback(200, "Test config done", self.identifier)
@@ -228,12 +224,10 @@ class TestConfigObjectThread(threading.Thread):
             StatusHelper.set_status(self.identifier, Status.Type.OBJECT_TEST, Status.Flag.FAILURE)
             return self.callback(500, err_msg.output, self.identifier)
 
-        videos_folder = os.path.join(get_project_path(self.identifier), "object_video")
-        if not os.path.exists(videos_folder):
-            os.makedirs(videos_folder)
-        output_path = os.path.join(videos_folder, "object_video.mp4")
-        last_frame = self.frame_start + self.num_frames
-        create_trajectory_video(get_project_video_path(self.identifier), obj_db_path, homography_path, output_path, first_frame=self.frame_start, last_frame=last_frame, video_type='feature')
+        project_path = get_project_path(self.identifier)
+        video_path = get_project_video_path(self.identifier)
+        output_path = os.path.join(project_path, 'object_video', 'object_video.avi')
+        create_test_config_video(project_path, video_path, output_path, obj_db_path, self.frame_start, self.frame_start + self.num_frames, 'object')
 
         StatusHelper.set_status(self.identifier, Status.Type.OBJECT_TEST, Status.Flag.COMPLETE)
         return self.callback(200, "Test config done", self.identifier)
