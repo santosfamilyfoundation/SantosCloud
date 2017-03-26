@@ -81,12 +81,13 @@ def create_highlight_video(project_path, video_path, list_of_near_misses):
 def create_test_config_video(project_path, video_path, output_path, db_path, first_frame, last_frame, video_type):
     videos_folder = os.path.dirname(output_path)
     homography_path = os.path.join(project_path, 'homography', 'homography.txt')
+    avi_output_path = convert_path_extension(output_path, 'avi')
 
     if not os.path.exists(videos_folder):
         os.makedirs(videos_folder)
 
-    create_trajectory_video(video_path, db_path, homography_path, output_path, first_frame=first_frame, last_frame=last_frame, video_type=video_type)
-    convert_to_mp4(output_path)
+    create_trajectory_video(video_path, db_path, homography_path, avi_output_path, first_frame=first_frame, last_frame=last_frame, video_type=video_type)
+    convert_to_mp4(avi_output_path)
 
 ## Helpers -- Internal use
 
