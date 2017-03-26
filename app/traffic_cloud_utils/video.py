@@ -47,8 +47,8 @@ def create_highlight_video(project_path, video_path, list_of_near_misses):
 
     clean_video_folder(videos_folder)
 
-    # Slow down by 3x for highlight video
-    slowdown = 3.0
+    # Slow down by 2x for highlight video
+    slowdown = 2.0
     current_framerate = get_framerate(video_path)
     upper_frame_limit = get_number_of_frames(video_path)
 
