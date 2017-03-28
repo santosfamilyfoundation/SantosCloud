@@ -31,7 +31,7 @@ class RetrieveResultsHandler(BaseHandler):
         file_report = os.path.join(project_path, 'santosreport.pdf')
         self.file_name = os.path.join(project_path, 'results.zip')
 
-        zipf = zipfile.ZipFile(self.file_name, 'w', zipfile.ZIP_DEFLATED)
+        zipf = zipfile.ZipFile(self.file_name, 'w', zipfile.ZIP_DEFLATED, allowZip64=True)
         # Write videos
         for root, dirs, files in os.walk(file_videos):
             for file in files:

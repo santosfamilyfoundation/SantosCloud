@@ -59,6 +59,7 @@ class BaseHandler(tornado.web.RequestHandler):
                     if not data:
                         break
                     self.write(data)
+                    self.flush()
             except Exception as e:
                 self.error_message = str(e)
                 raise tornado.web.HTTPError(status_code=500)
