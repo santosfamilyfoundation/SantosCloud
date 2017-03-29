@@ -48,7 +48,7 @@ class StatusHelper(object):
         update_config_with_sections(config_path, "status", status_type.value, status)
 
         if failure_message is not None:
-            update_config_with_sections(config_path, "failure_message", status_type.value, message)
+            update_config_with_sections(config_path, "failure_message", status_type.value, failure_message)
 
     @staticmethod
     def get_status(identifier):
