@@ -128,7 +128,7 @@ def _write_to_project_config(identifier, video_filename):
     config_parser.add_section("video")
     config_parser.set("video", "name", video_filename)
     config_parser.set("video", "source", video_filename)
-    config_parser.set("video", "framerate", get_framerate(os.path.join(get_project_path(identifier), video_filename)))
+    config_parser.set("video", "framerate", str(get_framerate(os.path.join(get_project_path(identifier), video_filename))))
     config_parser.set("video", "start", video_timestamp)
 
     with open(get_project_config_path(identifier), 'wb') as configfile:
