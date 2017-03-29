@@ -183,7 +183,6 @@ class TestConfigFeatureThread(threading.Thread):
             StatusHelper.set_status(self.identifier, Status.Type.FEATURE_TEST, Status.Flag.FAILURE)
             return self.callback(500, err_msg.output, self.identifier)
 
-        project_path = get_project_path(self.identifier)
         video_path = get_project_video_path(self.identifier)
         output_path = os.path.join(project_path, 'feature_video', 'feature_video.mp4')
         create_test_config_video(project_path, video_path, output_path, db_path, self.frame_start, self.frame_start + self.num_frames, 'feature')
@@ -224,7 +223,6 @@ class TestConfigObjectThread(threading.Thread):
             StatusHelper.set_status(self.identifier, Status.Type.OBJECT_TEST, Status.Flag.FAILURE)
             return self.callback(500, err_msg.output, self.identifier)
 
-        project_path = get_project_path(self.identifier)
         video_path = get_project_video_path(self.identifier)
         output_path = os.path.join(project_path, 'object_video', 'object_video.mp4')
         create_test_config_video(project_path, video_path, output_path, obj_db_path, self.frame_start, self.frame_start + self.num_frames, 'object')
