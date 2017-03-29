@@ -25,7 +25,7 @@ class StatusHandler(BaseHandler):
     """
     def get(self):
         identifier = self.find_argument('identifier')
-        status_dict = StatusHelper.get_status_raw_with_messages(identifier)
+        status_dict = StatusHelper.get_status_raw(identifier)
         if status_dict != None:
         	self.write(status_dict)
         else:
