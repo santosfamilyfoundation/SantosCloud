@@ -55,7 +55,7 @@ class AnalysisHandler(BaseHandler):
     def handler(identifier, email):
         project_path = get_project_path(identifier)
         if not os.path.exists(project_path):
-            StatusHelper.set_status(identifier, Status.Type.OBJECT_TRACKING, Status.Flag.FAILURE)
+            StatusHelper.set_status(identifier, Status.Type.OBJECT_TRACKING, Status.Flag.FAILURE, failure_message='Project directory does not exist.')
             return (500, 'Project directory does not exist. Check your identifier?')
 
         status_code, reason = ObjectTrackingHandler.handler(identifier, email, AnalysisHandler.object_tracking_callback)

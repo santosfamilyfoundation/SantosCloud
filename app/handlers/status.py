@@ -25,9 +25,9 @@ class StatusHandler(BaseHandler):
     """
     def get(self):
         identifier = self.find_argument('identifier')
-        status_dict = StatusHelper.get_status_raw(identifier)
+        status_dict = StatusHelper.get_status_raw_with_messages(identifier)
         if status_dict != None:
         	self.write(status_dict)
         else:
-        	# TODO: Error
-        	pass
+            self.error_message = "Could not get project status"
+            raise tornado.web.HTTPError(status_code = 500)

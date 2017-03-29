@@ -36,7 +36,7 @@ class BaseHandler(tornado.web.RequestHandler):
         }
 
         if self.error_message != None:
-            error_dict['message'] = self.error_message
+            error_dict['error_message'] = self.error_message
             print("ERROR: "+self.error_message)
 
         if self.settings.get('serve_traceback') and 'exc_info' in kwargs:

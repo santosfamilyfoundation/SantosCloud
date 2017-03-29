@@ -77,7 +77,7 @@ class ObjectTrackingHandler(BaseHandler):
         """
         project_path = get_project_path(identifier)
         if not os.path.exists(project_path):
-            StatusHelper.set_status(identifier, Status.Type.OBJECT_TRACKING, Status.Flag.FAILURE)
+            StatusHelper.set_status(identifier, Status.Type.OBJECT_TRACKING, Status.Flag.FAILURE, failure_message='Project directory does not exist.')
             return (500, 'Project directory does not exist. Check your identifier?')
 
         ObjectTrackingThread(identifier, email, callback).start()
@@ -134,8 +134,8 @@ class ObjectTrackingThread(threading.Thread):
                                         "-n", str(batch_size)])
 
         except subprocess.CalledProcessError as excp:
-            StatusHelper.set_status(self.identifier, Status.Type.OBJECT_TRACKING, Status.Flag.FAILURE)
-            return self.callback(500, excp.output, self.identifier, self.email)
+            StatusHelper.set_status(self.identifier, Status.Type.OBJECT_TRACKING, Status.Flag.FAILURE, failure_message='Failed with error: '+str(excp))
+            return self.callback(500, str(excp), self.identifier, self.email)
 
 
         db_make_objtraj(db_path)  # Make our object_trajectories db table

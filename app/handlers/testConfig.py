@@ -119,7 +119,7 @@ class TestConfigHandler(BaseHandler):
 
         project_path = get_project_path(identifier)
         if not os.path.exists(project_path):
-            StatusHelper.set_status(identifier, status_type, Status.Flag.FAILURE)
+            StatusHelper.set_status(identifier, status_type, Status.Flag.FAILURE, failure_message='Project directory does not exist.')
             return (400, 'Project directory does not exist. Check your identifier?')
 
         if test_flag == "feature":
@@ -132,11 +132,11 @@ class TestConfigHandler(BaseHandler):
                 TestConfigObjectThread(identifier, frame_start, num_frames, TestConfigHandler.test_feature_callback).start()
             else:
                 print "Feature tracking not run"
-                StatusHelper.set_status(identifier, status_type, Status.Flag.FAILURE)
-                return (400, "Testing of feature tracking did not produce the requird files. Try re-running it.")
+                StatusHelper.set_status(identifier, status_type, Status.Flag.FAILURE, failure_message="Feature tracking database deosn't exist. Please try running feature tracking again.")
+                return (400, "Testing of feature tracking did not produce the required files. Try re-running it.")
         else:
             print "Incorrect flag passed: " + test_flag
-            StatusHelper.set_status(identifier, status_type, Status.Flag.FAILURE)
+            StatusHelper.set_status(identifier, status_type, Status.Flag.FAILURE, failure_message='Please pass "object" or "feature" as your test_flag.')
             return (400, "Incorrect flag passed: " + test_flag)
 
         return (200, "Success")
@@ -180,8 +180,8 @@ class TestConfigFeatureThread(threading.Thread):
         try:
             subprocess.check_call(fbt_call)
         except subprocess.CalledProcessError as err_msg:
-            StatusHelper.set_status(self.identifier, Status.Type.FEATURE_TEST, Status.Flag.FAILURE)
-            return self.callback(500, err_msg.output, self.identifier)
+            StatusHelper.set_status(self.identifier, Status.Type.FEATURE_TEST, Status.Flag.FAILURE, failure_message='Feature tracking failed with error: '+str(err_msg))
+            return self.callback(500, str(err_msg), self.identifier)
 
         video_path = get_project_video_path(self.identifier)
         output_path = os.path.join(project_path, 'feature_video', 'feature_video.mp4')
@@ -220,8 +220,8 @@ class TestConfigObjectThread(threading.Thread):
             subprocess.check_call(["feature-based-tracking",tracking_path,"--gf","--database-filename",obj_db_path])
             subprocess.check_call(["classify-objects.py", "--cfg", tracking_path, "-d", obj_db_path])  # Classify road users
         except subprocess.CalledProcessError as err_msg:
-            StatusHelper.set_status(self.identifier, Status.Type.OBJECT_TEST, Status.Flag.FAILURE)
-            return self.callback(500, err_msg.output, self.identifier)
+            StatusHelper.set_status(self.identifier, Status.Type.OBJECT_TEST, Status.Flag.FAILURE, failure_message='Failed to run the object test with error: '+str(err_msg))
+            return self.callback(500, str(err_msg), self.identifier)
 
         video_path = get_project_video_path(self.identifier)
         output_path = os.path.join(project_path, 'object_video', 'object_video.mp4')
