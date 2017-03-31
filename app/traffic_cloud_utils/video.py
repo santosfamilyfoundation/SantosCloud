@@ -11,6 +11,9 @@ from moving import userTypeNames
 from storage import loadTrajectoriesFromSqlite
 from cvutils import cvPlot, cvColors, cvGreen, imageBox
 
+colors = cvColors['colorblind']
+green = cvGreen['colorblind']
+
 tracking_filename = "tracking.mp4"
 highlight_filename = "highlight.mp4"
 
@@ -157,12 +160,12 @@ def create_trajectory_video(video_path, db_filename, homography_path, output_pat
                         obj.projectedPositions = obj.positions.project(homography)
 
                     # Plot it's trajectory until now
-                    cvPlot(img, obj.projectedPositions, cvColors[obj.getNum()], frame_num-obj.getFirstInstant())
+                    cvPlot(img, obj.projectedPositions, colors[obj.getNum()], frame_num-obj.getFirstInstant())
 
                     # Plot the object's bounds if it has features
                     if obj.hasFeatures():
                         imgcrop, yCropMin, yCropMax, xCropMin, xCropMax = imageBox(img, obj, frame_num, homography, width, height)
-                        cv2.rectangle(img, (xCropMin, yCropMin), (xCropMax, yCropMax), cvGreen, 1)
+                        cv2.rectangle(img, (xCropMin, yCropMin), (xCropMax, yCropMax), green, 1)
 
                     # Put object id and type if it's an object video
                     # If it's a feature video, there's too many numbers, let's ignore it.
@@ -170,7 +173,7 @@ def create_trajectory_video(video_path, db_filename, homography_path, output_pat
                         objDescription = '{} '.format(obj.num)
                         if userTypeNames[obj.userType] != 'unknown':
                             objDescription += userTypeNames[obj.userType][0].upper()
-                        cv2.putText(img, objDescription, obj.projectedPositions[frame_num-obj.getFirstInstant()].asint().astuple(), cv2.FONT_HERSHEY_PLAIN, 3, cvColors[obj.getNum()], thickness=4)
+                        cv2.putText(img, objDescription, obj.projectedPositions[frame_num-obj.getFirstInstant()].asint().astuple(), cv2.FONT_HERSHEY_PLAIN, 3, colors[obj.getNum()], thickness=4)
 
             # Write image
             out.write(img)
