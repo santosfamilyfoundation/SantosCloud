@@ -74,7 +74,7 @@ class StatusHelper(object):
             d = {}
             for (k,v) in statuses.iteritems():
                 d[k] = { 'status': v }
-                if s and k in messages:
+                if s and k in messages and int(v) == Status.Flag.FAILURE.value:
                     d[k]['failure_message'] = messages[k]
                 elif v == Status.Flag.FAILURE.value:
                     d[k]['failure_message'] = "Operation failed: "+k
