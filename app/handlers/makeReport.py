@@ -9,22 +9,41 @@ from baseHandler import BaseHandler
 
 class MakeReportHandler(BaseHandler):
     """
-    @api {post} /makeReport/ Make Report
+    @api {get} /makeReport/ Make Report
     @apiName MakeReport
     @apiVersion 0.1.0
     @apiGroup Results
     @apiDescription Calling this route will create a safety report for a specified project. When the report is created, an email will be sent to the project's user. This route requires running object tracking on the video, and then running safety analysis on the results of the object tracking beforehand. (Due to the potentially long duration, it is infeasible to return the results as a response to the HTTP request. In order to check the status of the testing and view results, see the Status group of messages.)
 
     @apiParam {String} identifier The identifier of the project for which to create the report.
-
     @apiSuccess status_code The API will return a status code of 200 upon success.
 
     @apiError error_message The error message to display.
     """
-    def post(self):
+    def get(self):
         identifier = self.find_argument('identifier')
+        project_dir = get_project_path(identifier)
         status_code, reason = MakeReportHandler.handler(identifier)
+        if (not os.path.exists(os.path.join(project_dir,\
+                                            'final_images',\
+                                            'road_user_icon_counts.jpg'))):
+            self.error_message = 'Road User Counts must be run before the report can be generated.'
+            raise tornado.web.HTTPError(status_code=400)
+
+        if (not os.path.exists(os.path.join(project_dir,\
+                                            'final_images',\
+                                            'velocityPDF.jpg'))):
+            self.error_message = 'Speed Distribution must be run before the report can be generated.'
+            raise tornado.web.HTTPError(status_code=400)
+
         if status_code == 200:
+            report_path = os.path.join(project_dir,\
+                                    'santosreport.pdf')
+            self.set_header('Content-Disposition',\
+                            'attachment; filename=santosreport.pdf')
+            self.set_header('Content-Type', 'application/octet-stream')
+            self.set_header('Content-Description', 'File Transfer')
+            self.write_file_stream(report_path)
             self.finish("Make PDF Report")
         else:
             self.error_message = reason

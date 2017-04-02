@@ -12,12 +12,11 @@ import traceback
 
 class CreateSpeedDistributionHandler(BaseHandler):
     """
-    @api {post} /speedDistribution/ Speed Distribution
+    @api {get} /speedDistribution/ Speed Distribution
     @apiName SpeedDistribution
     @apiVersion 0.1.0
     @apiGroup Results
     @apiDescription Calling this route will create a graph of the speed distribution from a specified project.
-
     @apiParam {String} identifier The identifier of the project to create a speed distribution for.
     @apiParam {Integer} [speed_limit] speed limit of the intersection. Defaults to 25 mph.
     @apiParam {Boolean} [vehicle_only] Flag for specifying only vehicle speeds
@@ -26,15 +25,25 @@ class CreateSpeedDistributionHandler(BaseHandler):
 
     @apiError error_message The error message to display.
     """
-    def post(self):
+    def get(self):
         identifier = self.find_argument('identifier')
-        speed_limit = int(self.find_argument('speed_limit', default=25))
         vehicle_only = bool(self.find_argument('vehicle_only', default=True))
+        speed_limit = int(self.find_argument('speed_limit', default=25))
         status_code, reason = CreateSpeedDistributionHandler.handler(identifier, speed_limit, vehicle_only)
         if status_code == 200:
+            image_path = os.path.join(\
+                                    get_project_path(identifier),\
+                                    'final_images',\
+                                    'velocityPDF.jpg')
+            self.set_header('Content-Disposition',\
+                            'attachment; filename=velocityPDF.jpg')
+            self.set_header('Content-Type', 'application/octet-stream')
+            self.set_header('Content-Description', 'File Transfer')
+            self.write_file_stream(image_path)
             self.finish("Create Speed Distribution")
         else:
-            raise tornado.web.HTTPError(reason=reason, status_code=status_code)
+            self.error_message = reason
+            raise tornado.web.HTTPError(status_code=status_code)
 
     @staticmethod
     def handler(identifier, speed_limit, vehicle_only):
