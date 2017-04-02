@@ -50,10 +50,12 @@ class UploadVideoHandler(BaseHandler):
                 create_project(self.identifier, video_part)
             else:
                 print "video_part was None"
+                self.error_message = "Error decoding video upload"
                 raise tornado.web.HTTPError(status_code = 500)
 
-        except:
+        except Exception as e:
             print "could not complete streaming of data parts"
+            self.error_message = "Error uploading video: " + str(e)
             raise tornado.web.HTTPError(status_code = 500)
 
         finally:

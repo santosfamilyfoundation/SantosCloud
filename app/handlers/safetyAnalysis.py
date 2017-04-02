@@ -66,7 +66,7 @@ class SafetyAnalysisHandler(BaseHandler):
     def handler(identifier, email, callback, prediction_method=None):
         project_path = get_project_path(identifier)
         if not os.path.exists(project_path):
-            StatusHelper.set_status(identifier, Status.Type.SAFETY_ANALYSIS, Status.Flag.FAILURE)
+            StatusHelper.set_status(identifier, Status.Type.SAFETY_ANALYSIS, Status.Flag.FAILURE, failure_message='Project directory does not exist.')
             return (500, 'Project directory does not exist. Check your identifier?')
 
         SafetyAnalysisThread(identifier, email, callback, prediction_method=prediction_method).start()
@@ -102,8 +102,8 @@ class SafetyAnalysisThread(threading.Thread):
 
             subprocess.check_call(["safety-analysis.py", "--cfg", config_path, "--prediction-method", self.prediction_method])
         except subprocess.CalledProcessError as err_msg:
-            StatusHelper.set_status(self.identifier, Status.Type.SAFETY_ANALYSIS, Status.Flag.FAILURE)
-            return self.callback(500, err_msg.output, self.identifier, self.email)
+            StatusHelper.set_status(self.identifier, Status.Type.SAFETY_ANALYSIS, Status.Flag.FAILURE, failure_message='Safety analysis failed with error: '+str(err_msg))
+            return self.callback(500, str(err_msg), self.identifier, self.email)
 
         StatusHelper.set_status(self.identifier, Status.Type.SAFETY_ANALYSIS, Status.Flag.COMPLETE)
         return self.callback(200, "Success", self.identifier, self.email)

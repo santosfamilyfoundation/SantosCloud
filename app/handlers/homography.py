@@ -26,7 +26,7 @@ class HomographyHandler(BaseHandler):
 
     @apiError error_message The error message to display.
     """
-    
+
     """
     @api {get} /homography/ Get Homography
     @apiName GetHomography
@@ -34,7 +34,7 @@ class HomographyHandler(BaseHandler):
     @apiGroup Configuration
     @apiDescription Use this route to get the homography calculated during configuration.
     @apiParam {String} identifier The identifier of the project for which to configure the homography.
-    
+
     @apiSuccess {Integer[][]} The API will return a status code of 200 upon success.
 
     @apiError error_message The error message to display.
@@ -89,12 +89,13 @@ class HomographyHandler(BaseHandler):
                 np.savetxt(\
                     os.path.join(project_dir,'homography','homography.txt'),\
                     homography)
-            except:
-                self.error_messag = "Could not find the homography, check your points and try again"
+            except Exception as e:
+                self.error_message = "Could not find the homography, check your points and try again"
                 StatusHelper.set_status(\
                                         self.identifier,\
                                         Status.Type.HOMOGRAPHY,\
-                                        Status.Flag.FAILURE)
+                                        Status.Flag.FAILURE,
+                                        failure_message='Failed to find homography: '+str(e))
                 raise tornado.web.HTTPError(status_code = 500)
 
         else:
@@ -102,7 +103,8 @@ class HomographyHandler(BaseHandler):
             StatusHelper.set_status(\
                                     self.identifier,\
                                     Status.Type.HOMOGRAPHY,\
-                                    Status.Flag.FAILURE)
+                                    Status.Flag.FAILURE,
+                                    failure_message="Couldn't interpret uploaded points.")
             raise tornado.web.HTTPError(status_code = 500)
 
 

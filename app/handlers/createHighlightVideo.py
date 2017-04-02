@@ -62,18 +62,18 @@ class CreateHighlightVideoHandler(BaseHandler):
 
         project_dir = get_project_path(identifier)
         if not os.path.exists(project_dir):
-            StatusHelper.set_status(identifier, Status.Type.HIGHLIGHT_VIDEO, Status.Flag.FAILURE)
+            StatusHelper.set_status(identifier, Status.Type.HIGHLIGHT_VIDEO, Status.Flag.FAILURE, failure_message='Project directory does not exist.')
             return (500, 'Project directory does not exist. Check your identifier?')
 
         db = os.path.join(project_dir, 'run', 'results.sqlite')
         #TO-DO: Check to see if tables like "interactions" exist
         if not os.path.exists(db):
-            StatusHelper.set_status(identifier, Status.Type.HIGHLIGHT_VIDEO, Status.Flag.FAILURE)
+            StatusHelper.set_status(identifier, Status.Type.HIGHLIGHT_VIDEO, Status.Flag.FAILURE, failure_message='Trajectory analysis must be run before creating a highlight video.')
             return (500, 'Database file does not exist. Trajectory analysis needs to be called first ')
 
         video_path = get_project_video_path(identifier)
         if not os.path.exists(video_path):
-            StatusHelper.set_status(identifier, Status.Type.HIGHLIGHT_VIDEO, Status.Flag.FAILURE)
+            StatusHelper.set_status(identifier, Status.Type.HIGHLIGHT_VIDEO, Status.Flag.FAILURE, failure_message='The video file does not exist.')
             return (500, 'Source video file does not exist.  Was the video uploaded?')
 
         ttc_threshold_frames = int(ttc_threshold * float(get_framerate(video_path)))
@@ -81,7 +81,7 @@ class CreateHighlightVideoHandler(BaseHandler):
         try:
             near_misses = getNearMissFrames(db, ttc_threshold_frames, vehicle_only)
         except Exception as error_message:
-            StatusHelper.set_status(identifier, Status.Type.HIGHLIGHT_VIDEO, Status.Flag.FAILURE)
+            StatusHelper.set_status(identifier, Status.Type.HIGHLIGHT_VIDEO, Status.Flag.FAILURE, failure_message='Failed to get near miss frames.')
             return (500, str(error_message))
 
         num_near_misses_to_use = min(10, num_near_misses_to_use)
@@ -91,7 +91,7 @@ class CreateHighlightVideoHandler(BaseHandler):
         try:
             CreateHighlightVideoThread(identifier, project_dir, video_path, near_misses, email, CreateHighlightVideoHandler.callback).start()
         except Exception as error_message:
-            StatusHelper.set_status(identifier, Status.Type.HIGHLIGHT_VIDEO, Status.Flag.FAILURE)
+            StatusHelper.set_status(identifier, Status.Type.HIGHLIGHT_VIDEO, Status.Flag.FAILURE, failure_message='Error creating highlight video: '+str(error_message))
             return (500, str(error_message))
 
         return (200, "Success")

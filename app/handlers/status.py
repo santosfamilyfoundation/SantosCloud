@@ -29,5 +29,5 @@ class StatusHandler(BaseHandler):
         if status_dict != None:
         	self.write(status_dict)
         else:
-        	# TODO: Error
-        	pass
+            self.error_message = "Could not get project status"
+            raise tornado.web.HTTPError(status_code = 500)

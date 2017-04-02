@@ -42,10 +42,13 @@ class StatusHelper(object):
             update_config_with_sections(config_path, "status", status_type.value, str(status.value))
 
     @staticmethod
-    def set_status(identifier, status_type, val):
+    def set_status(identifier, status_type, val, failure_message=None):
         config_path = get_project_config_path(identifier)
         status = str(val.value)
         update_config_with_sections(config_path, "status", status_type.value, status)
+
+        if failure_message is not None:
+            update_config_with_sections(config_path, "failure_message", status_type.value, failure_message)
 
     @staticmethod
     def get_status(identifier):
@@ -65,9 +68,17 @@ class StatusHelper(object):
     @staticmethod
     def get_status_raw(identifier):
         config_path = get_project_config_path(identifier)
-        (success, value) = get_config_section(config_path, "status")
+        (success, statuses) = get_config_section(config_path, "status")
         if success:
-            return value
+            s, messages = get_config_section(config_path, "failure_message")
+            d = {}
+            for (k,v) in statuses.iteritems():
+                d[k] = { 'status': v }
+                if s and k in messages and int(v) == Status.Flag.FAILURE.value:
+                    d[k]['failure_message'] = messages[k]
+                elif v == Status.Flag.FAILURE.value:
+                    d[k]['failure_message'] = "Operation failed: "+k
+            return d
         else:
             return None
 
@@ -79,7 +90,7 @@ class StatusHelper(object):
             if status:
                 for (k, v) in status.iteritems():
                     if v == Status.Flag.IN_PROGRESS:
-                        StatusHelper.set_status(identifier, k, Status.Flag.FAILURE)
+                        StatusHelper.set_status(identifier, k, Status.Flag.FAILURE, failure_message='Failed when server died')
             else:
                 print "Error: Could not mark project status failure flags for project {}".format(identifier)
 
