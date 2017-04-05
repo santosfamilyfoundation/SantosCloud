@@ -290,8 +290,16 @@ def get_number_of_frames(videopath):
         return num
 
 def get_framerate(videopath):
-    capture = cv2.VideoCapture(videopath)
-    return float(capture.get(cv2.cv.CV_CAP_PROP_FPS))
+    if not os.path.exists(videopath):
+        print("ERROR: filename %s was not found!" % videopath)
+        return -1
+    out = subprocess.check_output(["ffprobe",videopath,"-v","0","-select_streams","v","-print_format","flat","-show_entries","stream=r_frame_rate"])
+    rate = out.split('=')[1].strip().strip('"').split('/')
+    if len(rate)==1:
+        return float(rate[0])
+    if len(rate)==2:
+        return float(rate[0])/float(rate[1])
+    return -1
 
 def get_resolution(videopath):
     """
