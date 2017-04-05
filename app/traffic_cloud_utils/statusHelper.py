@@ -40,6 +40,8 @@ class StatusHelper(object):
         config_path = get_project_config_path(identifier)
         for (status_type, status) in d.iteritems():
             update_config_with_sections(config_path, "status", status_type.value, str(status.value))
+        # Prevent 'Section failure_message does not exist' errors
+        update_config_with_sections(config_path, "failure_message", "None", "None")
 
     @staticmethod
     def set_status(identifier, status_type, val, failure_message=None):
