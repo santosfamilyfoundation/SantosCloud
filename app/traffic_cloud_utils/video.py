@@ -192,7 +192,7 @@ def combine_videos(videos_list, output_path):
     capture = cv2.VideoCapture(videos_list[video_index])
     width = int(capture.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH))
     height = int(capture.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT))
-    framerate = float(capture.get(cv2.cv.CV_CAP_PROP_FPS))
+    framerate = get_framerate(videos_list[video_index])
 
     out = get_video_writer(output_path, framerate, width, height)
 
