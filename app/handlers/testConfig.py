@@ -41,8 +41,7 @@ class TestConfigHandler(BaseHandler):
     @apiParam {String} test_flag Flag to determine whether feature tracking or object tracking will be tested.
     @apiParam {String} identifier The identifier of the project to test configuration of.
 
-    @apiSuccess (object) {File} [object_video.mp4] If called with the 'object' test flag, the API will return this generated test video as a video file upon sucess.
-    @apiSuccess (feature) {File} [feature_video.mp4] If called with the 'feature' test flag, the API will return this generated test video as a video file upon sucess.
+    @apiSuccess {File} video_mp4 The API will return this generated test video as a video file upon sucess.
 
     @apiError error_message The error message to display.
     """

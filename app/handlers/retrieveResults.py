@@ -18,7 +18,7 @@ class RetrieveResultsHandler(BaseHandler):
 
     @apiParam {String} identifier The identifier of the project to retrieve results from.
 
-    @apiSuccess {File} results.zip The API will return all metadata (Images, Report, etc.) as a compressed archive.
+    @apiSuccess {File} results_zip The API will return all metadata (Images, Report, etc.) as a compressed archive.
 
     @apiError error_message The error message to display.
     """

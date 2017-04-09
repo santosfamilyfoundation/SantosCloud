@@ -17,7 +17,7 @@ class MakeReportHandler(BaseHandler):
 
     @apiParam {String} identifier The identifier of the project for which to create the report.
 
-    @apiSuccess {File} santosreport.pdf The API will return the created report upon success.
+    @apiSuccess {File} report_pdf The API will return the created report upon success.
 
     @apiError error_message The error message to display.
     """

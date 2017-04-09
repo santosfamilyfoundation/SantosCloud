@@ -39,7 +39,7 @@ class CreateHighlightVideoHandler(BaseHandler):
 
     @apiParam {String} identifier The identifier of the project to create a highlight video for.
 
-    @apiSuccess {File} highlight.mp4 The API will return the highlight video upon success.
+    @apiSuccess {File} video_mp4 The API will return the highlight video upon success.
 
     @apiError error_message The error message to display.
     """

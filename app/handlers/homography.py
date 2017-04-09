@@ -35,7 +35,7 @@ class HomographyHandler(BaseHandler):
     @apiDescription Use this route to get the homography calculated during configuration.
     @apiParam {String} identifier The identifier of the project for which to configure the homography.
 
-    @apiSuccess {Integer} homography The API will return an array containing the 3x3 matrix of homography points.
+    @apiSuccess {Integer[]} homography The API will return an array containing the 3x3 matrix of homography points.
 
     @apiError error_message The error message to display.
     """

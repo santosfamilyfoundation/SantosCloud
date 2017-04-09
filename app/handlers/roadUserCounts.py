@@ -18,7 +18,7 @@ class RoadUserCountsHandler(BaseHandler):
 
     @apiParam {String} identifier The identifier of the project to create road user counts for.
 
-    @apiSuccess status_code The API will return a status code of 200 upon success.
+    @apiSuccess {File} image_jpg The API will return a status code of 200 upon success.
 
     @apiError error_message The error message to display.
     """

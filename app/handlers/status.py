@@ -15,11 +15,11 @@ class StatusHandler(BaseHandler):
 
     @apiParam {String} identifier The identifier of the project on which to return status information.
 
-    @apiSuccess upload_homography The status of homography file uploading.
-    @apiSuccess configuration_test The status of the configuration test.
-    @apiSuccess object_tracking The status of object tracking.
-    @apiSuccess safety_analysis The status of performing safety analysis.
-    @apiSuccess highlight_video The status of creating the highlight video.
+    @apiSuccess {Integer} upload_homography The status of homography file uploading.
+    @apiSuccess {Integer} configuration_test The status of the configuration test.
+    @apiSuccess {Integer} object_tracking The status of object tracking.
+    @apiSuccess {Integer} safety_analysis The status of performing safety analysis.
+    @apiSuccess {Integer} highlight_video The status of creating the highlight video.
 
     @apiError error_message The error message to display. (Will return unique error message if object tracking has NOT been run on specified project)
     """

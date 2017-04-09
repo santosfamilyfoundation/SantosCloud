@@ -21,7 +21,7 @@ class CreateSpeedDistributionHandler(BaseHandler):
     @apiParam {Integer} [speed_limit] speed limit of the intersection. Defaults to 25 mph.
     @apiParam {Boolean} [vehicle_only] Flag for specifying only vehicle speeds
 
-    @apiSuccess {File} velocityPDF.jpg The API will return the created graph upon success.
+    @apiSuccess {File} image_jpg The API will return the created graph upon success.
     
     @apiError error_message The error message to display.
     """
