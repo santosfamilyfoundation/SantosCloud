@@ -19,7 +19,6 @@ import cleanup
 # Import all of our custom routes
 
 # Upload routes
-from handlers.upload import UploadHandler
 from handlers.uploadVideo import UploadVideoHandler
 from handlers.homography import HomographyHandler
 
@@ -54,7 +53,6 @@ class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
             (r"/", MainHandler),
-            (r"/upload", UploadHandler),
             (r"/uploadVideo", UploadVideoHandler),
             (r"/homography", HomographyHandler),
             (r"/config", ConfigHandler),
