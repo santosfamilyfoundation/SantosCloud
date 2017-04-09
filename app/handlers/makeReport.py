@@ -13,7 +13,7 @@ class MakeReportHandler(BaseHandler):
     @apiName MakeReport
     @apiVersion 0.1.0
     @apiGroup Results
-    @apiDescription Calling this route will create a safety report for a specified project. The report is returned in the response body.
+    @apiDescription Calling this route will create a safety report for a specified project. The report is returned in the response body. This route requires running roadUserCounts and createSpeedDistribution to generate the report images.
 
     @apiParam {String} identifier The identifier of the project for which to create the report.
 

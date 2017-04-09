@@ -16,7 +16,7 @@ class CreateSpeedDistributionHandler(BaseHandler):
     @apiName SpeedDistribution
     @apiVersion 0.1.0
     @apiGroup Results
-    @apiDescription Calling this route will create a graph of the speed distribution from a specified project and return the 
+    @apiDescription Calling this route will create a graph of the speed distribution from a specified project. The image will then be sent back in the response body. This route requires running object tracking on the video, and then running safety analysis on the results of the object tracking beforehand.
     @apiParam {String} identifier The identifier of the project to create a speed distribution for.
     @apiParam {Integer} [speed_limit] speed limit of the intersection. Defaults to 25 mph.
     @apiParam {Boolean} [vehicle_only] Flag for specifying only vehicle speeds
@@ -25,6 +25,13 @@ class CreateSpeedDistributionHandler(BaseHandler):
     
     @apiError error_message The error message to display.
     """
+    def prepare(self):
+        self.identifier = self.find_argument('identifier')
+        status_dict = StatusHelper.get_status(self.identifier)
+        if status_dict[Status.Type.SAFETY_ANALYSIS] != Status.Flag.COMPLETE:
+            status_code = 412
+            self.error_message = "Safety analysis did not complete successfully, try re-running it."
+
     def get(self):
         identifier = self.find_argument('identifier')
         vehicle_only = bool(self.find_argument('vehicle_only', default=True))
