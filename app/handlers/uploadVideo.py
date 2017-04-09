@@ -18,7 +18,7 @@ class UploadVideoHandler(BaseHandler):
     @apiName UploadVideo
     @apiVersion 0.2.0
     @apiGroup Upload
-    @apiDescription This route will upload a video to a project (and create a new project if an old one is not specified)
+    @apiDescription This route will create a new project and upload a video to it.
 
     @apiParam {File} video The video file to analyze. This can have any file extension.
     
