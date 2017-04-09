@@ -15,8 +15,8 @@ from traffic_cloud_utils.emailHelper import EmailHelper
 
 class CreateHighlightVideoHandler(BaseHandler):
     """
-    @api {post} /highlightVideo/ Highlight Video
-    @apiName HighlightVideo
+    @api {post} /highlightVideo/ Post Highlight Video
+    @apiName PostHighlightVideo
     @apiVersion 0.1.0
     @apiGroup Results
     @apiDescription Calling this route will create a highlight video of dangerous interactions from a specified project. When the video is created, an email will be sent to the project's user. This route requires running object tracking on the video, and then running safety analysis on the results of the object tracking beforehand. (Due to the potentially long duration, it is infeasible to return the results as a response to the HTTP request. In order to check the status of the testing and view results, see the Status group of messages.)
@@ -27,6 +27,19 @@ class CreateHighlightVideoHandler(BaseHandler):
     @apiParam {Integer} [num_near_misses_to_use] Number of near misses to use in creating the highlight video. If provided a value greater than 10, it will default to 10.
 
     @apiSuccess status_code The API will return a status code of 200 upon success.
+
+    @apiError error_message The error message to display.
+    """
+    """
+    @api {get} /highlightVideo/ Get Highlight Video
+    @apiName GetHighlightVideo
+    @apiVersion 0.1.0
+    @apiGroup Results
+    @apiDescription Calling this route will get the highlight video created by the hightlightVideo route and returns it in the response body. This route requires the video to be created beforehand.
+
+    @apiParam {String} identifier The identifier of the project to create a highlight video for.
+
+    @apiSuccess {File} highlight.mp4 The API will return the highlight video upon success.
 
     @apiError error_message The error message to display.
     """
@@ -41,6 +54,9 @@ class CreateHighlightVideoHandler(BaseHandler):
             status_code = 412
             self.error_message = "Safety analysis did not complete successfully, try re-running it."
             raise tornado.web.HTTPError(status_code = status_code)
+        if self.request.method.lower() == "get" and status_dict[Status.Type.HIGHLIGHT_VIDEO] != Status.Flag.COMPLETE:
+            self.error_message = "Highlight Video did not complete successfully, try re-running it."
+            raise tornado.web.HTTPError(status_code = 500)
         StatusHelper.set_status(self.identifier, Status.Type.HIGHLIGHT_VIDEO, Status.Flag.IN_PROGRESS)
 
     def get(self):

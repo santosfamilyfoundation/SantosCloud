@@ -16,13 +16,13 @@ class CreateSpeedDistributionHandler(BaseHandler):
     @apiName SpeedDistribution
     @apiVersion 0.1.0
     @apiGroup Results
-    @apiDescription Calling this route will create a graph of the speed distribution from a specified project.
+    @apiDescription Calling this route will create a graph of the speed distribution from a specified project and return the 
     @apiParam {String} identifier The identifier of the project to create a speed distribution for.
     @apiParam {Integer} [speed_limit] speed limit of the intersection. Defaults to 25 mph.
     @apiParam {Boolean} [vehicle_only] Flag for specifying only vehicle speeds
 
-    @apiSuccess status_code The API will return a status code of 200 upon success.
-
+    @apiSuccess {File} velocityPDF.jpg The API will return the created graph upon success.
+    
     @apiError error_message The error message to display.
     """
     def get(self):

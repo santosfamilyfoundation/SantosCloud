@@ -8,7 +8,6 @@ from traffic_cloud_utils.plotting.visualization import road_user_counts, road_us
 from traffic_cloud_utils.app_config import get_project_path
 from baseHandler import BaseHandler
 
-#TODO(rlouie): replace with SantosBaseHandler class pip makes
 class RoadUserCountsHandler(BaseHandler):
     """
     @api {get} /roadUserCounts/ Road User Counts
@@ -23,12 +22,18 @@ class RoadUserCountsHandler(BaseHandler):
 
     @apiError error_message The error message to display.
     """
+    def prepare(self):
+        self.identifier = self.find_argument('identifier')
+        status_dict = StatusHelper.get_status(self.identifier)
+        if status_dict[Status.Type.SAFETY_ANALYSIS] != Status.Flag.COMPLETE:
+            status_code = 412
+            self.error_message = "Safety analysis did not complete successfully, try re-running it."
+
     def get(self):
-        identifier = self.find_argument('identifier')
-        status_code, reason = RoadUserCountsHandler.handler(identifier)
+        status_code, reason = RoadUserCountsHandler.handler(self.identifier)
         if status_code == 200:
             image_path = os.path.join(\
-                                    get_project_path(identifier),\
+                                    get_project_path(self.identifier),\
                                     'final_images',\
                                     'road_user_icon_counts.jpg')
             self.set_header('Content-Disposition',\

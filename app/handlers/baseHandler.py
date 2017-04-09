@@ -50,7 +50,7 @@ class BaseHandler(tornado.web.RequestHandler):
 
     def write_file_stream(self, file_name, chunk_size = 2048):
         if not os.path.exists(file_name):
-            self.error_message = "That file does not exist on the server"
+            self.error_message = "{} does not exist on the server".format(file_name)
             raise tornado.web.HTTPError(status_code=500)
         with open(file_name, 'rb') as f:
             try:
