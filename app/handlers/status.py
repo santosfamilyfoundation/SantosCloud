@@ -7,7 +7,7 @@ from baseHandler import BaseHandler
 class StatusHandler(BaseHandler):
 
     """
-    @api {post} /status/ Processing Status
+    @api {get} /status/ Processing Status
     @apiName ProcessingStatus
     @apiVersion 0.1.0
     @apiGroup Status
@@ -15,19 +15,19 @@ class StatusHandler(BaseHandler):
 
     @apiParam {String} identifier The identifier of the project on which to return status information.
 
-    @apiSuccess upload_homography The status of homography file uploading.
-    @apiSuccess configuration_test The status of the configuration test.
-    @apiSuccess object_tracking The status of object tracking.
-    @apiSuccess safety_analysis The status of performing safety analysis.
-    @apiSuccess highlight_video The status of creating the highlight video.
+    @apiSuccess {Integer} upload_homography The status of homography file uploading.
+    @apiSuccess {Integer} configuration_test The status of the configuration test.
+    @apiSuccess {Integer} object_tracking The status of object tracking.
+    @apiSuccess {Integer} safety_analysis The status of performing safety analysis.
+    @apiSuccess {Integer} highlight_video The status of creating the highlight video.
 
     @apiError error_message The error message to display. (Will return unique error message if object tracking has NOT been run on specified project)
     """
-    def post(self):
-        identifier = self.get_body_argument('identifier')
+    def get(self):
+        identifier = self.find_argument('identifier')
         status_dict = StatusHelper.get_status_raw(identifier)
         if status_dict != None:
         	self.write(status_dict)
         else:
-        	# TODO: Error
-        	pass
+            self.error_message = "Could not get project status"
+            raise tornado.web.HTTPError(status_code = 500)

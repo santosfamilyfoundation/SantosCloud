@@ -12,26 +12,26 @@ class RetrieveResultsHandler(BaseHandler):
     """
     @api {get} /retrieveResults/ Retrieve Results
     @apiName RetrieveResults
-    @apiVersion 0.0.0
+    @apiVersion 0.1.0
     @apiGroup Results
     @apiDescription This route will retrieve any metadata associated with the project. This includes test video files and safety analysis results.
 
     @apiParam {String} identifier The identifier of the project to retrieve results from.
 
-    @apiSuccess files The API will return all metadata since last retrieval as a compressed archive.
+    @apiSuccess {File} results_zip The API will return all metadata (Images, Report, etc.) as a compressed archive.
 
     @apiError error_message The error message to display.
     """
-
+    
     def get(self):
-        identifier = self.get_body_argument('identifier')
+        identifier = self.find_argument('identifier')
         project_path = get_project_path(identifier)
         file_videos = os.path.join(project_path, 'final_videos')
         file_images = os.path.join(project_path, 'final_images')
         file_report = os.path.join(project_path, 'santosreport.pdf')
         self.file_name = os.path.join(project_path, 'results.zip')
 
-        zipf = zipfile.ZipFile(self.file_name, 'w', zipfile.ZIP_DEFLATED)
+        zipf = zipfile.ZipFile(self.file_name, 'w', zipfile.ZIP_DEFLATED, allowZip64=True)
         # Write videos
         for root, dirs, files in os.walk(file_videos):
             for file in files:
