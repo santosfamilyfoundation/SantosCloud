@@ -7,6 +7,7 @@ from traffic_cloud_utils.app_config import get_project_path, get_project_video_p
 from traffic_cloud_utils.video import get_framerate
 from traffic_cloud_utils.plotting.visualization import vel_distribution
 
+from traffic_cloud_utils.statusHelper import StatusHelper, Status
 import json
 import traceback
 
@@ -33,13 +34,12 @@ class CreateSpeedDistributionHandler(BaseHandler):
             self.error_message = "Safety analysis did not complete successfully, try re-running it."
 
     def get(self):
-        identifier = self.find_argument('identifier')
         vehicle_only = bool(self.find_argument('vehicle_only', default=True))
         speed_limit = int(self.find_argument('speed_limit', default=25))
-        status_code, reason = CreateSpeedDistributionHandler.handler(identifier, speed_limit, vehicle_only)
+        status_code, reason = CreateSpeedDistributionHandler.handler(self.identifier, speed_limit, vehicle_only)
         if status_code == 200:
             image_path = os.path.join(\
-                                    get_project_path(identifier),\
+                                    get_project_path(self.identifier),\
                                     'final_images',\
                                     'velocityPDF.jpg')
             self.set_header('Content-Disposition',\
