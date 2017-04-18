@@ -7,6 +7,7 @@ import tornado.escape
 from traffic_cloud_utils.plotting.visualization import road_user_counts, road_user_icon_counts
 from traffic_cloud_utils.app_config import get_project_path
 from baseHandler import BaseHandler
+from traffic_cloud_utils.statusHelper import StatusHelper, Status
 
 class RoadUserCountsHandler(BaseHandler):
     """
