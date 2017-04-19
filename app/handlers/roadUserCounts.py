@@ -24,7 +24,9 @@ class RoadUserCountsHandler(BaseHandler):
     @apiError error_message The error message to display.
     """
     def prepare(self):
-        self.identifier = self.find_argument('identifier')
+        self.identifier = self.find_argument('identifier', str)
+        self.project_exists(self.identifier)
+        
         status_dict = StatusHelper.get_status(self.identifier)
         if status_dict[Status.Type.SAFETY_ANALYSIS] != Status.Flag.COMPLETE:
             status_code = 412
