@@ -41,19 +41,18 @@ class HomographyHandler(BaseHandler):
     """
 
     def prepare(self):
-        self.identifier = self.find_argument('identifier')
+        self.identifier = self.find_argument('identifier', str)
+        self.project_exists(self.identifier)
 
-        #TODO: Make sure that the project actually exists, ie. project_exists(id)
-
-        #Handle the status correctly
-        if StatusHelper.get_status(self.identifier)[Status.Type.HOMOGRAPHY] == Status.Flag.IN_PROGRESS:
+        status_dict = StatusHelper.get_status(self.identifier)
+        if status_dict[Status.Type.HOMOGRAPHY] == Status.Flag.IN_PROGRESS:
             status_code = 423
             self.error_message = "Currently uploading homography. Please wait."
             raise tornado.web.HTTPError(status_code = status_code)
         StatusHelper.set_status(self.identifier, Status.Type.HOMOGRAPHY, Status.Flag.IN_PROGRESS)
 
     def post(self):
-        self.up_ratio = float(self.find_argument('unit_pixel_ratio'))
+        self.up_ratio = self.find_argument('unit_pixel_ratio', float)
         self.write_homography_files()
         StatusHelper.set_status(self.identifier, Status.Type.HOMOGRAPHY, Status.Flag.COMPLETE)
         self.finish()
@@ -73,8 +72,15 @@ class HomographyHandler(BaseHandler):
 
     def write_homography_files(self):
         project_dir = get_project_path(self.identifier)
-        aerial_pts = literal_eval(self.find_argument('aerial_pts'))
-        camera_pts = literal_eval(self.find_argument('camera_pts'))
+        aerial_pts = self.find_argument('aerial_pts', list)
+        camera_pts = self.find_argument('camera_pts', list)
+
+        if isinstance(aerial_pts[0],basestring):
+            aerial_pts = [[float(aerial_pts[i]),float(aerial_pts[i+1])] for i in xrange(0,len(aerial_pts), 2)]
+
+        if isinstance(camera_pts[0],basestring):
+            camera_pts = [[float(camera_pts[i]),float(camera_pts[i+1])] for i in xrange(0,len(camera_pts), 2)]
+
 
         if  ((aerial_pts is not None) and (camera_pts is not None)) and\
             (isinstance(aerial_pts, list) and isinstance(camera_pts, list)) and\
@@ -113,6 +119,6 @@ class HomographyHandler(BaseHandler):
             if not (isinstance(i, list) and len(i)==2):
                 return False
             for j in i:
-                if not isinstance(j, float):
+                if not isinstance(j, (int,float)):
                     return False
         return True

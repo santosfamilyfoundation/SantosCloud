@@ -27,20 +27,22 @@ class ConfigHandler(BaseHandler):
 
     @apiError error_message The error message to display.
     """
-    def post(self):
-        identifier = self.find_argument("identifier")
+    def prepare(self):
+        self.identifier = self.find_argument('identifier', str)
+        self.project_exists(self.identifier)
 
+    def post(self):
         config_keys = default_config_dict().keys()
         config_dict = {}
 
         for key in config_keys:
-            arg = self.find_argument(key)
+            arg = self.find_argument(key, str)
             if arg != None:
                 config_dict[key] = arg
 
-        self.handler(identifier, config_dict)
+        self.handler(self.identifier, config_dict)
 
-        self.finish("Config")
+        self.finish()
 
     @staticmethod
     def handler(identifier, config_dict):

@@ -34,7 +34,9 @@ class ObjectTrackingHandler(BaseHandler):
     """
 
     def prepare(self):
-        self.identifier = self.find_argument('identifier')
+        self.identifier = self.find_argument('identifier', str)
+        self.project_exists(self.identifier)
+        
         status_dict = StatusHelper.get_status(self.identifier)
         if status_dict[Status.Type.OBJECT_TRACKING] == Status.Flag.IN_PROGRESS:
             status_code = 423
@@ -49,7 +51,7 @@ class ObjectTrackingHandler(BaseHandler):
 
     def post(self):
         # TODO: Implement rerun flag to prevent unnecessary computation
-        email = self.find_argument("email", default = None)
+        email = self.find_argument("email", str, default = None)
         status_code, reason = ObjectTrackingHandler.handler(self.identifier, email, ObjectTrackingHandler.callback)
 
         if status_code == 200:
