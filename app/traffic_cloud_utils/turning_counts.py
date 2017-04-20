@@ -45,9 +45,7 @@ def trajectory_headings(db_filename, homography_file):
 
     trajectories.append(obj_traj)
 
-    centroids, labels = cluster_trajectories(trajectories)
-
-    geometry = intersection_geometry(trajectories, labels)
+    geometry = intersection_geometry(trajectories)
 
     d = {}
     for i in range(len(trajectories)):
@@ -129,7 +127,7 @@ def draw_clusters(trajectories, labels, centroids=None):
         fig.savefig('here'+str(j)+'.png', dpi=dpi, bbox_inches=0, pad_inches=0, format='png')
         plt.close()
 
-def intersection_geometry(trajectories, labels):
+def intersection_geometry(trajectories):
     '''
     Returns the geometry of the intersection as a 2-tuple. The tuple will contain the angle of the 'Right'
     direction in the intersection and the 'Down' angle in the intersection. Assumes that the intersection
@@ -138,6 +136,8 @@ def intersection_geometry(trajectories, labels):
     This function works by finding large clusters that contain objects traveling very straight (i.e. low
     variance among their angle heading), and finding the angles for those clusters.
     '''
+    _, labels = cluster_trajectories(trajectories)
+
     num_samples = 5
     interval = 10
     clusters = []
@@ -405,6 +405,6 @@ def midpoint(a1, a2):
 
 
 if __name__=="__main__":
-    print(trajectory_headings('project_dir/8871ad0e-d75b-4f6f-a95a-07b98a911bc9/run/results.sqlite', 'project_dir/8871ad0e-d75b-4f6f-a95a-07b98a911bc9/homography/homography.txt'))
+    print(trajectory_headings('./../../project_dir/8871ad0e-d75b-4f6f-a95a-07b98a911bc9/run/results.sqlite', './../../project_dir/8871ad0e-d75b-4f6f-a95a-07b98a911bc9/homography/homography.txt'))
 
 
