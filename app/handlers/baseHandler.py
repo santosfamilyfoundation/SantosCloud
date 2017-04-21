@@ -2,6 +2,7 @@ import tornado.web
 import json
 import traceback
 import os
+from traffic_cloud_utils.app_config import get_project_path
 
 class BaseHandler(tornado.web.RequestHandler):
     def initialize(self):
@@ -9,24 +10,62 @@ class BaseHandler(tornado.web.RequestHandler):
         self.MB = 1024*1024
         self.GB = 1024*self.MB
 
-    def find_argument(self, arg_name, default=None):
+    def project_exists(self, identifier):
+        if identifier == None:
+            self.error_message = 'Identifier required but none given!'
+            raise tornado.web.HTTPError(status_code=400)
+        if not os.path.exists(get_project_path(identifier)):
+            self.error_message = 'Invalid Identifier {}. This project does not exist!'.format(identifier)
+            raise tornado.web.HTTPError(status_code=404)
+
+    def find_argument(self, arg_name, expected_type, default=None):
         method_type = self.request.method.lower()
         ret_val = None
         if method_type == 'post':
-            # Try to get the identifier from the body
-            ret_val = self.get_body_argument(arg_name, default=default)
+            # Try to get the arg from the body
+            content_type = self.request.headers['Content-Type']
+            if 'application/json' in content_type:
+                # Grab from json
+                try:
+                    json = tornado.escape.json_decode(self.request.body)
+                    ret_val = json[arg_name]
+                except (ValueError,KeyError) as V :
+                    ret_val = default
+            elif 'x-www-form-urlencoded' in content_type:
+                # Grab from form data
+                if expected_type is list:
+                    ret_val = self.get_body_arguments(arg_name)
+                    if ret_val == []:
+                        ret_val = default
+                else:
+                    ret_val = self.get_body_argument(arg_name, default=default)
+            else:
+                self.error_message = 'Content type {} is unsupported'.format(content_type)
+                raise tornado.web.HTTPError(status_code=400)
         elif method_type == 'get':
-            # Try to get the identifier from the header instead
+            # Try to get the arg from the header instead
             ret_val = self.get_argument(arg_name, default=default)
         else:
             # We don't currently support other method types
             self.error_message = 'Only GET and POST are supported methods for this API'
             raise tornado.web.HTTPError(status_code=405)
 
-        if ret_val:
+        if isinstance(ret_val, expected_type) or ret_val is None:
             return ret_val
         else:
-            return default
+            try:
+                if expected_type is bool and isinstance(ret_val, basestring):
+                    low = ret_val.lower()
+                    if low == 'true' or low == '1':
+                        return True
+                    elif low == 'false' or low == '0':
+                        return False
+                    else:
+                        return default
+                return expected_type(ret_val)
+            except:
+                self.error_message = 'Improper type for argument {}. Expected {}, got {}'.format(arg_name,expected_type.__name__, type(ret_val).__name__)
+                raise tornado.web.HTTPError(status_code=400)
 
     def write_error(self, status_code, **kwargs):
         self.set_header('Content-Type', 'application/json')
