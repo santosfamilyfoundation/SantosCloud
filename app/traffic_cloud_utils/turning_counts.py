@@ -14,6 +14,39 @@ import matplotlib.pyplot as plt
 
 from moving import Point
 
+def get_objects_with_trajectory(obj_to_heading, turn=None, initial_heading=None, final_heading=None):
+    '''
+    Returns all objects matching the given parameters, i.e. with the headings or turning motion 
+    specified by the arguments. Takes a dictionary of objects to headings, such as:
+    {1:('Right, 'Down'), 2:('Left','Left')}
+    '''
+    directions = ["right", "down", "left", "up"]
+
+    objs = []
+    for (i, headings) in obj_to_heading.iteritems():
+        if initial_heading is not None and headings[0].lower() != initial_heading.lower():
+            continue
+
+        if final_heading is not None and headings[1].lower() != final_heading.lower():
+            continue
+
+        if turn is not None:
+            initial_index = directions.index(headings[0].lower())
+            final_index = directions.index(headings[1].lower())
+            if turn.lower() == "left" and (final_index + 1) % len(directions) != initial_index:
+                continue
+
+            if turn.lower() == "right" and (initial_index + 1) % len(directions) != final_index:
+                continue
+
+            if turn.lower() == "straight" and initial_index != final_index:
+                continue
+
+        objs.append(i)
+
+    return objs
+        
+
 def trajectory_headings(db_filename, homography_file):
     """
     Returns a dictionary from object id to a tuple representing the object's initial and final headings.
@@ -405,6 +438,7 @@ def midpoint(a1, a2):
 
 
 if __name__=="__main__":
-    print(trajectory_headings('./../../project_dir/8871ad0e-d75b-4f6f-a95a-07b98a911bc9/run/results.sqlite', './../../project_dir/8871ad0e-d75b-4f6f-a95a-07b98a911bc9/homography/homography.txt'))
+    obj_to_heading = trajectory_headings('./../../project_dir/8871ad0e-d75b-4f6f-a95a-07b98a911bc9/run/results.sqlite', './../../project_dir/8871ad0e-d75b-4f6f-a95a-07b98a911bc9/homography/homography.txt')
+    print(get_objects_with_trajectory(obj_to_heading, initial_heading='right'))
 
 
