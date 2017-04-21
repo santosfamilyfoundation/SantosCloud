@@ -34,10 +34,7 @@ def road_user_traj(filename, homographyFile, roadImageFile, save_path, objs_to_p
     """
     Plots all road-user trajectories.
     """
-
     homography = inv(loadtxt(homographyFile))
-
-    # print(homography)
 
     connection = sqlite3.connect(filename)
     cursor = connection.cursor()
@@ -56,15 +53,14 @@ def road_user_traj(filename, homographyFile, roadImageFile, save_path, objs_to_p
     obj_traj_x = []
     obj_traj_y = []
 
-    # aplot = QTPLT()
     plt.figure(1)
     fig = plt.gcf()
     ax = fig.add_subplot(111)
     ax.set_axis_off()
     im = imread(roadImageFile)
+    height, width, _ = im.shape
     implot = ax.imshow(im)
 
-    # colors = [(0,0,0), (0,0,1), (0,1,0), (1,0,1), (0,1,1), (1,1,0), (1,0,1)]
     userlist = ['unknown', 'car', 'pedestrian',
                 'motorcycle', 'bicycle', 'bus', 'truck']
     alpha = 0.22
@@ -73,20 +69,14 @@ def road_user_traj(filename, homographyFile, roadImageFile, save_path, objs_to_p
 
     for row in cursor:
         pos = Point(row[2], row[3])
-        # xpos = row[2]
-        # ypos = row[3]
 
         usertype = usertypes[obj_id]
 
-        # print pos.x, pos.y
         pos = pos.project(homography)
-        # print pos.x, pos.y
         obj_traj_x.append(pos.x)
         obj_traj_y.append(pos.y)
-        # print(obj_traj)
 
         if(row[0] != obj_id):
-            # color = random.choice(colors)
             usertype = userlist[usertype]
 
             if plot_cars or (usertype == 'pedestrian' or usertype == 'bicycle'):
@@ -99,52 +89,35 @@ def road_user_traj(filename, homographyFile, roadImageFile, save_path, objs_to_p
             obj_traj_x = []
             obj_traj_y = []
 
-    # Now add the legend with some customizations.
-
-    # plot_handles = []
-    # for user in userlist:
-    #     handle = mpatches.Patch(color=colors[user], label=user)
-    #     plt.legend(handles=handle, loc='upper right', shadow=True)
-
-    colorlist = []
-    recs = []
-    # pedestrians and bike trajectory only
-    for idx, i in enumerate([2, 4]):
-        colorlist.append(colors[userlist[i]])
-        recs.append(mpatches.Rectangle((0, 0), 1, 1, fc=colorlist[idx]))
-    ax.set_position([0.1, 0.1, 0.85, 0.85])
-    # ax.legend(recs,userlist, loc='center left', bbox_to_anchor=(1, 0.5))
-    ax.legend(recs, userlist, loc=8, mode="expand",
+    if not plot_cars:
+        colorlist = []
+        recs = []
+        # pedestrians and bike trajectory only
+        for idx, i in enumerate([2, 4]):
+            colorlist.append(colors[userlist[i]])
+            recs.append(mpatches.Rectangle((0, 0), 1, 1, fc=colorlist[idx]))
+        ax.set_position([0.1, 0.1, 0.85, 0.85])
+        ax.legend(recs, userlist, loc=8, mode="expand",
               bbox_to_anchor=(-.5, -.5, .1, .1))
 
-    box = ax.get_position()
-    ax.set_position(
-        [box.x0, box.y0 + box.height * 0.1, box.width, box.height * 0.9])
+        box = ax.get_position()
+        ax.set_position(
+            [box.x0, box.y0 + box.height * 0.1, box.width, box.height * 0.9])
 
-    # Put a legend below current axis
-    ax.legend(recs, [userlist[i] for i in [2,4]], loc='upper center', bbox_to_anchor=(
+        ax.legend(recs, [userlist[i] for i in [2,4]], loc='upper center', bbox_to_anchor=(
         0.5, -0.05), fancybox=True, shadow=True, ncol=4)
-    # ax.legend(recs, userlist, bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
 
-    # legend = plt.legend(loc='upper right', shadow=True)
-
-    ax.set_xlim([0, 1280])
-    ax.set_ylim([0, 720])
+    ax.set_xlim([0, width])
+    ax.set_ylim([0, height])
     ax.set_ylim(ax.get_ylim()[::-1])
 
-    # ax.set_xlabel('X-Coordinate')
-    # ax.set_ylabel('Y-Coordinate')
     ax.set_title('Road User Trajectories')
 
     fig.savefig(save_path, bbox_inches=0, pad_inches=0, format='png')
     plt.close()
 
-    # plt.show()
-
     connection.commit()
     connection.close()
-
-    # return aplot
 
 
 def road_user_vels(fig, filename, fps):
