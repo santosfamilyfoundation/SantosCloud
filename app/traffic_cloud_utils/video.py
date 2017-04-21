@@ -92,6 +92,11 @@ def create_test_config_video(project_path, video_path, output_path, db_path, fir
     create_trajectory_video(video_path, db_path, homography_path, avi_output_path, first_frame=first_frame, last_frame=last_frame, video_type=video_type)
     convert_to_mp4(avi_output_path)
 
+def save_video_frame(video_path, image_path):
+    if os.path.exists(video_path):
+        cmd = "ffmpeg -y -i %s -t 1 -vframes 1 -f image2 %s" % (video_path, image_path)
+        subprocess.check_call(cmd, shell=True)
+
 ## Helpers -- Internal use
 
 def get_video_writer(output_path, framerate, width, height):

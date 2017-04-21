@@ -438,7 +438,20 @@ def midpoint(a1, a2):
 
 
 if __name__=="__main__":
-    obj_to_heading = trajectory_headings('./../../project_dir/8871ad0e-d75b-4f6f-a95a-07b98a911bc9/run/results.sqlite', './../../project_dir/8871ad0e-d75b-4f6f-a95a-07b98a911bc9/homography/homography.txt')
-    print(get_objects_with_trajectory(obj_to_heading, initial_heading='right'))
+    import os
+    project_path = './../../project_dir/8871ad0e-d75b-4f6f-a95a-07b98a911bc9'
+    db = os.path.join(project_path, 'run', 'results.sqlite')
+    homography = os.path.join(project_path, 'homography', 'homography.txt')
+    obj_to_heading = trajectory_headings(db, homography)
+    objs = get_objects_with_trajectory(obj_to_heading, turn='left')
+    print(objs)
 
+    from video import save_video_frame
+    video_path = os.path.join(project_path, 'stmarc_video.avi')
+    image_path = os.path.join(project_path, 'frame.png')
+    save_path = os.path.join(project_path, 'out.png')
+    save_video_frame(video_path, image_path)
+
+    from plotting.visualization import road_user_traj
+    road_user_traj(db, homography, image_path, save_path, objs_to_plot=objs, plot_cars=True)
 
