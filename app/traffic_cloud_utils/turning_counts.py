@@ -456,23 +456,16 @@ if __name__=="__main__":
     road_user_traj(db, homography, image_path, save_path, objs_to_plot=objs, plot_cars=True)
 
 
-    out = []
+    out = {}
 
     for turn in ['left', 'straight', 'right']:
-        objs = get_objects_with_trajectory(obj_to_heading, turn=turn)
-        save_path = os.path.join(turn_images, 'turn_'+turn+'.png')
-        road_user_traj(db, homography, image_path, save_path, objs_to_plot=objs, plot_cars=True)
-
-        out.append([])
-
         for direction in ['right', 'down', 'left', 'up']:
-            objs = get_objects_with_trajectory(obj_to_heading, turn=turn, initial_direction=direction)
-            save_path = os.path.join(turn_images, 'turn_'+turn+'_direction_'+direction+'.png')
-            road_user_traj(db, homography, image_path, save_path, objs_to_plot=objs, plot_cars=True)
+            if direction not in out:
+                out[direction] = {}
 
-            out[-1].append(len(objs))
+            objs = get_objects_with_trajectory(obj_to_heading, turn=turn, initial_heading=direction)
+            out[direction][turn] = len(objs)
 
-    print(out)
     save_path = os.path.join(project_path, 'turns.png')
     turn_icon_counts(out, save_path)
 

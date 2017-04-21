@@ -494,32 +494,60 @@ def turn_icon_counts(turn_dict, save_path, textcolor='#000000', facecolor='#FFFF
         # assumes that the icon image files are in the same directory as this file
         iconpath = os.path.dirname(os.path.abspath(__file__))
 
+    num_cars = 0
+    for (direction, d) in turn_dict.iteritems():
+        for (turn, num) in d.iteritems():
+            num_cars += num
+
     # car icon
     fn = os.path.join(iconpath, 'turns.png')
     arr_img = plt.imread(fn, format='png')
-    im = OffsetImage(arr_img, zoom=0.7)
+    zoom = (dpi * mpl_height - 100) / arr_img.shape[1]
+    im = OffsetImage(arr_img, zoom=zoom)
     ab = AnnotationBbox(im, (.5*mpl_width, .5*mpl_height), xycoords='data', frameon=False)
     ax.add_artist(ab)
     # car count
-    # ax.text(car_loc*mpl_width, text_y*mpl_height, str(car), horizontalalignment='center', fontsize=fontsize, color=textcolor)
+    ax.text(.5*mpl_width, .35*mpl_height, str(num_cars), horizontalalignment='center', fontsize=fontsize, color=textcolor)
 
-    # # bike icon
-    # fn = os.path.join(iconpath, 'bike.png')
-    # arr_img = plt.imread(fn, format='png')
-    # im = OffsetImage(arr_img, zoom=0.7)
-    # ab = AnnotationBbox(im, (bike_loc*mpl_width, icon_y*mpl_height), xycoords='data', frameon=False)
-    # ax.add_artist(ab)
-    # # bike count
-    # ax.text(bike_loc*mpl_width, text_y*mpl_height, str(bike), horizontalalignment='center', fontsize=fontsize, color=textcolor)
+    for direction in ['right', 'down', 'left', 'up']:
+        t = None
+        if direction == 'right':
+            x = -1
+            t = 'x'
+        elif direction == 'left':
+            x = 1
+            t = 'x'
+        elif direction == 'up':
+            y = -1
+            t = 'y'
+        elif direction == 'down':
+            y = 1
+            t = 'y'
 
-    # # ped icon
-    # fn = os.path.join(iconpath, 'pedestrian.png')
-    # arr_img = plt.imread(fn, format='png')
-    # im = OffsetImage(arr_img, zoom=0.7)
-    # ab = AnnotationBbox(im, (ped_loc*mpl_width, icon_y*mpl_height), xycoords='data', frameon=False)
-    # ax.add_artist(ab)
-    # # bike count
-    # ax.text(ped_loc*mpl_width, text_y*mpl_height, str(pedestrian), horizontalalignment='center', fontsize=fontsize, color=textcolor)
+        for turn in ['left', 'straight', 'right']:
+            proportion = .33
+            if turn == 'left':
+                if t == 'y':
+                    x = -proportion * y
+                elif t == 'x':
+                    y = -proportion * x
+
+            elif turn == 'straight':
+                if t == 'y':
+                    x = 0
+                elif t == 'x':
+                    y = 0
+                 
+            elif turn == 'right':
+                if t == 'y':
+                    x = proportion * y
+                elif t == 'x':
+                    y = proportion * x
+
+            x1 = .075 + (1 - 2*0.075)*(1+x)/2.0
+            y1 = .02 + (1 - 0.075)*(1+y)/2.0
+            ax.text(x1*mpl_width, y1*mpl_height, str(turn_dict[direction][turn]), horizontalalignment='center', fontsize=fontsize, color=textcolor)
+
 
     fig.savefig(save_path, dpi=dpi, bbox_inches=0, pad_inches=0, facecolor=facecolor, format='jpg')
     plt.close()
