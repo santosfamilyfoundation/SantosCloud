@@ -30,7 +30,7 @@ In the video_tracking/stmarc/stmarc-vis folder.
 
 
 
-def road_user_traj(filename, homographyFile, roadImageFile, objs_to_plot=None, plot_cars=False):
+def road_user_traj(filename, homographyFile, roadImageFile, save_path, objs_to_plot=None, plot_cars=False):
     """
     Plots all road-user trajectories.
     """
@@ -135,6 +135,9 @@ def road_user_traj(filename, homographyFile, roadImageFile, objs_to_plot=None, p
     # ax.set_xlabel('X-Coordinate')
     # ax.set_ylabel('Y-Coordinate')
     ax.set_title('Road User Trajectories')
+
+    fig.savefig(save_path, bbox_inches=0, pad_inches=0, format='png')
+    plt.close()
 
     # plt.show()
 
