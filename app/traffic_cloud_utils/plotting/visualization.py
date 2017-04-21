@@ -465,6 +465,93 @@ def road_user_icon_counts(title, car, bike, pedestrian, save_path, textcolor='#0
     fig.savefig(save_path, dpi=dpi, bbox_inches=0, pad_inches=0, facecolor=facecolor, format='jpg')
     plt.close()
 
+def turn_icon_counts(turn_dict, save_path, textcolor='#000000', facecolor='#FFFFFF', iconpath=None):
+    """
+    car, bike, pedestrian: str or int, the desired data to display under these different road users
+
+    Example:
+    road_user_icon_counts(title='Road User Counts', car=10, bike='bike', pedestrian=0, save_path='out.png')
+    """
+    dpi = 100.0
+    mpl_width, mpl_height = (10, 8)
+
+    # make figure without frame
+    fig = plt.figure(frameon=False)
+    fig.set_size_inches(mpl_width, mpl_height)
+    ax = fig.add_subplot(111)
+
+    # hide axis
+    ax.set_axis_off()
+
+    # set your axis size
+    ax.axis([0, mpl_width, 0, mpl_height])
+
+    fontsize = 30
+
+    text_margin = 0.075
+
+    if iconpath is None:
+        # assumes that the icon image files are in the same directory as this file
+        iconpath = os.path.dirname(os.path.abspath(__file__))
+
+    num_cars = 0
+    for (direction, d) in turn_dict.iteritems():
+        for (turn, num) in d.iteritems():
+            num_cars += num
+
+    # car icon
+    fn = os.path.join(iconpath, 'turns.png')
+    arr_img = plt.imread(fn, format='png')
+    zoom = (dpi * mpl_height - 100) / arr_img.shape[1]
+    im = OffsetImage(arr_img, zoom=zoom)
+    ab = AnnotationBbox(im, (.5*mpl_width, .5*mpl_height), xycoords='data', frameon=False)
+    ax.add_artist(ab)
+    # car count
+    ax.text(.5*mpl_width, .35*mpl_height, str(num_cars), horizontalalignment='center', fontsize=fontsize, color=textcolor)
+
+    for direction in ['right', 'down', 'left', 'up']:
+        t = None
+        if direction == 'right':
+            x = -1
+            t = 'x'
+        elif direction == 'left':
+            x = 1
+            t = 'x'
+        elif direction == 'up':
+            y = -1
+            t = 'y'
+        elif direction == 'down':
+            y = 1
+            t = 'y'
+
+        for turn in ['left', 'straight', 'right']:
+            proportion = .33
+            if turn == 'left':
+                if t == 'y':
+                    x = -proportion * y
+                elif t == 'x':
+                    y = -proportion * x
+
+            elif turn == 'straight':
+                if t == 'y':
+                    x = 0
+                elif t == 'x':
+                    y = 0
+                 
+            elif turn == 'right':
+                if t == 'y':
+                    x = proportion * y
+                elif t == 'x':
+                    y = proportion * x
+
+            x1 = .075 + (1 - 2*0.075)*(1+x)/2.0
+            y1 = .02 + (1 - 0.075)*(1+y)/2.0
+            ax.text(x1*mpl_width, y1*mpl_height, str(turn_dict[direction][turn]), horizontalalignment='center', fontsize=fontsize, color=textcolor)
+
+
+    fig.savefig(save_path, dpi=dpi, bbox_inches=0, pad_inches=0, facecolor=facecolor, format='jpg')
+    plt.close()
+
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()

@@ -37,11 +37,7 @@ class TurningCountsHandler(BaseHandler):
             self.error_message = "Safety analysis did not complete successfully, try re-running it."
 
     def get(self):
-        vehicle_only = self.find_argument('vehicle_only', bool, default=True)
-        speed_limit = self.find_argument('speed_limit', int, default=25)
-
-
-        status_code, reason = CreateSpeedDistributionHandler.handler(self.identifier, speed_limit, vehicle_only)
+        status_code, reason = CreateSpeedDistributionHandler.handler(self.identifier)
         if status_code == 200:
             image_path = os.path.join(\
                                     get_project_path(self.identifier),\
@@ -58,7 +54,7 @@ class TurningCountsHandler(BaseHandler):
             raise tornado.web.HTTPError(status_code=status_code)
 
     @staticmethod
-    def handler(identifier, speed_limit, vehicle_only):
+    def handler(identifier):
         project_dir = get_project_path(identifier)
 
         if not os.path.exists(project_dir):
@@ -81,20 +77,24 @@ class TurningCountsHandler(BaseHandler):
         if not os.path.exists(final_images):
             os.mkdir(final_images)
 
+        turn_images = os.path.join(final_images, 'turns')
+        if not os.path.exists(turn_images):
+            os.mkdir(turn_images)
+
         obj_to_heading = trajectory_headings(db, homography)
 
         out = []
 
         for turn in ['left', 'straight', 'right']:
             objs = get_objects_with_trajectory(obj_to_heading, turn=turn)
-            save_path = os.path.join(project_path, 'turn_'+turn+'.png')
+            save_path = os.path.join(turn_images, 'turn_'+turn+'.png')
             road_user_traj(db, homography, image_path, save_path, objs_to_plot=objs, plot_cars=True)
 
             out.append([])
 
             for direction in ['right', 'down', 'left', 'up']:
-                objs = get_objects_with_trajectory(obj_to_heading, turn=turn, initial_direction=direction)
-                save_path = os.path.join(project_path, 'turn_'+turn+'_direction_'+direction+'.png')
+                objs = get_objects_with_trajectory(obj_to_heading, turn=turn, initial_heading=direction)
+                save_path = os.path.join(turn_images, 'turn_'+turn+'_direction_'+direction+'.png')
                 road_user_traj(db, homography, image_path, save_path, objs_to_plot=objs, plot_cars=True)
 
                 out[-1].append(len(objs))
