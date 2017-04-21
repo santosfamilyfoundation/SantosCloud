@@ -30,7 +30,7 @@ In the video_tracking/stmarc/stmarc-vis folder.
 
 
 
-def road_user_traj(fig, filename, fps, homographyFile, roadImageFile):
+def road_user_traj(filename, homographyFile, roadImageFile, objs_to_plot=None, plot_cars=False):
     """
     Plots all road-user trajectories.
     """
@@ -57,6 +57,8 @@ def road_user_traj(fig, filename, fps, homographyFile, roadImageFile):
     obj_traj_y = []
 
     # aplot = QTPLT()
+    plt.figure(1)
+    fig = plt.gcf()
     ax = fig.add_subplot(111)
     ax.set_axis_off()
     im = imread(roadImageFile)
@@ -87,9 +89,10 @@ def road_user_traj(fig, filename, fps, homographyFile, roadImageFile):
             # color = random.choice(colors)
             usertype = userlist[usertype]
 
-            if usertype == 'pedestrian' or usertype == 'bicycle':
-                ax.plot(obj_traj_x[:-1], obj_traj_y[:-1], ".-",
-                    color=colors[usertype], label=usertype, linewidth=2, markersize=3)
+            if plot_cars or (usertype == 'pedestrian' or usertype == 'bicycle'):
+                if objs_to_plot is None or obj_id in objs_to_plot:
+                    ax.plot(obj_traj_x[:-1], obj_traj_y[:-1], ".-",
+                        color=colors[usertype], label=usertype, linewidth=2, markersize=3)
 
             print 'switching object to: ', row[0]
             obj_id = row[0]
