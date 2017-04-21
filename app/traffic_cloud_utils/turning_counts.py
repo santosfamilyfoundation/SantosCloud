@@ -16,7 +16,7 @@ from moving import Point
 
 def get_objects_with_trajectory(obj_to_heading, turn=None, initial_heading=None, final_heading=None):
     '''
-    Returns all objects matching the given parameters, i.e. with the headings or turning motion 
+    Returns all objects matching the given parameters, i.e. with the headings or turning motion
     specified by the arguments. Takes a dictionary of objects to headings, such as:
     {1:('Right, 'Down'), 2:('Left','Left')}
     '''
@@ -45,7 +45,7 @@ def get_objects_with_trajectory(obj_to_heading, turn=None, initial_heading=None,
         objs.append(i)
 
     return objs
-        
+
 
 def trajectory_headings(db_filename, homography_file):
     """
@@ -107,7 +107,7 @@ def categorize_trajectory(trajectory):
 
         vels.append(x_vel / speed)
         vels.append(y_vel / speed)
-      
+
     return vels
 
 def cluster_trajectories(trajectories):
@@ -205,10 +205,10 @@ def intersection_geometry(trajectories):
 
             diff_arr.append(diff)
 
-        # Add the heading diffs to the right list for the cluster, in order to find the straightest 
+        # Add the heading diffs to the right list for the cluster, in order to find the straightest
         # trajectory later
         diff_dict[label] = np.concatenate((diff_dict[label], diff_arr))
-        
+
         # Also keep track of what the angles for all the objects in the cluster were, to find
         # the average angle for the cluster later
         average_angle = normalize_angle(angle_arr[0] + sum(diff_arr) / len(diff_arr))
@@ -222,9 +222,9 @@ def intersection_geometry(trajectories):
         diff_arr = []
         for j in range(len(angles)):
             diff_arr.append(angle_difference(angles[0], angles[j]))
-       
+
         average_angle = angles[0] + sum(diff_arr) / len(diff_arr)
-        
+
         arr = diff_dict[i]
         o.append((i, np.var(arr), len(arr) / num_samples, average_angle))
 
@@ -353,7 +353,7 @@ def angle_to_direction(angle, geometry):
 
     least_index = find_discontinuity(angles)
     most_index = (least_index - 1) % 4
-    
+
     if angle <= angles[least_index] or angle >= angles[most_index]:
         return directions[most_index]
 
@@ -375,7 +375,7 @@ def opposite_angle(a):
 def normalize_angle(a):
     '''
     Takes an angle that may not be in the -pi to pi space, and converts it to a value between -pi and pi.
-    ''' 
+    '''
     while a > math.pi:
         a -= 2*math.pi
     while a < -math.pi:
@@ -387,7 +387,7 @@ def similar_angles(a1, a2, max_diff=20):
     Returns True if the angles are within max_diff of each other. (max_diff is specified in degrees
     for human readability).
     '''
-    max_radian_diff = max_diff * math.pi / 180 
+    max_radian_diff = max_diff * math.pi / 180
     if discontinuous_angles(a1, a2):
         # tot_angle will be near 2*pi iff they are near and discontinuous
         tot_angle = abs(a1 - a2)
@@ -452,6 +452,27 @@ if __name__=="__main__":
     save_path = os.path.join(project_path, 'out.png')
     save_video_frame(video_path, image_path)
 
-    from plotting.visualization import road_user_traj
+    from plotting.visualization import road_user_traj, turn_icon_counts
     road_user_traj(db, homography, image_path, save_path, objs_to_plot=objs, plot_cars=True)
+
+
+    out = []
+
+    for turn in ['left', 'straight', 'right']:
+        objs = get_objects_with_trajectory(obj_to_heading, turn=turn)
+        save_path = os.path.join(turn_images, 'turn_'+turn+'.png')
+        road_user_traj(db, homography, image_path, save_path, objs_to_plot=objs, plot_cars=True)
+
+        out.append([])
+
+        for direction in ['right', 'down', 'left', 'up']:
+            objs = get_objects_with_trajectory(obj_to_heading, turn=turn, initial_direction=direction)
+            save_path = os.path.join(turn_images, 'turn_'+turn+'_direction_'+direction+'.png')
+            road_user_traj(db, homography, image_path, save_path, objs_to_plot=objs, plot_cars=True)
+
+            out[-1].append(len(objs))
+
+    print(out)
+    save_path = os.path.join(project_path, 'turns.png')
+    turn_icon_counts(out, save_path)
 
