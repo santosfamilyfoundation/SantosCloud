@@ -7,9 +7,8 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
-import random
-from thinkstats2 import Cdf, EstimatedPdf
-import thinkplot
+from thinkstats2 import Cdf
+import seaborn as sns
 
 from numpy.linalg.linalg import inv
 from numpy import loadtxt
@@ -140,176 +139,25 @@ def road_user_traj(fig, filename, fps, homographyFile, roadImageFile):
 
     # return aplot
 
-
-def road_user_vels(fig, filename, fps):
-    """
-    Creates a histogram of road-user velocities, segregated by road user type.
-    """
-    connection = sqlite3.connect(filename)
-    cursor = connection.cursor()
-
-    queryStatement = 'SELECT * FROM objects ORDER BY object_id'
-    cursor.execute(queryStatement)
-
-    usertypes = []
-    for row in cursor:
-        usertypes.append(row[1])
-
-    queryStatement = 'SELECT * FROM object_trajectories ORDER BY object_id, frame'
-    cursor.execute(queryStatement)
-
-    obj_id = 0
-    obj_vels = []
-
-    xvels = []
-    yvels = []
-
-    userlist = ['unknown', 'car', 'pedestrian',
-                'motorcycle', 'bicycle', 'bus', 'truck']
-    roadusers = {'unknown': [], 'car': [], 'pedestrian': [],
-                 'motorcycle': [], 'bicycle': [], 'bus': [], 'truck': []}
-
-    for row in cursor:
-        xvel = row[4]
-        yvel = row[5]
-        usertype = usertypes[obj_id]
-
-        xvels.append(xvel * fps * MPS_MPH_CONVERSION)
-        yvels.append(yvel * fps * MPS_MPH_CONVERSION)
-
-        if(row[0] != obj_id):
-            xvels = [abs(x) for x in xvels]
-            yvels = [abs(y) for y in yvels]
-
-            avg_xv = sum(xvels) / len(xvels)
-            avg_yv = sum(yvels) / len(yvels)
-
-            avg_vel = math.sqrt(avg_xv**2 + avg_yv**2)
-            obj_vels.append(avg_vel)
-
-            roadusers[userlist[usertype]].append(avg_vel)
-            # print 'setting new avg velocity: ', avg_vel
-
-            # print 'switching object to: ', row[0]
-            obj_id = row[0]
-            xvels = []
-            yvels = []
-
-    print roadusers
-
-    index = np.arange(len(userlist))  # the x locations for the groups
-    width = 0.1       # the width of the bars
-    bins = np.linspace(0, 40, 20)
-
-    # fig = plt.figure()
-    ax = fig.add_subplot(111)
-
-    colors = [(0, 0, 0), (0, 0, 1), (0, 1, 0), (1, 0, 0),
-              (1, 0, 1), (0, 1, 1), (1, 1, 0), (1, 1, 1)]
-    for user in userlist:
-        if roadusers[user]:
-            color = random.choice(colors)
-            colors.remove(color)
-            ax.hist(roadusers[user], bins, color=color,
-                    alpha=.6, label=user, linewidth=2)
-
-    # Now add the legend with some customizations.
-    legend = ax.legend(loc='upper right', shadow=True)
-
-    plt.xlabel('Velocity (mph)')
-    plt.ylabel('Road Users')
-    plt.title('Road User Velocity By Category')
-
-    connection.commit()
-    connection.close()
-
-
-def vel_histograms(fig, filename, fps, vistype='overall'):
-    """
-    Obtains trajectory (position and velocity data) from object-trajectory table)
-    Creates visualizations.
-    """
-    connection = sqlite3.connect(filename)
-    cursor = connection.cursor()
-
-    queryStatement = 'SELECT * FROM object_trajectories ORDER BY object_id, frame'
-    cursor.execute(queryStatement)
-
-    obj_id = 0
-    obj_vels = []
-
-    xvels = []
-    yvels = []
-    for row in cursor:
-        xvel = row[4]
-        yvel = row[5]
-
-        xvels.append(xvel * fps * MPS_MPH_CONVERSION)
-        yvels.append(yvel * fps * MPS_MPH_CONVERSION)
-
-        if(row[0] != obj_id):
-            xvels = [abs(x) for x in xvels]
-            yvels = [abs(y) for y in yvels]
-
-            speeds = [math.sqrt(vels[0]**2 + vels[1]**2)
-                      for vels in zip(xvels, yvels)]
-
-            # Individual road user velocity histograms
-            if(vistype == 'indiv'):
-                fig = plt.figure()
-                ax = fig.add_subplot(111)
-                ax.hist(speeds, 25, facecolor='green', alpha=0.75)
-
-                plt.xlabel('Velocity (mph)')
-                plt.ylabel('Measurements')
-                plt.title('Road User {}'.format(obj_id))
-                plt.show()
-
-            avg_xv = sum(xvels) / len(xvels)
-            avg_yv = sum(yvels) / len(yvels)
-
-            avg_vel = math.sqrt(avg_xv**2 + avg_yv**2)
-            obj_vels.append(avg_vel)
-            # print 'setting new avg velocity: ', avg_vel
-
-            obj_id = row[0]
-            xvels = []
-            yvels = []
-
-    # Histogram of all road user average velocities
-    if(vistype == 'overall'):
-        # fig = plt.figure()
-        ax = fig.add_subplot(111)
-
-        ax.hist(obj_vels, 25, normed=1, facecolor='green', alpha=0.75)
-
-        plt.xlabel('Velocity (mph)')
-        plt.ylabel('Road Users')
-        plt.title('All Road User Velocities')
-
-    connection.commit()
-    connection.close()
-
-def vel_distribution(filename, fps, speed_limit=25, dir=None, only_vehicle=True):
+def vel_distribution(filename, fps, save_dir):
     """
     Arguments
     ---------
     filename: str, path to database
     fps: frame rate of the video, in frames per second
-    speed_limit: speed limit of the intersection
-    dir: directory to save image, if None don't automatically save
-    only_vehicle: only show velocities of vehicles, default True
+    save_dir: directory to save image
     """
+    if not os.path.exists(save_dir):
+        raise ValueError("Save directory does not exist. Should be the final_images folder")
+
     connection = sqlite3.connect(filename)
     cursor = connection.cursor()
 
-    if only_vehicle:
-        queryStatement = '''SELECT object_trajectories.object_id AS object_id, frame, x, y, x_v, y_v
-            FROM object_trajectories INNER JOIN objects ON object_trajectories.object_id = objects.object_id
-            WHERE road_user_type = 1
-            ORDER BY object_id, frame'''
-    else:
-        queryStatement = 'SELECT object_id, frame, x, y, x_v, y_v FROM object_trajectories ORDER BY object_id, frame'
+    # Query for trajectories of only cars
+    queryStatement = '''SELECT object_trajectories.object_id AS object_id, frame, x, y, x_v, y_v
+        FROM object_trajectories INNER JOIN objects ON object_trajectories.object_id = objects.object_id
+        WHERE road_user_type = 1
+        ORDER BY object_id, frame'''
     cursor.execute(queryStatement)
 
     obj_id = 0;
@@ -342,23 +190,20 @@ def vel_distribution(filename, fps, speed_limit=25, dir=None, only_vehicle=True)
             xvels = []
             yvels = []
 
+    # calculate 85th percentile speed
     cdf = Cdf(obj_vels)
-    kdepdf = EstimatedPdf(obj_vels)
-    pr = cdf.PercentileRank(speed_limit)
+    speed_85 = cdf.Percentile(85)
 
-    titlestring = "{:0.1f} % of {} are exceeding the {} mph limit".format(
-        100 - pr,
-        'vehicles' if only_vehicle else 'road users',
-        speed_limit)
+    titlestring = "85th percentile speed of cars is {} mph".format(int(speed_85))
 
-    thinkplot.PrePlot(1)
-    thinkplot.Pdf(kdepdf)
-    thinkplot.Vlines(speed_limit, 0, 0.05)
-    thinkplot.Config(title=titlestring, xlabel='Velocity (mph)', ylabel='PDF')
-    if dir is not None:
-        thinkplot.Save(os.path.join(dir, 'velocityPDF'), formats=['jpg'], bbox_inches='tight')
-    else:
-        thinkplot.Show()
+    sns_plot = sns.distplot(obj_vels, kde=False)
+    ylim = plt.gca().axes.get_ylim()
+    plt.plot(len(ylim) * [speed_85], ylim)
+    fig = sns_plot.get_figure()
+    fig.suptitle(titlestring)
+    sns_plot.set_xlabel('Velocity (mph)')
+    sns_plot.set_ylabel('Counts')
+    fig.savefig(os.path.join(save_dir, 'velocityPDF.jpg'), format='jpg', bbox_inches='tight')
 
 def road_user_counts(filename):
     """obtains road user count information
@@ -415,9 +260,6 @@ def road_user_chart(filename):
     plt.xlabel('Road User Type')
     plt.ylabel('Number of Road Users')
     plt.title('Road User Type Counts')
-
-    connection.commit()
-    connection.close()
 
 def road_user_icon_counts(title, car, bike, pedestrian, save_path, textcolor='#000000', facecolor='#FFFFFF', iconpath=None):
     """
@@ -486,32 +328,3 @@ def road_user_icon_counts(title, car, bike, pedestrian, save_path, textcolor='#0
     fig.savefig(save_path, dpi=dpi, bbox_inches=0, pad_inches=0, facecolor=facecolor, format='jpg')
     plt.close()
 
-if __name__ == '__main__':
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument('db', metavar='<.sqlite database file>',
-                        help='A TrafficIntelligence generated .sqlite database.')
-    parser.add_argument('fps', metavar='<frames per second>', type=int,
-                        help='The frame rate of the video, in frames per second.')
-    parser.add_argument(
-        'homographyFile', nargs='?', metavar='<Homography>', help='The homography file name')
-    parser.add_argument('roadImageFile', nargs='?', metavar='<Image>',
-                        help='The name of the image file containing the video still')
-    parser.add_argument('--vis-type', dest='vis_type', help='The visualization you wish to generate. ',
-                        choices=['user-chart', 'vel-indiv', 'vel-overall', 'vel-user', 'trajectories', 'vel-overall-distribution'])
-
-    args = parser.parse_args()
-
-    if (args.vis_type == 'user-chart'):
-        road_user_chart(args.db)
-    elif (args.vis_type == 'vel-indiv'):
-        vel_histograms(args.db, args.fps, 'indiv')
-    elif (args.vis_type == 'vel-overall'):
-        vel_histograms(args.db, args.fps, 'overall')
-    elif (args.vis_type == 'vel-user'):
-        road_user_vels(args.db, args.fps)
-    elif (args.vis_type == 'vel-overall-distribution'):
-        vel_distribution(args.db, args.fps)
-    elif (args.vis_type == 'trajectories'):
-        road_user_traj(
-            args.db, args.fps, args.homographyFile, args.roadImageFile)
