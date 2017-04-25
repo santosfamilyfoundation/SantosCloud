@@ -5,7 +5,7 @@ import tornado.web
 from baseHandler import BaseHandler
 from traffic_cloud_utils.app_config import get_project_path, get_project_video_path
 from traffic_cloud_utils.video import save_video_frame
-from traffic_cloud_utils.plotting.visualization import road_user_traj
+from traffic_cloud_utils.plotting.visualization import road_user_traj, turn_icon_counts
 from traffic_cloud_utils.turning_counts import trajectory_headings, get_objects_with_trajectory
 
 from traffic_cloud_utils.statusHelper import StatusHelper, Status
@@ -37,24 +37,24 @@ class TurningCountsHandler(BaseHandler):
             self.error_message = "Safety analysis did not complete successfully, try re-running it."
 
     def get(self):
-        status_code, reason = CreateSpeedDistributionHandler.handler(self.identifier)
+        status_code, reason = TurningCountsHandler.handler(self.identifier)
         if status_code == 200:
             image_path = os.path.join(\
                                     get_project_path(self.identifier),\
                                     'final_images',\
-                                    'velocityPDF.jpg')
+                                    'turningCounts.jpg')
             self.set_header('Content-Disposition',\
-                            'attachment; filename=velocityPDF.jpg')
+                            'attachment; filename=turningCounts.jpg')
             self.set_header('Content-Type', 'application/octet-stream')
             self.set_header('Content-Description', 'File Transfer')
             self.write_file_stream(image_path)
-            self.finish("Create Speed Distribution")
+            self.finish("Create Turning Counts")
         else:
             self.error_message = reason
             raise tornado.web.HTTPError(status_code=status_code)
 
     @staticmethod
-    def handler(identifier):
+    def handler(identifier, save_turns=False):
         project_dir = get_project_path(identifier)
 
         if not os.path.exists(project_dir):
@@ -64,42 +64,47 @@ class TurningCountsHandler(BaseHandler):
         if not os.path.exists(db):
             return (500, 'Database file does not exist. Trajectory analysis needs to be called first ')
 
-        homography = os.path.join(project_path, 'homography', 'homography.txt')
+        homography = os.path.join(project_dir, 'homography', 'homography.txt')
 
         # Save a frame in order to overlay trajectories
         video_path = get_project_video_path(identifier)
         if not os.path.exists(video_path):
             return (500, 'Source video file does not exist.  Was the video uploaded?')
-        image_path = os.path.join(project_path, '.temp', 'frame.png')
+        image_path = os.path.join(project_dir, '.temp', 'frame.png')
         save_video_frame(video_path, image_path)
 
         final_images = os.path.join(project_dir, 'final_images')
         if not os.path.exists(final_images):
             os.mkdir(final_images)
 
-        turn_images = os.path.join(final_images, 'turns')
-        if not os.path.exists(turn_images):
-            os.mkdir(turn_images)
+        if save_turns:
+            turn_images = os.path.join(final_images, 'turns')
+            if not os.path.exists(turn_images):
+                os.mkdir(turn_images)
 
         obj_to_heading = trajectory_headings(db, homography)
 
-        out = []
+        out = {}
 
         for turn in ['left', 'straight', 'right']:
             objs = get_objects_with_trajectory(obj_to_heading, turn=turn)
-            save_path = os.path.join(turn_images, 'turn_'+turn+'.png')
-            road_user_traj(db, homography, image_path, save_path, objs_to_plot=objs, plot_cars=True)
-
-            out.append([])
-
-            for direction in ['right', 'down', 'left', 'up']:
-                objs = get_objects_with_trajectory(obj_to_heading, turn=turn, initial_heading=direction)
-                save_path = os.path.join(turn_images, 'turn_'+turn+'_direction_'+direction+'.png')
+            if save_turns:
+                save_path = os.path.join(turn_images, 'turn_'+turn+'.png')
                 road_user_traj(db, homography, image_path, save_path, objs_to_plot=objs, plot_cars=True)
 
-                out[-1].append(len(objs))
+            for direction in ['right', 'down', 'left', 'up']:
+                if direction not in out:
+                    out[direction] = {}
 
-        print(out)
+                objs = get_objects_with_trajectory(obj_to_heading, turn=turn, initial_heading=direction)
+                if save_turns:
+                    save_path = os.path.join(turn_images, 'turn_'+turn+'_direction_'+direction+'.png')
+                    road_user_traj(db, homography, image_path, save_path, objs_to_plot=objs, plot_cars=True)
+
+                out[direction][turn] = len(objs)
+
+        save_path = os.path.join(final_images, 'turningCounts.jpg')
+        turn_icon_counts(out, save_path)
 
         return (200, "Success")
 

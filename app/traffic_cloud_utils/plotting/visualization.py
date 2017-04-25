@@ -113,7 +113,7 @@ def road_user_traj(filename, homographyFile, roadImageFile, save_path, objs_to_p
 
     ax.set_title('Road User Trajectories')
 
-    fig.savefig(save_path, bbox_inches=0, pad_inches=0, format='png')
+    fig.savefig(save_path, bbox_inches=0, pad_inches=0, format='jpg')
     plt.close()
 
     connection.commit()
@@ -467,10 +467,8 @@ def road_user_icon_counts(title, car, bike, pedestrian, save_path, textcolor='#0
 
 def turn_icon_counts(turn_dict, save_path, textcolor='#000000', facecolor='#FFFFFF', iconpath=None):
     """
-    car, bike, pedestrian: str or int, the desired data to display under these different road users
-
-    Example:
-    road_user_icon_counts(title='Road User Counts', car=10, bike='bike', pedestrian=0, save_path='out.png')
+    Takes a dictionary like {'up':{'right':2,'left'3','straight':4},'down':{...},...}, and produces
+    a visualization showing the amount of cars that turned each way for every direction.
     """
     dpi = 100.0
     mpl_width, mpl_height = (10, 8)
@@ -548,36 +546,7 @@ def turn_icon_counts(turn_dict, save_path, textcolor='#000000', facecolor='#FFFF
             y1 = .02 + (1 - 0.075)*(1+y)/2.0
             ax.text(x1*mpl_width, y1*mpl_height, str(turn_dict[direction][turn]), horizontalalignment='center', fontsize=fontsize, color=textcolor)
 
-
     fig.savefig(save_path, dpi=dpi, bbox_inches=0, pad_inches=0, facecolor=facecolor, format='jpg')
     plt.close()
 
-if __name__ == '__main__':
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument('db', metavar='<.sqlite database file>',
-                        help='A TrafficIntelligence generated .sqlite database.')
-    parser.add_argument('fps', metavar='<frames per second>', type=int,
-                        help='The frame rate of the video, in frames per second.')
-    parser.add_argument(
-        'homographyFile', nargs='?', metavar='<Homography>', help='The homography file name')
-    parser.add_argument('roadImageFile', nargs='?', metavar='<Image>',
-                        help='The name of the image file containing the video still')
-    parser.add_argument('--vis-type', dest='vis_type', help='The visualization you wish to generate. ',
-                        choices=['user-chart', 'vel-indiv', 'vel-overall', 'vel-user', 'trajectories', 'vel-overall-distribution'])
 
-    args = parser.parse_args()
-
-    if (args.vis_type == 'user-chart'):
-        road_user_chart(args.db)
-    elif (args.vis_type == 'vel-indiv'):
-        vel_histograms(args.db, args.fps, 'indiv')
-    elif (args.vis_type == 'vel-overall'):
-        vel_histograms(args.db, args.fps, 'overall')
-    elif (args.vis_type == 'vel-user'):
-        road_user_vels(args.db, args.fps)
-    elif (args.vis_type == 'vel-overall-distribution'):
-        vel_distribution(args.db, args.fps)
-    elif (args.vis_type == 'trajectories'):
-        road_user_traj(
-            args.db, args.fps, args.homographyFile, args.roadImageFile)

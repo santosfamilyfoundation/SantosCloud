@@ -47,7 +47,7 @@ def get_objects_with_trajectory(obj_to_heading, turn=None, initial_heading=None,
     return objs
 
 
-def trajectory_headings(db_filename, homography_file):
+def trajectory_headings(db_filename, homography_file, cars_only=True):
     """
     Returns a dictionary from object id to a tuple representing the object's initial and final headings.
     For example, {1:('Left','Up')} means that object 1 was heading left initially, and then turned right
@@ -58,12 +58,21 @@ def trajectory_headings(db_filename, homography_file):
     connection = sqlite3.connect(db_filename)
     cursor = connection.cursor()
 
+    queryStatement = 'SELECT * FROM objects ORDER BY object_id'
+    cursor.execute(queryStatement)
+
+    usertypes = {}
+    for row in cursor:
+        usertypes[row[0]] = row[1]
+
     queryStatement = 'SELECT * FROM object_trajectories ORDER BY object_id, frame'
     cursor.execute(queryStatement)
 
     obj_id = 0
     obj_traj = []
     trajectories = []
+    userlist = ['unknown', 'car', 'pedestrian',
+                'motorcycle', 'bicycle', 'bus', 'truck']
 
     for row in cursor:
         if(row[0] != obj_id):
@@ -76,13 +85,18 @@ def trajectory_headings(db_filename, homography_file):
         pos = pos.project(homography)
         obj_traj.append((pos.x[0], pos.y[0]))
 
-    trajectories.append(obj_traj)
+    final_trajectories = {}
+    for i in range(len(trajectories)):
+        usertype = userlist[usertypes[i]]
+        if cars_only and usertype != 'car':
+            continue
+        final_trajectories[i] = trajectories[i]
 
-    geometry = intersection_geometry(trajectories)
+    geometry = intersection_geometry(final_trajectories.values())
 
     d = {}
-    for i in range(len(trajectories)):
-        d[i] = classify_trajectory(trajectories[i], geometry)
+    for (obj_id, traj) in final_trajectories.iteritems():
+        d[obj_id] = classify_trajectory(traj, geometry)
 
     return d
 
@@ -436,36 +450,4 @@ def midpoint(a1, a2):
     else:
         return (a1 + a2) / 2
 
-
-if __name__=="__main__":
-    import os
-    project_path = './../../project_dir/8871ad0e-d75b-4f6f-a95a-07b98a911bc9'
-    db = os.path.join(project_path, 'run', 'results.sqlite')
-    homography = os.path.join(project_path, 'homography', 'homography.txt')
-    obj_to_heading = trajectory_headings(db, homography)
-    objs = get_objects_with_trajectory(obj_to_heading, turn='left')
-    print(objs)
-
-    from video import save_video_frame
-    video_path = os.path.join(project_path, 'stmarc_video.avi')
-    image_path = os.path.join(project_path, 'frame.png')
-    save_path = os.path.join(project_path, 'out.png')
-    save_video_frame(video_path, image_path)
-
-    from plotting.visualization import road_user_traj, turn_icon_counts
-    road_user_traj(db, homography, image_path, save_path, objs_to_plot=objs, plot_cars=True)
-
-
-    out = {}
-
-    for turn in ['left', 'straight', 'right']:
-        for direction in ['right', 'down', 'left', 'up']:
-            if direction not in out:
-                out[direction] = {}
-
-            objs = get_objects_with_trajectory(obj_to_heading, turn=turn, initial_heading=direction)
-            out[direction][turn] = len(objs)
-
-    save_path = os.path.join(project_path, 'turns.png')
-    turn_icon_counts(out, save_path)
 
