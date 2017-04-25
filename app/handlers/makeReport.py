@@ -26,7 +26,7 @@ class MakeReportHandler(BaseHandler):
         self.project_exists(self.identifier)
 
     def get(self):
-        
+        project_dir = get_project_path(self.identifier)
         if (not os.path.exists(os.path.join(project_dir,\
                                             'final_images',\
                                             'road_user_icon_counts.jpg'))):
@@ -37,6 +37,12 @@ class MakeReportHandler(BaseHandler):
                                             'final_images',\
                                             'velocityPDF.jpg'))):
             self.error_message = 'Speed Distribution must be run before the report can be generated.'
+            raise tornado.web.HTTPError(status_code=400)
+
+        if (not os.path.exists(os.path.join(project_dir,\
+                                            'final_images',\
+                                            'turningCounts.jpg'))):
+            self.error_message = 'Turning Counts must be run before the report can be generated.'
             raise tornado.web.HTTPError(status_code=400)
 
         status_code, reason = MakeReportHandler.handler(self.identifier)
@@ -69,7 +75,8 @@ class MakeReportHandler(BaseHandler):
         # Hardcoded image file name order, so that the ordering of visuals in the report is consistent
         image_fns = [
             os.path.join(final_images, 'road_user_icon_counts.jpg'),
-            os.path.join(final_images, 'velocityPDF.jpg')
+            os.path.join(final_images, 'velocityPDF.jpg'),
+            os.path.join(final_images, 'turningCounts.jpg')
         ]
 
         makePdf(report_path, image_fns, final_images)

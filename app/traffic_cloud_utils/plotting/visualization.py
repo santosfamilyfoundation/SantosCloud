@@ -113,7 +113,7 @@ def road_user_traj(filename, homographyFile, roadImageFile, save_path, objs_to_p
 
     ax.set_title('Road User Trajectories')
 
-    fig.savefig(save_path, bbox_inches=0, pad_inches=0, format='png')
+    fig.savefig(save_path, bbox_inches=0, pad_inches=0, format='jpg')
     plt.close()
 
     connection.commit()
@@ -547,7 +547,6 @@ def turn_icon_counts(turn_dict, save_path, textcolor='#000000', facecolor='#FFFF
             x1 = .075 + (1 - 2*0.075)*(1+x)/2.0
             y1 = .02 + (1 - 0.075)*(1+y)/2.0
             ax.text(x1*mpl_width, y1*mpl_height, str(turn_dict[direction][turn]), horizontalalignment='center', fontsize=fontsize, color=textcolor)
-
 
     fig.savefig(save_path, dpi=dpi, bbox_inches=0, pad_inches=0, facecolor=facecolor, format='jpg')
     plt.close()
