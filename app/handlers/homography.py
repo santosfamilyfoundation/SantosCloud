@@ -46,7 +46,7 @@ class HomographyHandler(BaseHandler):
 
         status_dict = StatusHelper.get_status(self.identifier)
         if status_dict[Status.Type.HOMOGRAPHY] == Status.Flag.IN_PROGRESS:
-            status_code = 423
+            status_code = 409
             self.error_message = "Currently uploading homography. Please wait."
             raise tornado.web.HTTPError(status_code = status_code)
         StatusHelper.set_status(self.identifier, Status.Type.HOMOGRAPHY, Status.Flag.IN_PROGRESS)
@@ -62,6 +62,9 @@ class HomographyHandler(BaseHandler):
                         get_project_path(self.identifier),\
                         'homography',\
                         'homography.txt')
+        if not os.path.exists(h_path):
+            self.error_message = "Homography file does not exist. Make sure that homography has been run successfully"
+            raise tornado.web.HTTPError(status_code = 404)
         self.write({'homography': np.ndarray.tolist(np.loadtxt(h_path))})
 
         StatusHelper.set_status(\
@@ -75,11 +78,27 @@ class HomographyHandler(BaseHandler):
         aerial_pts = self.find_argument('aerial_pts', list)
         camera_pts = self.find_argument('camera_pts', list)
 
-        if isinstance(aerial_pts[0],basestring):
-            aerial_pts = [[float(aerial_pts[i]),float(aerial_pts[i+1])] for i in xrange(0,len(aerial_pts), 2)]
-
-        if isinstance(camera_pts[0],basestring):
-            camera_pts = [[float(camera_pts[i]),float(camera_pts[i+1])] for i in xrange(0,len(camera_pts), 2)]
+        try:
+            if isinstance(aerial_pts[0],basestring):
+                aerial_pts = [[float(aerial_pts[i]),float(aerial_pts[i+1])] for i in xrange(0,len(aerial_pts), 2)]
+            if isinstance(camera_pts[0],basestring):
+                camera_pts = [[float(camera_pts[i]),float(camera_pts[i+1])] for i in xrange(0,len(camera_pts), 2)]
+        except ValueError as v:
+            self.error_message = "Could not interpret the points given as floats. Try again with different points"
+            StatusHelper.set_status(\
+                                    self.identifier,\
+                                    Status.Type.HOMOGRAPHY,\
+                                    Status.Flag.FAILURE,
+                                    failure_message="Couldn't interpret uploaded points.")
+            raise tornado.web.HTTPError(status_code = 400)
+        except IndexError as i:
+            self.error_message = "Malformed points. Try again with different points"
+            StatusHelper.set_status(\
+                            self.identifier,\
+                            Status.Type.HOMOGRAPHY,\
+                            Status.Flag.FAILURE,
+                            failure_message="Couldn't interpret uploaded points.")
+            raise tornado.web.HTTPError(status_code = 400)
 
 
         if  ((aerial_pts is not None) and (camera_pts is not None)) and\
@@ -102,7 +121,7 @@ class HomographyHandler(BaseHandler):
                                         Status.Type.HOMOGRAPHY,\
                                         Status.Flag.FAILURE,
                                         failure_message='Failed to find homography: '+str(e))
-                raise tornado.web.HTTPError(status_code = 500)
+                raise tornado.web.HTTPError(status_code = 400)
 
         else:
             self.error_message = "Could not interpret the points given. Try again with different points"
@@ -111,7 +130,7 @@ class HomographyHandler(BaseHandler):
                                     Status.Type.HOMOGRAPHY,\
                                     Status.Flag.FAILURE,
                                     failure_message="Couldn't interpret uploaded points.")
-            raise tornado.web.HTTPError(status_code = 500)
+            raise tornado.web.HTTPError(status_code = 400)
 
 
     def check_points(self, points):
