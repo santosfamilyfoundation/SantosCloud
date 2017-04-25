@@ -467,10 +467,8 @@ def road_user_icon_counts(title, car, bike, pedestrian, save_path, textcolor='#0
 
 def turn_icon_counts(turn_dict, save_path, textcolor='#000000', facecolor='#FFFFFF', iconpath=None):
     """
-    car, bike, pedestrian: str or int, the desired data to display under these different road users
-
-    Example:
-    road_user_icon_counts(title='Road User Counts', car=10, bike='bike', pedestrian=0, save_path='out.png')
+    Takes a dictionary like {'up':{'right':2,'left'3','straight':4},'down':{...},...}, and produces
+    a visualization showing the amount of cars that turned each way for every direction.
     """
     dpi = 100.0
     mpl_width, mpl_height = (10, 8)
