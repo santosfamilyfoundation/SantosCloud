@@ -549,32 +549,4 @@ def turn_icon_counts(turn_dict, save_path, textcolor='#000000', facecolor='#FFFF
     fig.savefig(save_path, dpi=dpi, bbox_inches=0, pad_inches=0, facecolor=facecolor, format='jpg')
     plt.close()
 
-if __name__ == '__main__':
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument('db', metavar='<.sqlite database file>',
-                        help='A TrafficIntelligence generated .sqlite database.')
-    parser.add_argument('fps', metavar='<frames per second>', type=int,
-                        help='The frame rate of the video, in frames per second.')
-    parser.add_argument(
-        'homographyFile', nargs='?', metavar='<Homography>', help='The homography file name')
-    parser.add_argument('roadImageFile', nargs='?', metavar='<Image>',
-                        help='The name of the image file containing the video still')
-    parser.add_argument('--vis-type', dest='vis_type', help='The visualization you wish to generate. ',
-                        choices=['user-chart', 'vel-indiv', 'vel-overall', 'vel-user', 'trajectories', 'vel-overall-distribution'])
 
-    args = parser.parse_args()
-
-    if (args.vis_type == 'user-chart'):
-        road_user_chart(args.db)
-    elif (args.vis_type == 'vel-indiv'):
-        vel_histograms(args.db, args.fps, 'indiv')
-    elif (args.vis_type == 'vel-overall'):
-        vel_histograms(args.db, args.fps, 'overall')
-    elif (args.vis_type == 'vel-user'):
-        road_user_vels(args.db, args.fps)
-    elif (args.vis_type == 'vel-overall-distribution'):
-        vel_distribution(args.db, args.fps)
-    elif (args.vis_type == 'trajectories'):
-        road_user_traj(
-            args.db, args.fps, args.homographyFile, args.roadImageFile)
