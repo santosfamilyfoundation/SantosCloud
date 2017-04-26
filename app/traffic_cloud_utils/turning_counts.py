@@ -300,19 +300,125 @@ def get_correct_geometry(angles):
     return out
 
 def classify_trajectory(trajectory, geometry):
+    time_classification = classify_trajectory_vels(trajectory, geometry, get_velocity_time)
+    distance_classification = classify_trajectory_vels(trajectory, geometry, get_velocity_distance)
+    template_classification = classify_trajectory_template(trajectory, geometry)
+    print("Timewise: ", time_classification)
+    print("Distancewise: ", distance_classification)
+    print("Templatewise: ", template_classification)
+    return time_classification
+
+def classify_trajectory_template(trajectory, geometry, num_samples = 10):
+    samples = get_sample_tuples(len(trajectory), num_samples, 10)
+
+    for i in range(0,1,.1):
+        print('hi')
+        print(angle_in_trajectory('left', 'down', i, (.4, 1.9)))
+
+    angles = []
+    for sample in samples:
+        vel = average_velocity(trajectory, sample[0], sample[1])
+        angles.append(math.atan2(vel[1], vel[0])))
+
+    directions = ['right', 'down', 'left', 'up']
+    l = [] # [('left','down',.2),...]
+
+    sum_squares = 0
+    for initial_direction in directions:
+        for final_direction in directions:
+            if initial_direction == final_direction:
+                continue
+
+            for i in range(len(samples)):
+                angle = angles[i]
+                predicted_angle = angle_in_trajectory(initial_direction, final_direction, float(i) / (num_samples - 1), geometry)
+                sum_squares += angle_difference(angle, predicted_angle) ** 2
+
+            rms = math.sqrt(sum_squares / num_samples)
+            l.append((initial_direction, final_direction, rms))
+
+    best = sorted(l, key=lambda x: x[2])[0]
+    return (best[0], best[1])
+
+def angle_in_trajectory(initial_direction, final_direction, percent_done, geometry):
+    '''
+    Returns the angle that an object turning in the given direction from the initial direction will
+    have when it is some percent of the way through its trajectory specified by percent_done.
+    '''
+    directions = ['right', 'down', 'left', 'up']
+    angles = [geometry[0], geometry[1], opposite_angle(geometry[0]), opposite_angle(geometry[1])]
+    initial_index = directions.index(initial_direction.lower())
+    final_index = directions.index(final_direction.lower())
+
+    start_angle = angles[initial_index]
+    final_angle = angles[final_index]
+
+    diff = angle_difference(start_angle, final_angle)
+
+    return normalize_angle(start_angle + percent_done * diff)
+
+def classify_trajectory_vel(trajectory, geometry, vel_function):
     '''
     Returns a tuple of the initial and final heading of a trajectory. For example, ('Right', 'Down')
     '''
+    vels = vel_function(trajectory)
+    initial_vel = vels[0]
+    initial_angle = math.atan2(initial_vel[1], initial_vel[0]))
+    final_vel = vels[1]
+    final_angle = math.atan2(final_vel[1], final_vel[0]))
+
+    return (angle_to_direction(initial_angle, geometry), angle_to_direction(final_angle, geometry))
+
+def get_velocity_time(trajectory):
     # Look at velocity in first and last second
     interval = 45
     samples = get_sample_tuples(len(trajectory), 2, interval)
 
-    angles = []
+    vels = []
     for sample in samples:
-        avg_vel = average_velocity(trajectory, sample[0], sample[1])
-        angles.append(math.atan2(avg_vel[1], avg_vel[0]))
+        vels.append(average_velocity(trajectory, sample[0], sample[1]))
 
-    return (angle_to_direction(angles[0], geometry), angle_to_direction(angles[1], geometry))
+    return vels
+
+def get_velocity_distance(trajectory):
+    # Look at velocity in first bit of distance traveled
+    initial_vel = velocity_by_distance(trajectory, 0)
+    final_vel = velocity_by_distance(trajectory, len(trajectory) - 1, forward=False)
+    return [initial_vel, final_vel]
+
+def velocity_by_distance(trajectory, start_frame, forward=True, threshold_distance=75):
+    '''
+    Returns the velocity of the object starting at start_frame until the object has traveled
+    the distance (in pixels) specified by threshold_distance.
+
+    Even if forward is False, the returned value will be the velocity of the object moving forward.
+
+    If the object never travels a distance threshold_distance, it will return either the
+    velocity in the first half of the trajectory or the velocity in the second half of the
+    trajectory, depending on whether the start_frame is in the first or second half of the trajectory.
+    (This behavior is intended to assist with classify_trajectory_distance)
+    '''
+    start_pos = trajectory[start_frame]:
+
+    increment = 1
+    if not forward:
+        increment = -1
+    frame = start_frame + increment
+    while frame < len(trajectory) and frame >= 0:
+        pos = trajectory[frame]
+        distance = math.sqrt((pos[0] - start_pos[0])**2 + (pos[1] - start_pos[1])**2)
+        if distance >= threshold_distance:
+            if frame < start_frame:
+                return average_velocity(trajectory, frame, start_frame)
+            else:
+                return average_velocity(trajectory, start_frame, frame)
+        frame += increment
+
+    # If we got past that, we didn't travel the threshold distance
+    if start_frame <= len(trajectory) / 2:
+        return average_velocity(trajectory, 0, len(trajectory) / 2)
+    else:
+        return average_velocity(trajectory, len(trajectory) / 2, len(trajectory))
 
 def average_velocity(trajectory, start, end):
     '''
