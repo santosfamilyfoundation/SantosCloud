@@ -29,11 +29,14 @@ In the video_tracking/stmarc/stmarc-vis folder.
 
 
 
-def road_user_traj(filename, homographyFile, roadImageFile, save_path, objs_to_plot=None, plot_cars=False):
+def road_user_traj(fig, filename, fps, homographyFile, roadImageFile):
     """
     Plots all road-user trajectories.
     """
+
     homography = inv(loadtxt(homographyFile))
+
+    # print(homography)
 
     connection = sqlite3.connect(filename)
     cursor = connection.cursor()
@@ -52,13 +55,13 @@ def road_user_traj(filename, homographyFile, roadImageFile, save_path, objs_to_p
     obj_traj_x = []
     obj_traj_y = []
 
-    plt.figure(1)
-    fig = plt.gcf()
+    # aplot = QTPLT()
     ax = fig.add_subplot(111)
     ax.set_axis_off()
     im = imread(roadImageFile)
-    ax.imshow(im)
+    implot = ax.imshow(im)
 
+    # colors = [(0,0,0), (0,0,1), (0,1,0), (1,0,1), (0,1,1), (1,1,0), (1,0,1)]
     userlist = ['unknown', 'car', 'pedestrian',
                 'motorcycle', 'bicycle', 'bus', 'truck']
     alpha = 0.22
@@ -67,52 +70,69 @@ def road_user_traj(filename, homographyFile, roadImageFile, save_path, objs_to_p
 
     for row in cursor:
         pos = Point(row[2], row[3])
+        # xpos = row[2]
+        # ypos = row[3]
 
         usertype = usertypes[obj_id]
 
+        # print pos.x, pos.y
         pos = pos.project(homography)
+        # print pos.x, pos.y
         obj_traj_x.append(pos.x)
         obj_traj_y.append(pos.y)
+        # print(obj_traj)
 
         if(row[0] != obj_id):
+            # color = random.choice(colors)
             usertype = userlist[usertype]
 
-            if plot_cars or (usertype == 'pedestrian' or usertype == 'bicycle'):
-                if objs_to_plot is None or obj_id in objs_to_plot:
-                    ax.plot(obj_traj_x[:-1], obj_traj_y[:-1], ".-",
-                        color=colors[usertype], label=usertype, linewidth=2, markersize=3)
+            if usertype == 'pedestrian' or usertype == 'bicycle':
+                ax.plot(obj_traj_x[:-1], obj_traj_y[:-1], ".-",
+                    color=colors[usertype], label=usertype, linewidth=2, markersize=3)
 
             print 'switching object to: ', row[0]
             obj_id = row[0]
             obj_traj_x = []
             obj_traj_y = []
 
-    if not plot_cars:
-        colorlist = []
-        recs = []
-        # pedestrians and bike trajectory only
-        for idx, i in enumerate([2, 4]):
-            colorlist.append(colors[userlist[i]])
-            recs.append(mpatches.Rectangle((0, 0), 1, 1, fc=colorlist[idx]))
-        ax.set_position([0.1, 0.1, 0.85, 0.85])
-        ax.legend(recs, userlist, loc=8, mode="expand",
+    # Now add the legend with some customizations.
+
+    # plot_handles = []
+    # for user in userlist:
+    #     handle = mpatches.Patch(color=colors[user], label=user)
+    #     plt.legend(handles=handle, loc='upper right', shadow=True)
+
+    colorlist = []
+    recs = []
+    # pedestrians and bike trajectory only
+    for idx, i in enumerate([2, 4]):
+        colorlist.append(colors[userlist[i]])
+        recs.append(mpatches.Rectangle((0, 0), 1, 1, fc=colorlist[idx]))
+    ax.set_position([0.1, 0.1, 0.85, 0.85])
+    # ax.legend(recs,userlist, loc='center left', bbox_to_anchor=(1, 0.5))
+    ax.legend(recs, userlist, loc=8, mode="expand",
               bbox_to_anchor=(-.5, -.5, .1, .1))
 
-        box = ax.get_position()
-        ax.set_position(
-            [box.x0, box.y0 + box.height * 0.1, box.width, box.height * 0.9])
+    box = ax.get_position()
+    ax.set_position(
+        [box.x0, box.y0 + box.height * 0.1, box.width, box.height * 0.9])
 
-        ax.legend(recs, [userlist[i] for i in [2,4]], loc='upper center', bbox_to_anchor=(
+    # Put a legend below current axis
+    ax.legend(recs, [userlist[i] for i in [2,4]], loc='upper center', bbox_to_anchor=(
         0.5, -0.05), fancybox=True, shadow=True, ncol=4)
+    # ax.legend(recs, userlist, bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
 
-    ax.set_xlim([0, width])
-    ax.set_ylim([0, height])
+    # legend = plt.legend(loc='upper right', shadow=True)
+
+    ax.set_xlim([0, 1280])
+    ax.set_ylim([0, 720])
     ax.set_ylim(ax.get_ylim()[::-1])
 
+    # ax.set_xlabel('X-Coordinate')
+    # ax.set_ylabel('Y-Coordinate')
     ax.set_title('Road User Trajectories')
 
-    fig.savefig(save_path, bbox_inches=0, pad_inches=0, format='jpg')
-    plt.close()
+    # plt.show()
 
     connection.commit()
     connection.close()
@@ -157,6 +177,8 @@ def calculate_avg_vels(filename, fps):
             # save velocity information for old object before moving onward
             xvels = [abs(x) for x in xvels]
             yvels = [abs(y) for y in yvels]
+
+            speeds = [math.sqrt(vels[0]**2 + vels[1]**2) for vels in zip(xvels, yvels)]
 
             avg_xv = sum(xvels)/len(xvels)
             avg_yv = sum(yvels)/len(yvels)
@@ -208,7 +230,7 @@ def compare_speeds(identifiers_to_cmp, labels_to_cmp, fps_list, only_show_85th, 
     speed_50_list = []
     speed_99_list = []
     for identifer, fps in zip(identifiers_to_cmp, fps_list):
-        filename = os.path.join(identifer, 'run', 'results.sqlite')
+        filename = os.path.join(identifer, 'run/results.sqlite')
         obj_vels = calculate_avg_vels(filename, fps)
 
         cdf = Cdf(obj_vels)
@@ -223,7 +245,7 @@ def compare_speeds(identifiers_to_cmp, labels_to_cmp, fps_list, only_show_85th, 
         fig = sns_plot.get_figure()
         sns_plot.set_xlabel('85th Percentile Speed (mph)')
         sns_plot.set_ylabel('Comparing video data captured for')
-        fig.savefig(os.path.join(save_dir, 'compare85th.jpg'),
+        fig.savefig(os.path.join(save_dir, 'compare85th_{}.jpg'.format('_'.join(labels_to_cmp))),
                     format='jpg', bbox_inches='tight')
 
     # comparePercentiles, with labels_to_cmp in the legend, each percentile under a grouping of bars
@@ -236,7 +258,7 @@ def compare_speeds(identifiers_to_cmp, labels_to_cmp, fps_list, only_show_85th, 
         fig = sns_plot.get_figure()
         sns_plot.set_xlabel('Speed (mph)')
         sns_plot.set_ylabel('Speed Percentile')
-        fig.savefig(os.path.join(save_dir, 'comparePercentiles.jpg'),
+        fig.savefig(os.path.join(save_dir, 'comparePercentiles_{}.jpg'.format('_'.join(labels_to_cmp))),
                     format='jpg', bbox_inches='tight')
 
 def road_user_counts(filename):
@@ -361,89 +383,4 @@ def road_user_icon_counts(title, car, bike, pedestrian, save_path, textcolor='#0
 
     fig.savefig(save_path, dpi=dpi, bbox_inches=0, pad_inches=0, facecolor=facecolor, format='jpg')
     plt.close()
-
-def turn_icon_counts(turn_dict, save_path, textcolor='#000000', facecolor='#FFFFFF', iconpath=None):
-    """
-    Takes a dictionary like {'up':{'right':2,'left'3','straight':4},'down':{...},...}, and produces
-    a visualization showing the amount of cars that turned each way for every direction.
-    """
-    dpi = 100.0
-    mpl_width, mpl_height = (10, 8)
-
-    # make figure without frame
-    fig = plt.figure(frameon=False)
-    fig.set_size_inches(mpl_width, mpl_height)
-    ax = fig.add_subplot(111)
-
-    # hide axis
-    ax.set_axis_off()
-
-    # set your axis size
-    ax.axis([0, mpl_width, 0, mpl_height])
-
-    fontsize = 30
-
-    text_margin = 0.075
-
-    if iconpath is None:
-        # assumes that the icon image files are in the same directory as this file
-        iconpath = os.path.dirname(os.path.abspath(__file__))
-
-    num_cars = 0
-    for (direction, d) in turn_dict.iteritems():
-        for (turn, num) in d.iteritems():
-            num_cars += num
-
-    # car icon
-    fn = os.path.join(iconpath, 'turns.png')
-    arr_img = plt.imread(fn, format='png')
-    zoom = (dpi * mpl_height - 100) / arr_img.shape[1]
-    im = OffsetImage(arr_img, zoom=zoom)
-    ab = AnnotationBbox(im, (.5*mpl_width, .5*mpl_height), xycoords='data', frameon=False)
-    ax.add_artist(ab)
-    # car count
-    ax.text(.5*mpl_width, .35*mpl_height, str(num_cars), horizontalalignment='center', fontsize=fontsize, color=textcolor)
-
-    for direction in ['right', 'down', 'left', 'up']:
-        t = None
-        if direction == 'right':
-            x = -1
-            t = 'x'
-        elif direction == 'left':
-            x = 1
-            t = 'x'
-        elif direction == 'up':
-            y = -1
-            t = 'y'
-        elif direction == 'down':
-            y = 1
-            t = 'y'
-
-        for turn in ['left', 'straight', 'right']:
-            proportion = .33
-            if turn == 'left':
-                if t == 'y':
-                    x = -proportion * y
-                elif t == 'x':
-                    y = -proportion * x
-
-            elif turn == 'straight':
-                if t == 'y':
-                    x = 0
-                elif t == 'x':
-                    y = 0
-
-            elif turn == 'right':
-                if t == 'y':
-                    x = proportion * y
-                elif t == 'x':
-                    y = proportion * x
-
-            x1 = .075 + (1 - 2*0.075)*(1+x)/2.0
-            y1 = .02 + (1 - 0.075)*(1+y)/2.0
-            ax.text(x1*mpl_width, y1*mpl_height, str(turn_dict[direction][turn]), horizontalalignment='center', fontsize=fontsize, color=textcolor)
-
-    fig.savefig(save_path, dpi=dpi, bbox_inches=0, pad_inches=0, facecolor=facecolor, format='jpg')
-    plt.close()
-
 
