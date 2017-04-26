@@ -273,6 +273,8 @@ def get_sample_tuples(length, samples, interval):
     '''
     out = []
     stride = (length - interval) / (samples - 1)
+    if stride < 0:
+        stride = 0
     for i in range(samples):
         start = stride * i
         end = start + interval
