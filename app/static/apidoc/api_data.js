@@ -847,7 +847,7 @@ define({ "api": [
     "name": "SpeedDistribution",
     "version": "0.1.0",
     "group": "Results",
-    "description": "<p>Calling this route will create a graph of the speed distribution from a specified project. The image will then be sent back in the response body. This route requires running object tracking on the video, and then running safety analysis on the results of the object tracking beforehand.</p>",
+    "description": "<p>Calling this route will create a graph of the speed distribution from a specified project. The image will then be sent back in the response body. This route requires running object tracking on the video beforehand.</p>",
     "parameter": {
       "fields": {
         "Parameter": [
@@ -936,6 +936,76 @@ define({ "api": [
       }
     },
     "filename": "app/handlers/turningCounts.py",
+    "groupTitle": "Results"
+  },
+  {
+    "type": "get",
+    "url": "/compareSpeeds/",
+    "title": "Visualize how speed distributions compare across projects",
+    "name": "compareSpeeds",
+    "version": "0.1.0",
+    "group": "Results",
+    "description": "<p>Calling this route will create a graph of comparing the speed distributions of different project video data. The image will then be sent back in the response body. This route requires running object tracking on the video.</p>",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "identifier",
+            "description": "<p>identifier of the parent project. This is used to decide in which project directory to save the compare speeds graph.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "JSON",
+            "optional": false,
+            "field": "identifiers_to_cmp",
+            "description": "<p>A json array of the identifiers of the projects of which to compare speeds.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "JSON",
+            "optional": false,
+            "field": "labels_to_cmp",
+            "description": "<p>A json array of the human readable string text for each of the projects in project_identifiers. These will be used in the legends and axes labels of the graph.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "Boolean",
+            "optional": true,
+            "field": "only_show_85th",
+            "description": "<p>Control whether the graph will only compare the 85th percentile speeds. If you are comparing more than 4 projects, it is recommended to set this to True, for visual purposes. Defaults to False.</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "File",
+            "optional": false,
+            "field": "image_jpg",
+            "description": "<p>The API will return the created graph upon success.</p>"
+          }
+        ]
+      }
+    },
+    "error": {
+      "fields": {
+        "Error 4xx": [
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "error_message",
+            "description": "<p>The error message to display.</p>"
+          }
+        ]
+      }
+    },
+    "filename": "app/handlers/compareSpeeds.py",
     "groupTitle": "Results"
   },
   {
