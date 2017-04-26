@@ -29,6 +29,8 @@ class BaseHandler(tornado.web.RequestHandler):
                 try:
                     json = tornado.escape.json_decode(self.request.body)
                     ret_val = json[arg_name]
+                    if ret_val == None:
+                        ret_val = default
                 except (ValueError,KeyError) as V :
                     ret_val = default
             elif 'x-www-form-urlencoded' in content_type:
