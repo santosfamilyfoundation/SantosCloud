@@ -272,6 +272,7 @@ def get_sample_tuples(length, samples, interval):
     tuples specified by samples. The start and end index of the tuples will be separated by interval.
     '''
     out = []
+    interval = min(interval, length/samples)
     stride = (length - interval) / (samples - 1)
     if stride < 0:
         stride = 0
