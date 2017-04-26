@@ -190,7 +190,8 @@ def vel_distribution(filename, fps, save_dir):
     titlestring = "85th percentile speed of cars is {} mph".format(int(speed_85))
 
     plt.figure()
-    sns_plot = sns.distplot(obj_vels, kde=False)
+    binwidth = 5
+    sns_plot = sns.distplot(obj_vels, bins=range(0, int(max(obj_vels)) + binwidth, binwidth), kde=False)
     ylim = plt.gca().axes.get_ylim()
     plt.plot(len(ylim) * [speed_85], ylim)
     fig = sns_plot.get_figure()

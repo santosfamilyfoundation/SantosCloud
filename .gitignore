@@ -94,3 +94,5 @@ ENV/
 /.temp
 
 /app/uploads/*
+*.swp
+
