@@ -71,12 +71,14 @@ def trajectory_headings(db_filename, homography_file, cars_only=True):
     obj_id = 0
     obj_traj = []
     trajectories = []
+    obj_ids = []
     userlist = ['unknown', 'car', 'pedestrian',
                 'motorcycle', 'bicycle', 'bus', 'truck']
 
     for row in cursor:
         if(row[0] != obj_id):
             trajectories.append(obj_traj)
+            obj_ids.append(obj_id)
             obj_id = row[0]
             obj_traj = []
 
@@ -86,7 +88,7 @@ def trajectory_headings(db_filename, homography_file, cars_only=True):
         obj_traj.append((pos.x[0], pos.y[0]))
 
     final_trajectories = {}
-    for i in range(len(trajectories)):
+    for i in obj_ids:
         usertype = userlist[usertypes[i]]
         if cars_only and usertype != 'car':
             continue
