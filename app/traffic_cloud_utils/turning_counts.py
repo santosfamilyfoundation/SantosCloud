@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 
 from moving import Point
 
+
 def get_objects_with_trajectory(obj_to_heading, turn=None, initial_heading=None, final_heading=None):
     '''
     Returns all objects matching the given parameters, i.e. with the headings or turning motion
@@ -46,7 +47,6 @@ def get_objects_with_trajectory(obj_to_heading, turn=None, initial_heading=None,
 
     return objs
 
-
 def trajectory_headings(db_filename, homography_file, cars_only=True):
     """
     Returns a dictionary from object id to a tuple representing the object's initial and final headings.
@@ -71,12 +71,14 @@ def trajectory_headings(db_filename, homography_file, cars_only=True):
     obj_id = 0
     obj_traj = []
     trajectories = []
+    obj_ids = []
     userlist = ['unknown', 'car', 'pedestrian',
                 'motorcycle', 'bicycle', 'bus', 'truck']
 
     for row in cursor:
         if(row[0] != obj_id):
             trajectories.append(obj_traj)
+            obj_ids.append(obj_id)
             obj_id = row[0]
             obj_traj = []
 
@@ -86,7 +88,7 @@ def trajectory_headings(db_filename, homography_file, cars_only=True):
         obj_traj.append((pos.x[0], pos.y[0]))
 
     final_trajectories = {}
-    for i in range(len(trajectories)):
+    for i in obj_ids:
         usertype = userlist[usertypes[i]]
         if cars_only and usertype != 'car':
             continue
@@ -176,8 +178,8 @@ def draw_clusters(trajectories, labels, centroids=None):
 
 def intersection_geometry(trajectories):
     '''
-    Returns the geometry of the intersection as a 2-tuple. The tuple will contain the angle of the 'Right'
-    direction in the intersection and the 'Down' angle in the intersection. Assumes that the intersection
+    Returns the geometry of the intersection as a 2-tuple. The tuple will contain the angle of the 'right'
+    direction in the intersection and the 'down' angle in the intersection. Assumes that the intersection
     is the intersection of two straight roads.
 
     This function works by finding large clusters that contain objects traveling very straight (i.e. low
@@ -270,7 +272,10 @@ def get_sample_tuples(length, samples, interval):
     tuples specified by samples. The start and end index of the tuples will be separated by interval.
     '''
     out = []
+    interval = min(interval, length/samples)
     stride = (length - interval) / (samples - 1)
+    if stride < 0:
+        stride = 0
     for i in range(samples):
         start = stride * i
         end = start + interval
@@ -279,8 +284,8 @@ def get_sample_tuples(length, samples, interval):
 
 def get_correct_geometry(angles):
     '''
-    Takes two angles of roads in the intersection and returns a tuple that contains the angle for the 'Right'
-    direction and the angle for the 'Down' direction.
+    Takes two angles of roads in the intersection and returns a tuple that contains the angle for the 'right'
+    direction and the angle for the 'down' direction.
     '''
     a1 = angles[0]
     a2 = angles[1]
@@ -290,7 +295,7 @@ def get_correct_geometry(angles):
     out = []
     # Heuristic: the angle with the least magnitude is right. (In the coordinate space, an angle of 0
     # corresponds to right
-    # Then, make sure that the second angle ('Down') is positive. Positive angles correspond to down in
+    # Then, make sure that the second angle ('down') is positive. Positive angles correspond to down in
     # the coordinate space
     if min_a1 < min_a2:
         if abs(a1) > math.pi / 2:
@@ -315,18 +320,153 @@ def get_correct_geometry(angles):
 
 def classify_trajectory(trajectory, geometry):
     '''
-    Returns a tuple of the initial and final heading of a trajectory. For example, ('Right', 'Down')
+    Uses three types of classification to classify the initial and final directions of an object:
+    - velocity by distance (i.e. getting an objects overall velocity when it has moved x distance)
+    - velocity by time (getting the objects velocity in the first x seconds)
+    - trajectory templating (comparing similarity of the trajectory to an ideal turning motion)
+    It will return the direction guessed by the majority of the three classifications.
+    If no majority is found, it will use the distance classification
     '''
+    distance_classification = classify_trajectory_vel(trajectory, geometry, get_velocity_distance)
+    time_classification = classify_trajectory_vel(trajectory, geometry, get_velocity_time)
+    template_classification = classify_trajectory_template(trajectory, geometry)
+
+    classifications = [distance_classification, time_classification, template_classification]
+    
+    directions = ['right','down','left','up']
+    initial_scores = [0] * len(directions)
+    final_scores = [0] * len(directions)
+	
+    for classification in classifications:
+        initial_scores[directions.index(classification[0])] += 1 
+        final_scores[directions.index(classification[1])] += 1 
+
+    initial = None
+    final = None
+
+    for i in range(len(directions)):
+        if initial_scores[i] > len(classifications) / 2:
+            initial = directions[i]
+        if final_scores[i] > len(classifications) / 2:
+            final = directions[i]
+
+    # If no majority, use distance classification
+    if initial is None:
+        initial = distance_classification[0]
+    if final is None:
+        final = distance_classification[1]
+
+    return (initial, final)
+
+def classify_trajectory_template(trajectory, geometry, num_samples = 10):
+    samples = get_sample_tuples(len(trajectory), num_samples, 10)
+
+    angles = []
+    for sample in samples:
+        vel = average_velocity(trajectory, sample[0], sample[1])
+        angles.append(math.atan2(vel[1], vel[0]))
+
+    directions = ['right', 'down', 'left', 'up']
+    l = [] # [('left','down',.2),...]
+
+    for initial in range(len(directions)):
+        for final in range(len(directions)):
+            if (initial-final) % 4 == 2:
+                continue
+            initial_direction = directions[initial]
+            final_direction = directions[final]
+
+            squares = []
+            for i in range(len(samples)):
+                angle = angles[i]
+                predicted_angle = angle_in_trajectory(initial_direction, final_direction, float(i) / (num_samples - 1), geometry)
+                squares.append(angle_difference(angle, predicted_angle) ** 2)
+
+            rms = math.sqrt(sum(squares) / num_samples)
+            l.append((initial_direction, final_direction, rms))
+
+    best = sorted(l, key=lambda x: x[2])[0]
+    return (best[0], best[1])
+
+def angle_in_trajectory(initial_direction, final_direction, percent_done, geometry):
+    '''
+    Returns the angle that an object turning in the given direction from the initial direction will
+    have when it is some percent of the way through its trajectory specified by percent_done.
+    '''
+    directions = ['right', 'down', 'left', 'up']
+    angles = [geometry[0], geometry[1], opposite_angle(geometry[0]), opposite_angle(geometry[1])]
+    initial_index = directions.index(initial_direction.lower())
+    final_index = directions.index(final_direction.lower())
+
+    start_angle = angles[initial_index]
+    final_angle = angles[final_index]
+
+    diff = angle_difference(start_angle, final_angle)
+
+    return normalize_angle(start_angle + percent_done * diff)
+
+def classify_trajectory_vel(trajectory, geometry, vel_function):
+    '''
+    Returns a tuple of the initial and final heading of a trajectory. For example, ('right', 'down')
+    '''
+    vels = vel_function(trajectory)
+    initial_vel = vels[0]
+    initial_angle = math.atan2(initial_vel[1], initial_vel[0])
+    final_vel = vels[1]
+    final_angle = math.atan2(final_vel[1], final_vel[0])
+
+    return (angle_to_direction(initial_angle, geometry), angle_to_direction(final_angle, geometry))
+
+def get_velocity_time(trajectory):
     # Look at velocity in first and last second
     interval = 45
     samples = get_sample_tuples(len(trajectory), 2, interval)
 
-    angles = []
+    vels = []
     for sample in samples:
-        avg_vel = average_velocity(trajectory, sample[0], sample[1])
-        angles.append(math.atan2(avg_vel[1], avg_vel[0]))
+        vels.append(average_velocity(trajectory, sample[0], sample[1]))
 
-    return (angle_to_direction(angles[0], geometry), angle_to_direction(angles[1], geometry))
+    return vels
+
+def get_velocity_distance(trajectory):
+    # Look at velocity in first bit of distance traveled
+    initial_vel = velocity_by_distance(trajectory, 0)
+    final_vel = velocity_by_distance(trajectory, len(trajectory) - 1, forward=False)
+    return [initial_vel, final_vel]
+
+def velocity_by_distance(trajectory, start_frame, forward=True, threshold_distance=100):
+    '''
+    Returns the velocity of the object starting at start_frame until the object has traveled
+    the distance (in pixels) specified by threshold_distance.
+
+    Even if forward is False, the returned value will be the velocity of the object moving forward.
+
+    If the object never travels a distance threshold_distance, it will return either the
+    velocity in the first half of the trajectory or the velocity in the second half of the
+    trajectory, depending on whether the start_frame is in the first or second half of the trajectory.
+    (This behavior is intended to assist with classify_trajectory_distance)
+    '''
+    start_pos = trajectory[start_frame]
+
+    increment = 1
+    if not forward:
+        increment = -1
+    frame = start_frame + increment
+    while frame < len(trajectory) and frame >= 0:
+        pos = trajectory[frame]
+        distance = math.sqrt((pos[0] - start_pos[0])**2 + (pos[1] - start_pos[1])**2)
+        if distance >= threshold_distance:
+            if frame < start_frame:
+                return average_velocity(trajectory, frame, start_frame)
+            else:
+                return average_velocity(trajectory, start_frame, frame)
+        frame += increment
+
+    # If we got past that, we didn't travel the threshold distance
+    if start_frame <= len(trajectory) / 2:
+        return average_velocity(trajectory, 0, len(trajectory) / 2)
+    else:
+        return average_velocity(trajectory, len(trajectory) / 2, len(trajectory))
 
 def average_velocity(trajectory, start, end):
     '''
@@ -341,7 +481,7 @@ def average_velocity(trajectory, start, end):
 
 def angle_to_direction(angle, geometry):
     '''
-    Returns a string representation of an angle for a given geometry. For example, could return 'Right'
+    Returns a string representation of an angle for a given geometry. For example, could return 'right'
     for an angle of .04 radians if the right in the geometry is .02.
     '''
     right = geometry[0]
@@ -360,10 +500,10 @@ def angle_to_direction(angle, geometry):
     # directions array, an object will have that value for its direction iff it has an angle between
     # the angle at that position and the next position in the angles array.
     # Example: Object a has an angle between leftup and rightup (indexes 2 and 3). Therefore, its
-    # direction is "Up" (index 2).
+    # direction is "up" (index 2).
 
     angles = [rightdown, leftdown, leftup, rightup]
-    directions = ["Down", "Left", "Up", "Right"]
+    directions = ["down", "left", "up", "right"]
 
     least_index = find_discontinuity(angles)
     most_index = (least_index - 1) % 4

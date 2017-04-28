@@ -891,12 +891,12 @@ define({ "api": [
   },
   {
     "type": "get",
-    "url": "/speedDistribution/",
-    "title": "Speed Distribution",
-    "name": "SpeedDistribution",
+    "url": "/turningCounts/",
+    "title": "Turning Counts",
+    "name": "TurningCounts",
     "version": "0.1.0",
     "group": "Results",
-    "description": "<p>Calling this route will create a graph of the speed distribution from a specified project. The image will then be sent back in the response body. This route requires running object tracking on the video, and then running safety analysis on the results of the object tracking beforehand.</p>",
+    "description": "<p>Calling this route will create an image detailing the counts of turning motions for a specified project. The image will then be sent back in the response body. This route requires running object tracking on the video, and then running safety analysis on the results of the object tracking beforehand.</p>",
     "parameter": {
       "fields": {
         "Parameter": [
@@ -906,20 +906,6 @@ define({ "api": [
             "optional": false,
             "field": "identifier",
             "description": "<p>The identifier of the project to create a speed distribution for.</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "Integer",
-            "optional": true,
-            "field": "speed_limit",
-            "description": "<p>speed limit of the intersection. Defaults to 25 mph.</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "Boolean",
-            "optional": true,
-            "field": "vehicle_only",
-            "description": "<p>Flag for specifying only vehicle speeds. Takes True, False, 1 (true), or 0 (false). Defaults to True.</p>"
           }
         ]
       }
