@@ -5,10 +5,13 @@ import math
 import os
 
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from matplotlib.offsetbox import OffsetImage, AnnotationBbox
+from matplotlib.offsetbox import OffsetImage, AnnotationBbox, AnchoredOffsetbox
 from thinkstats2 import Cdf
 import seaborn as sns
+sns.set(font_scale=3)
 
 from numpy.linalg.linalg import inv
 from numpy import loadtxt
@@ -193,10 +196,11 @@ def vel_distribution(filename, fps, save_dir):
     binwidth = 5
     sns_plot = sns.distplot(obj_vels, bins=range(0, int(max(obj_vels)) + binwidth, binwidth), kde=False)
     ylim = plt.gca().axes.get_ylim()
-    plt.plot(len(ylim) * [speed_85], ylim)
+    # Vertical Line marking 85th percentile speed
+    plt.plot(len(ylim) * [speed_85], ylim, linewidth=3)
     fig = sns_plot.get_figure()
-    fig.suptitle(titlestring)
-    sns_plot.set_xlabel('Velocity (mph)')
+    fig.suptitle(titlestring, y=1.08) # so title does not overlap axes
+    sns_plot.set_xlabel('Speed (mph)')
     sns_plot.set_ylabel('Counts')
     fig.savefig(os.path.join(save_dir, 'velocityPDF.jpg'), format='jpg', bbox_inches='tight')
 
@@ -237,6 +241,9 @@ def compare_speeds(identifiers_to_cmp, labels_to_cmp, fps_list, only_show_85th, 
         fig = sns_plot.get_figure()
         sns_plot.set_xlabel('Speed (mph)')
         sns_plot.set_ylabel('Speed Percentile')
+        # Put the legend out of the figure
+        plt.legend(bbox_to_anchor=(1.05, 0.5),
+                   loc='center left', borderaxespad=0.)
         fig.savefig(os.path.join(save_dir, 'comparePercentiles.jpg'),
                     format='jpg', bbox_inches='tight')
 
@@ -276,6 +283,48 @@ def road_user_counts(filename):
         roadusercounts[user] = len(roadusers[user])
 
     return roadusercounts
+
+def compare_counts(identifiers_to_cmp, labels_to_cmp, save_dir):
+    """
+    identifiers_to_cmp: list of strings, directory paths to different project identifiers to compare
+    labels_to_cmp: list of strings, the names to show up in the graph legend
+    """
+    # corresponding to each label to cmp
+    bike_counts = []
+    ped_counts = []
+    car_counts = []
+    for identifer in identifiers_to_cmp:
+        filename = os.path.join(identifer, 'run', 'results.sqlite')
+        counts = road_user_counts(filename)
+        bike_counts.append(counts['bicycle'])
+        ped_counts.append(counts['pedestrian'])
+        car_counts.append(counts['car'])
+
+    all_counts = [bike_counts, ped_counts, car_counts]
+    all_labels = ['Bicycle', 'Pedestrian', 'Car']
+    all_iconfiles = ['bike.png', 'pedestrian.png', 'car.png']
+    for user_counts, user_label, iconfile in zip(
+            all_counts, all_labels, all_iconfiles):
+        # Plot Data
+        plt.figure()
+        sns_plot = sns.barplot(x=np.array(user_counts), y=np.array(labels_to_cmp))
+        fig = sns_plot.get_figure()
+        sns_plot.set_xlabel('Counts')
+        sns_plot.set_ylabel('Comparing video captured')
+
+        # Insert Icon
+        # assumes that the icon image files are in the same directory as
+        # this file
+        iconpath = os.path.dirname(os.path.abspath(__file__))
+        fn = os.path.join(iconpath, iconfile)
+        arr_img = plt.imread(fn, format='png')
+        newax = fig.add_axes([0.3, 0.9, 0.35, 0.35], anchor='NE')
+        newax.imshow(arr_img)
+        newax.axis('off')
+
+        figsavepath = os.path.join(save_dir,
+                'compare{}Counts.jpg'.format(user_label))
+        fig.savefig(figsavepath, format='jpg', bbox_inches='tight')
 
 def road_user_chart(filename):
     """Creates a bar graph chart of road user counts"""
