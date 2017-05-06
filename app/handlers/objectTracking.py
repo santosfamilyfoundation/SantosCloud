@@ -129,7 +129,7 @@ class ObjectTrackingThread(threading.Thread):
             for start_index in xrange(0,total_objs,batch_size):
                 if start_index+batch_size>total_objs:
                     batch_size = total_objs%batch_size
-                subprocess.check_call(["classify-objects-tensorflow.py",\
+                subprocess.check_call(["classify-objects-cnn.py",\
                                         "--cfg", tracking_path,\
                                         "-d", db_path,\
                                         "-s", str(start_index),\
