@@ -10,6 +10,7 @@ import tornado.options
 import tornado.web
 import os
 import matplotlib
+import datetime
 matplotlib.use('Agg')
 
 from tornado.options import define, options
@@ -106,6 +107,22 @@ def main():
     ioloop = tornado.ioloop.IOLoop().instance()
     tornado.autoreload.start(ioloop)
     ioloop.start()
+
+def shutdown():
+    logging.info('Stopping http server')
+    server.stop()
+
+    logging.info('Will shutdown at midnight')
+    io_loop = tornado.ioloop.IOLoop.instance()
+
+    def stop_loop():
+        now = datetime.datetime.now()
+        if now.hour == 0 and (io_loop._callbacks or io_loop._timeouts):
+            io_loop.add_timeout(now.minute + 1, stop_loop)
+        else:
+            io_loop.stop()
+            logging.info('Shutdown')
+    stop_loop()
 
 if __name__ == "__main__":
     # If we're just starting the program, there shouldn't be anything already
