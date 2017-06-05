@@ -108,7 +108,9 @@ def _create_project_dir(identifier, config_dict, video_part):
 
         update_dict = {
             'pbv-svm-filename': os.path.join(default_files_dir, 'modelPBV.xml'),
-            'bv-svm-filename': os.path.join(default_files_dir, 'modelBV.xml')
+            'bv-svm-filename': os.path.join(default_files_dir, 'modelBV.xml'),
+            'cnn-graph': os.path.join(default_files_dir, 'cnn_graph.pb'),
+            'cnn-labels': os.path.join(default_files_dir, 'cnn_labels.txt')
         }
         update_config_without_sections(classifier_path, update_dict)
         update_config_without_sections(tracking_path,update_dict)

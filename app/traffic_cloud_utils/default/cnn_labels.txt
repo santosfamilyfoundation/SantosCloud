@@ -1,0 +1,11 @@
+bicycle
+bus
+work van
+pedestrian
+motorcycle
+background
+pickup truck
+articulated truck
+non motorized vehicle
+single unit truck
+car

@@ -49,7 +49,7 @@ class TestConfigHandler(BaseHandler):
     def prepare(self):
         self.identifier = self.find_argument('identifier', str)
         self.project_exists(self.identifier)
-        
+
         self.test_flag = self.find_argument('test_flag', str)
         status_dict = StatusHelper.get_status(self.identifier)
         if self.test_flag == "feature":
@@ -220,7 +220,7 @@ class TestConfigObjectThread(threading.Thread):
 
         try:
             subprocess.check_call(["feature-based-tracking",tracking_path,"--gf","--database-filename",obj_db_path])
-            subprocess.check_call(["classify-objects.py", "--cfg", tracking_path, "-d", obj_db_path])  # Classify road users
+            subprocess.check_call(["classify-objects-cnn.py", "--cfg", tracking_path, "-d", obj_db_path])  # Classify road users
         except subprocess.CalledProcessError as err_msg:
             StatusHelper.set_status(self.identifier, Status.Type.OBJECT_TEST, Status.Flag.FAILURE, failure_message='Failed to run the object test with error: '+str(err_msg))
             return self.callback(500, str(err_msg), self.identifier)

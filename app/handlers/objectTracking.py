@@ -36,7 +36,7 @@ class ObjectTrackingHandler(BaseHandler):
     def prepare(self):
         self.identifier = self.find_argument('identifier', str)
         self.project_exists(self.identifier)
-        
+
         status_dict = StatusHelper.get_status(self.identifier)
         if status_dict[Status.Type.OBJECT_TRACKING] == Status.Flag.IN_PROGRESS:
             status_code = 409
@@ -129,7 +129,7 @@ class ObjectTrackingThread(threading.Thread):
             for start_index in xrange(0,total_objs,batch_size):
                 if start_index+batch_size>total_objs:
                     batch_size = total_objs%batch_size
-                subprocess.check_call(["classify-objects.py",\
+                subprocess.check_call(["classify-objects-cnn.py",\
                                         "--cfg", tracking_path,\
                                         "-d", db_path,\
                                         "-s", str(start_index),\
