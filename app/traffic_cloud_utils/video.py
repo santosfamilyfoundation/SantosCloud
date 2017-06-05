@@ -298,7 +298,7 @@ def get_framerate(videopath):
     if not os.path.exists(videopath):
         print("ERROR: filename %s was not found!" % videopath)
         return -1
-    out = subprocess.check_output(["ffprobe",videopath,"-v","0","-select_streams","v","-print_format","flat","-show_entries","stream=r_frame_rate"])
+    out = subprocess.check_output(["ffprobe",videopath,"-v","0","-select_streams","v","-print_format","flat","-show_entries","stream=avg_frame_rate"])
     rate = out.split('=')[1].strip().strip('"').split('/')
     if len(rate)==1:
         return float(rate[0])
